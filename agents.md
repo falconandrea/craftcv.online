@@ -1,6 +1,9 @@
 # AI Agent Operating System
 
 > **READ THIS FIRST**: This file tells AI how to work with this project.
+> 
+> 💡 **Note for Developers**: This project uses the shared AI agents/skills workflow from [agent-brains](https://github.com/falconandrea/agent-brains). 
+> If you want to enable the custom slash commands (`/start`, `/feature`) and the specialized skills, clone `agent-brains` on your local system and run `./setup.sh .` inside this project directory.
 
 ## Skills
 
