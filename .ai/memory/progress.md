@@ -1,7 +1,7 @@
 # 📊 Progress Logic
 
-> **Current Status**: ✅ Project MVP Completed, AI Feature Live. Dashboard + Editor Cyber Redesign done.
-> **Last Update**: 2026-03-31
+> **Current Status**: ✅ Project MVP Completed, AI Feature Live. Dashboard + Editor Cyber Redesign done. ATS Deterministic Rules Engine implemented.
+> **Last Update**: 2026-07-12
 
 ## Recent Achievements
 - [x] **Project Setup**: Documentation generated (PRD, Tech Stack, Flows).
@@ -24,10 +24,11 @@
 - [x] **Dashboard Redesign**: Created new `/dashboard` page as intermediate step between homepage and editor. Introduced shared `AppHeader` component with conditional nav links and CTA. Dashboard supports 3 actions: Start from Scratch, Import PDF (AI-powered), Import JSON. Removed `WelcomeDialog` from editor. Updated all homepage CTAs to route through `/dashboard`. Also migrated `cookies` and `privacy` pages to use `AppHeader`.
 - [x] **Editor Cyber Redesign**: Full cyber/terminal aesthetic applied to the editor page. Replaced side-by-side layout with IDE-style single-pane toggle (Editor/Preview). Cyber-styled forms (`soft-field` inputs with glow focus), neon tabs (#ff00aa active), terminal-styled AI Sheet (`> AI_COACH.EXE`), diff modal with addition/deletion coloring (#b8ff00/#ff00aa). Removed all `dark:` variants in favor of permanent dark theme. Mobile bottom sheet removed, unified across all devices.
 - [x] **Stats Counters**: Implemented anonymous JSON backend tracking for CV generations, AI messages, PDF uploads, and ATS tests with local Docker volume mapping.
+- [x] **ATS Deterministic Rules Engine (P0-A)**: 16 deterministic lint rules (contacts, bullet quality, structure, ATS-specific) integrated into `/api/ai/analyze-ats`. New "CraftCV Lint Check" section in the frontend with category grouping and lint score.
 
 ## Current Context
-- **Goal**: Launch the project, gather feedback from the community (Reddit, ProductHunt, etc.), and integrate tracking/analytics tools.
-- **Active Feature**: Editor Cyber Redesign complete. Back to Launch & Analytics.
+- **Goal**: Proceed with backlog — next up is **P0-B: JD Tailoring & Keyword Gap Analysis**.
+- **Active Feature**: ATS Deterministic Rules Engine complete.
 
 ## Features In Progress
 | Feature | Status | Files |
@@ -39,6 +40,7 @@
 | CV Language Settings | ✅ Done | `.ai/features/cv-language/prd-cv-language.md`, `state/types.ts`, `components/pdf/cv-document.tsx` |
 | Launch & Analytics | ⏳ Pending | `.ai/context/LAUNCH_STRATEGY.md`, `app/privacy`, `app/cookies` |
 | ATS Score Feature | ✅ Done | `.ai/features/ats-score/prd-ats-score.md`, `app/ats-score/page.tsx`, `app/api/ai/analyze-ats/route.ts` |
+| ATS Deterministic Rules Engine (P0-A) | ✅ Done | `.ai/features/ats-score-deterministic/`, `lib/ats-rules.ts`, `lib/ats-rules.test.ts` |
 
 ## Backlog
 - [x] Add Google Tag Manager (GTM).
@@ -49,3 +51,19 @@
 - [x] Add Sitemap & robots.txt.
 - [x] Add Google Search Console (GSC) verification.
 - [x] Post on Reddit (`r/resumes`, `r/SideProject`, `r/webdev`) to gather initial user feedback.
+
+## Spec Backlog — agentkit-seo research (ideas captured, not yet implemented)
+Research source: [.ai/features/agentkit-seo-research/research-agentkit-seo.md](../features/agentkit-seo-research/research-agentkit-seo.md) (full idea map + prioritization).
+
+Cross-cutting principle: **determinism before AI** — check with code whatever can be checked with code; reserve the LLM for the subjective residue.
+
+| Priority | Cluster | Feature | PRD | Core idea |
+|---|---|---|---|---|
+| 🔴 P0 | A | ~~ATS Score deterministic rules engine~~ | ✅ **DONE** | Deterministic lint rules (16 checks) for contacts, bullet quality, structure, ATS-specific. Integrated server-side, shown in frontend as "CraftCV Lint Check". |
+| 🔴 P0 | B | JD Tailoring & Keyword Gap Analysis | [prd-jd-tailoring.md](../features/jd-tailoring/prd-jd-tailoring.md) | Paste JD → keyword gap report (the "wow"). B-3 split: diagnosis in `/ats-score`, cure via "Fix in editor" → AI Optimize with JD pre-loaded. |
+| 🟠 P1 | C | AI Optimize grounding & anti-hallucination | [prd-ai-grounding.md](../features/ai-grounding/prd-ai-grounding.md) | Anti-invention guardrail + VERIFIED FACTS protection + "needs verification" flag + STAR/XYZ enforcement. Structural cure for the fact-drift bug class (see `lessons.md`). |
+| 🟡 P2 | D | Structured career data model | [prd-career-data-model.md](../features/career-data-model/prd-career-data-model.md) | TL;DR field per entry + AI quick-reference snapshot (token savings) + skill evidence linking. Enabler for A/B/C. |
+
+**Suggested order**: A → B → C (ship alongside/after B) → D (refactor during A/B/C). **Out of scope (Cluster E)**: multi-platform export (LinkedIn/GitHub/X generators) — scope expansion, noted only.
+
+All PRDs are in PLANNING status. Next step per cluster: resolve its Open Questions → generate `tasks-*.md` → implement via the feature workflow.

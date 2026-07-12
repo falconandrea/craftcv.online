@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { PDFParse } from "pdf-parse";
 import { incrementCounter } from "@/lib/stats";
+import { runAllChecks } from "@/lib/ats-rules";
 
 export const maxDuration = 60; // Increase max duration for Vercel if needed
 
@@ -57,10 +58,10 @@ export async function POST(req: NextRequest) {
     const model = process.env.AI_PROVIDER_MODEL;
 
     if (!baseURL || !apiKey || !model) {
-       return NextResponse.json(
-         { error: "AI provider is not configured. Please check environment variables." },
-         { status: 503 }
-       );
+      return NextResponse.json(
+        { error: "AI provider is not configured. Please check environment variables." },
+        { status: 503 }
+      );
     }
 
     const formData = await req.formData();
@@ -89,6 +90,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "The PDF appears to be empty or contains only images (no text)." }, { status: 400 });
     }
 
+    // ── Deterministic checks (no AI, run before LLM) ─────────────────
+    const { checks: deterministicChecks, lintScore } = runAllChecks(parsedText, pdfFile.name);
+    incrementCounter("ats_lint_checks").catch(() => { });
+
     let userPrompt = `Here is the extracted text from the user's PDF resume:\n\n<resume_text>\n${parsedText}\n</resume_text>\n`;
     userPrompt += `\nPlease act as an ATS parser and evaluate it based on the system instructions.\n`;
 
@@ -115,7 +120,11 @@ export async function POST(req: NextRequest) {
 
     await incrementCounter("ats_tests");
 
-    return NextResponse.json(data);
+    return NextResponse.json({
+      ...data,
+      deterministicChecks,
+      lintScore,
+    });
   } catch (error) {
     console.error("[ATS Score API] Error:", error);
     return NextResponse.json(

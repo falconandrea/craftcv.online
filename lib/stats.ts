@@ -8,6 +8,7 @@ type Stats = {
   ai_messages: number;
   pdf_uploaded: number;
   ats_tests: number;
+  ats_lint_checks: number;
   [key: string]: number;
 };
 
@@ -22,6 +23,7 @@ async function getStats(): Promise<Stats> {
       ai_messages: 0,
       pdf_uploaded: 0,
       ats_tests: 0,
+      ats_lint_checks: 0,
     };
   }
 }
@@ -33,7 +35,7 @@ export async function incrementCounter(metric: keyof Stats) {
 
     // Ensure directory exists
     await fs.mkdir(path.dirname(STATS_FILE), { recursive: true });
-    
+
     // Write back
     await fs.writeFile(STATS_FILE, JSON.stringify(stats, null, 2));
   } catch (e) {
