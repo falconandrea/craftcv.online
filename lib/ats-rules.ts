@@ -40,16 +40,22 @@ function failed(id: string, category: CheckCategory, label: string, message: str
   return { id, category, status: "failed", label, message, details };
 }
 
-/** Extract potential bullet points from text. */
+/** Extract potential bullet points from text, filtering out non-content lines. */
 function extractBullets(text: string): string[] {
   const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
   const bullets: string[] = [];
 
   for (const line of lines) {
+    // Skip lines that look like page numbers or separators
+    if (/^[-–—]{2,}\s*(?:\d+\s*(?:of\s*\d+)?)?\s*[-–—]{2,}$/i.test(line)) continue; // "-- 1 of 1 --"
+    if (/^(?:page\s*)?\d+\s*(?:of\s*\d+)?$/i.test(line)) continue;                  // "Page 1" or "1 of 1"
+    if (/^[-–—]{3,}$/.test(line)) continue;                                          // "---" separator line
+    if (/^[•·⋅]{2,}$/.test(line)) continue;                                          // "•••" separator
+
     // Lines starting with bullet characters or numbered lists
     if (/^[-*•→‣⁃▪▸›»]\s/.test(line) || /^\d+[.)]\s/.test(line)) {
       bullets.push(line);
-    } else if (line.length < 120 && line.length > 10) {
+    } else if (line.length < 120 && line.length > 15) {
       // Short lines not obviously section headers (not ALL CAPS short lines)
       const upper = line.replace(/[^a-zA-Z]/g, "").length;
       if (line.length > 0 && upper / line.length < 0.6) {
@@ -170,65 +176,169 @@ export function checkPhone(text: string): DeterministicCheck {
 // ── U3. Contacts — LinkedIn, GitHub, Website, Location ─────────────────────
 
 export function checkLinkedIn(text: string): DeterministicCheck {
-  const regex = /linkedin\.com\/(?:in|pub|company)\/[a-zA-Z0-9_-]+/gi;
-  const match = text.match(regex);
-  if (match) {
-    return passed("D03", "contacts", "LinkedIn URL", "LinkedIn profile found.", match[0]);
+  // Full URL
+  const fullRegex = /linkedin\.com\/(?:in|pub|company)\/[a-zA-Z0-9_-]+/gi;
+  const fullMatch = text.match(fullRegex);
+
+  if (fullMatch) {
+    return passed("D03", "contacts", "LinkedIn URL", "LinkedIn profile found.", fullMatch[0]);
   }
+
+  // Abbreviated: "/in/username" (common in PDF headers)
+  const shortRegex = /\/in\/([a-zA-Z0-9_-]+)/g;
+  const shortMatch = shortRegex.exec(text);
+  if (shortMatch) {
+    return passed("D03", "contacts", "LinkedIn URL", "LinkedIn profile found (abbreviated).", `/in/${shortMatch[1]}`);
+  }
+
   return failed("D03", "contacts", "LinkedIn URL", "No LinkedIn URL found. Recruiters often check LinkedIn.");
 }
 
 export function checkGitHub(text: string): DeterministicCheck {
-  const regex = /github\.com\/[a-zA-Z0-9_-]+/gi;
-  const match = text.match(regex);
-  if (match) {
-    return passed("D04", "contacts", "GitHub URL", "GitHub profile found.", match[0]);
+  // Full URL: github.com/username
+  const fullRegex = /github\.com\/[a-zA-Z0-9_-]+/gi;
+  const fullMatch = text.match(fullRegex);
+
+  if (fullMatch) {
+    return passed("D04", "contacts", "GitHub URL", "GitHub profile found.", fullMatch[0]);
   }
+
+  // Abbreviated: "github: username" (no hyphens to avoid matching things like "hands-on")
+  const shortRegex = /\bgithub[\s:•·]*(?:@)?([a-zA-Z0-9][a-zA-Z0-9_]{1,30})\b/gi;
+  const shortMatch = shortRegex.exec(text);
+  if (shortMatch) {
+    return passed("D04", "contacts", "GitHub URL", "GitHub profile found (abbreviated).", shortMatch[1]);
+  }
+
   return warning("D04", "contacts", "GitHub URL", "No GitHub URL found. Optional but recommended for tech roles.");
 }
 
+const WEB_TLDS = new Set([
+  "com", "org", "net", "io", "dev", "app", "me", "co", "uk", "it", "fr",
+  "de", "es", "eu", "gov", "edu", "info", "ai", "ly", "io", "pro", "xyz",
+]);
+
+// Technology/library names that look like domains but aren't
+const TECH_FALSE_POSITIVES = new Set([
+  "next.js", "react.js", "node.js", "vue.js", "angular.js", "express.js",
+  "three.js", "jquery", "chart.js", "d3.js", "p5.js", "socket.io",
+  "redux.js", "meteor.js", "svelte.js", "ember.js", "backbone.js",
+]);
+
 export function checkWebsite(text: string): DeterministicCheck {
-  // URLs that are NOT linkedin/github
+  const lower = text.toLowerCase();
+
+  // Skip common tech names that look like domains
+  for (const fp of TECH_FALSE_POSITIVES) {
+    if (lower.includes(fp)) {
+      return warning("D05", "contacts", "Personal Website / Portfolio", "No personal website found. Optional but adds credibility.");
+    }
+  }
+
+  // Full URLs with protocol
   const urlRegex = /https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z]{2,6}\b(?:[-a-zA-Z0-9@:%_+.~#?&/=]*)/gi;
   const urls = text.match(urlRegex) || [];
 
   const personalUrls = urls.filter(u => {
-    const lower = u.toLowerCase();
-    return !lower.includes("linkedin.com") && !lower.includes("github.com");
-  });
-
-  // Also check for plain domains like "mariorossi.dev"
-  const domainRegex = /\b[a-zA-Z0-9][a-zA-Z0-9-]+\.[a-zA-Z]{2,6}\b(?!\/)/g;
-  const domains = text.match(domainRegex) || [];
-  const personalDomains = domains.filter(d => {
-    const lower = d.toLowerCase();
-    return !lower.includes("linkedin") && !lower.includes("github") &&
-      !lower.includes("gmail") && !lower.includes("outlook") &&
-      !lower.includes("yahoo") && !lower.includes("hotmail");
+    const l = u.toLowerCase();
+    return !l.includes("linkedin.com") && !l.includes("github.com");
   });
 
   if (personalUrls.length > 0) {
     return passed("D05", "contacts", "Personal Website / Portfolio", "Personal website found.", personalUrls[0]);
   }
+
+  // Plain domains like "mariorossi.dev" — only match with common web TLDs
+  const domainRegex = /\b[a-zA-Z0-9][a-zA-Z0-9-]+\.([a-zA-Z]{2,6})\b(?!\/)/g;
+  let domainMatch: RegExpExecArray | null;
+  const personalDomains: string[] = [];
+
+  while ((domainMatch = domainRegex.exec(text)) !== null) {
+    const tld = domainMatch[1].toLowerCase();
+    const full = domainMatch[0].toLowerCase();
+
+    // Skip false positives (tech names, common email domains)
+    if (TECH_FALSE_POSITIVES.has(full)) continue;
+    if (full.includes("linkedin") || full.includes("github")) continue;
+    if (full.includes("gmail") || full.includes("outlook") || full.includes("yahoo") || full.includes("hotmail")) continue;
+
+    if (WEB_TLDS.has(tld)) {
+      personalDomains.push(domainMatch[0]);
+    }
+  }
+
   if (personalDomains.length > 0) {
     return warning("D05", "contacts", "Personal Website / Portfolio", "Possible domain found but not a full URL.", personalDomains[0]);
   }
   return warning("D05", "contacts", "Personal Website / Portfolio", "No personal website found. Optional but adds credibility.");
 }
 
-export function checkLocation(text: string): DeterministicCheck {
-  // Look for location patterns: "City, Country", "City, State", timezone abbreviations
-  const locationPatterns = [
-    /\b[A-Z][a-z]+(?:\s[A-Z][a-z]+)*,\s[A-Z][a-z]+(?:\s[A-Z][a-z]+)*\b/g,  // "Milan, Italy"
-    /\b(?:GMT|UTC|EST|CST|PST|CET|EET|IST|JST)[+-]?\d{0,2}\b/g,              // Timezone abbreviations
-    /\b(?:Remote|Hybrid|On-site|On site)\b/gi,                                // Work location type
-  ];
+const KNOWN_COUNTRIES = new Set([
+  "italy", "usa", "uk", "germany", "france", "spain", "portugal", "netherlands",
+  "belgium", "switzerland", "austria", "sweden", "norway", "denmark", "finland",
+  "ireland", "poland", "czech", "slovakia", "hungary", "romania", "bulgaria",
+  "greece", "turkey", "japan", "china", "india", "brazil", "argentina", "mexico",
+  "canada", "australia", "new zealand", "singapore", "malaysia", "indonesia",
+  "thailand", "vietnam", "philippines", "south korea", "israel", "uae",
+  "united states", "united kingdom", "south africa", "russia", "ukraine",
+]);
 
+const KNOWN_CITIES = new Set([
+  "milan", "rome", "turin", "florence", "naples", "venice", "bologna",
+  "london", "paris", "berlin", "munich", "hamburg", "madrid", "barcelona",
+  "amsterdam", "brussels", "zurich", "geneva", "stockholm", "oslo", "copenhagen",
+  "helsinki", "dublin", "warsaw", "prague", "budapest", "vienna",
+  "new york", "san francisco", "los angeles", "chicago", "seattle", "boston",
+  "austin", "denver", "portland", "miami", "atlanta", "washington",
+  "toronto", "vancouver", "montreal", "sydney", "melbourne", "tokyo",
+  "seoul", "singapore", "hong kong", "shanghai", "beijing", "bangkok",
+  "dubai", "mumbai", "bangalore", "são paulo", "buenos aires",
+]);
+
+const US_STATES = new Set([
+  "al", "ak", "az", "ar", "ca", "co", "ct", "de", "fl", "ga",
+  "hi", "id", "il", "in", "ia", "ks", "ky", "la", "me", "md",
+  "ma", "mi", "mn", "ms", "mo", "mt", "ne", "nv", "nh", "nj",
+  "nm", "ny", "nc", "nd", "oh", "ok", "or", "pa", "ri", "sc",
+  "sd", "tn", "tx", "ut", "vt", "va", "wa", "wv", "wi", "wy",
+]);
+
+const TIMEZONE_ABBREVS = ["gmt", "utc", "est", "cst", "pst", "cet", "eet", "ist", "jst"];
+
+export function checkLocation(text: string): DeterministicCheck {
   const matches: string[] = [];
-  for (const p of locationPatterns) {
-    const m = text.match(p);
-    if (m) matches.push(...m);
+
+  // Pattern 1: "City, Country" — limit city to 1-2 words to avoid greedy grabs
+  const cityCountryRegex = /(?:^|\n|\s)([A-Z][a-z]+(?:\s[A-Z][a-z]+)?),\s*([A-Za-z]+(?:\s[A-Za-z]+)*)/g;
+  let m: RegExpExecArray | null;
+  while ((m = cityCountryRegex.exec(text)) !== null) {
+    const city = m[1].toLowerCase();
+    const country = m[2].toLowerCase();
+    if (KNOWN_COUNTRIES.has(country) || KNOWN_CITIES.has(city)) {
+      matches.push(`${m[1]}, ${m[2]}`);
+    }
   }
+
+  // Pattern 2: "City, ST" (US state abbreviation)
+  const cityStateRegex = /([A-Z][a-z]+(?:\s[A-Z][a-z]+)?),\s*([A-Z]{2})\b/g;
+  let m2: RegExpExecArray | null;
+  while ((m2 = cityStateRegex.exec(text)) !== null) {
+    if (US_STATES.has(m2[2].toLowerCase())) {
+      matches.push(`${m2[1]}, ${m2[2]}`);
+    }
+  }
+
+  // Pattern 3: Timezone abbreviations
+  for (const tz of TIMEZONE_ABBREVS) {
+    const tzRegex = new RegExp(`\\b${tz}[+-]?\\d{0,2}\\b`, "gi");
+    const tzMatch = text.match(tzRegex);
+    if (tzMatch) matches.push(...tzMatch);
+  }
+
+  // Pattern 4: Work location type
+  const workTypeRegex = /\b(?:Remote|Hybrid|On-site|On site)\b/gi;
+  const workMatch = text.match(workTypeRegex);
+  if (workMatch) matches.push(...workMatch);
 
   if (matches.length > 0) {
     return passed("D08", "contacts", "Location / Timezone", "Location or timezone found.", matches[0]);
@@ -422,13 +532,15 @@ export function checkRecentEndDate(text: string): DeterministicCheck {
 // ── U7. ATS-Specific — Special Chars, Skills, File Name ────────────────────
 
 export function checkSpecialChars(text: string): DeterministicCheck {
-  // Detect emoji and non-standard Unicode
+  // Detect emoji
   const emojiRegex = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{200D}\u{FE0F}]/gu;
   const emojis = text.match(emojiRegex);
 
-  // Detect special Unicode symbols often used in decorative headers
-  const specialSymbols = /[^\x00-\x7F]/g;
-  const nonAscii = text.match(specialSymbols);
+  // Detect only TRULY problematic Unicode: symbols outside common writing systems
+  // Allow: Basic Latin, Latin-1 Supplement (accented), Latin Extended, General Punctuation
+  // (covers è, à, ò, ñ, ü AND common punctuation like •, ·, – as well as quotes, dashes)
+  const problematicSymbols = /[^\u0000-\u02FF\u2000-\u206F\u2100-\u214F]/gu;
+  const problematic = text.match(problematicSymbols);
 
   if (emojis && emojis.length > 0) {
     return warning("A01", "ats_specific", "Special Characters / Emoji",
@@ -436,9 +548,10 @@ export function checkSpecialChars(text: string): DeterministicCheck {
       `Found: ${emojis.slice(0, 3).join(" ")}`);
   }
 
-  if (nonAscii && nonAscii.length > 3) {
+  if (problematic && problematic.length > 0) {
     return warning("A01", "ats_specific", "Special Characters / Emoji",
-      `${nonAscii.length} non-ASCII characters found. May cause ATS parsing issues.`);
+      `${problematic.length} unusual Unicode character(s) found. May cause ATS parsing issues.`,
+      `Found: ${problematic.slice(0, 3).map(c => `U+${c.charCodeAt(0).toString(16).toUpperCase()}`).join(" ")}`);
   }
 
   return passed("A01", "ats_specific", "Special Characters / Emoji",
@@ -486,19 +599,19 @@ export function checkFileName(fileName?: string): DeterministicCheck {
 
   if (lower === "resume.pdf" || lower === "cv.pdf" || lower === "resume" || lower === "cv") {
     return warning("A03", "ats_specific", "File Name",
-      `File name "${fileName}" is very generic. Use a professional name like "FirstName_LastName_CV.pdf".`,
-      fileName);
+      `File name "${fileName}" is very generic. Use a professional name like "FirstName_LastName_CV.pdf".`);
   }
 
   // Check for spaces or special chars in filename
   if (/[\s#%&{}]/.test(fileName)) {
+    const displayName = fileName.length > 50 ? fileName.substring(0, 47) + "..." : fileName;
     return warning("A03", "ats_specific", "File Name",
       `File name contains spaces or special characters. Some ATS systems may struggle with this.`,
-      fileName);
+      `File: ${displayName}`);
   }
 
   return passed("A03", "ats_specific", "File Name",
-    `File name "${fileName}" looks professional.`, fileName);
+    "File name looks professional.");
 }
 
 // ── U8. Runner ─────────────────────────────────────────────────────────────

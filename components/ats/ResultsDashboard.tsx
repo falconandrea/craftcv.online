@@ -96,6 +96,11 @@ export function ResultsDashboard({ data, onReset }: ResultsDashboardProps) {
             )}
           </div>
 
+          {/* Disclaimer */}
+          <p className="text-xs font-mono text-white/60 leading-relaxed border border-white/10 rounded px-3 py-2">
+            <span className="text-[#00ffd5] font-semibold">NOTE:</span> These checks use pattern matching (regex) and may occasionally produce false positives. Use them as a reference, not as absolute validation.
+          </p>
+
           {/* Group checks by category */}
           {(["contacts", "bullet_quality", "structure", "ats_specific"] as const).map((category) => {
             const categoryChecks = data.deterministicChecks!.filter(c => c.category === category);
