@@ -66,6 +66,7 @@ type EditorMode = "editor" | "preview";
 export default function EditorPage() {
   const [activeTab, setActiveTab] = useState("personal");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [, setIsAiLoading] = useState(false);
   const [chatMessages, setChatMessages] = useState<AiMessage[]>([INITIAL_AI_MESSAGE]);
   const [importPopoverOpen, setImportPopoverOpen] = useState(false);
   const [pdfImportOpen, setPdfImportOpen] = useState(false);
