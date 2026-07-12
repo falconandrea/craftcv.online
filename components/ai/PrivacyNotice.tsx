@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ShieldCheck, X } from "lucide-react";
 
 const STORAGE_KEY = "ai_privacy_dismissed";
 
 export function PrivacyNotice() {
-    const [visible, setVisible] = useState(false);
-
-    useEffect(() => {
-        const dismissed = localStorage.getItem(STORAGE_KEY);
-        if (!dismissed) setVisible(true);
-    }, []);
+    const [visible, setVisible] = useState(() => {
+        // Read localStorage once during initial render (client-side only)
+        if (typeof window !== "undefined") {
+            return !localStorage.getItem(STORAGE_KEY);
+        }
+        return false;
+    });
 
     const handleDismiss = () => {
         localStorage.setItem(STORAGE_KEY, "true");

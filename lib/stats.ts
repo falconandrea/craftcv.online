@@ -16,7 +16,7 @@ async function getStats(): Promise<Stats> {
   try {
     const data = await fs.readFile(STATS_FILE, 'utf-8');
     return JSON.parse(data) as Stats;
-  } catch (e: any) {
+  } catch {
     // If file doesn't exist or is invalid, return empty defaults
     return {
       cv_created: 0,

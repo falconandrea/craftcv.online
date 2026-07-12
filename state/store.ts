@@ -22,7 +22,6 @@ import type {
   Language,
   CustomSection,
   CVLanguage,
-  defaultCVState,
 } from "./types";
 
 /**

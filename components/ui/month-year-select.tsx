@@ -20,13 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 
 interface MonthYearSelectProps {
   value: string | null;
   onChange: (value: string | null) => void;
   disabled?: boolean;
-  placeholder?: string;
 }
 
 // Month names for display
@@ -66,7 +64,6 @@ export function MonthYearSelect({
   value,
   onChange,
   disabled,
-  placeholder = "Select date",
 }: MonthYearSelectProps) {
   const yearOptions = generateYearOptions();
 

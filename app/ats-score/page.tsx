@@ -45,9 +45,10 @@ export default function AtsScorePage() {
         className: "border-[#b8ff00] bg-black text-[#b8ff00]"
       });
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err.message || "An unexpected error occurred. Please try again.", {
+      const message = err instanceof Error ? err.message : "An unexpected error occurred. Please try again.";
+      toast.error(message, {
         className: "border-[#ff00aa] bg-black text-[#ff00aa]"
       });
     } finally {

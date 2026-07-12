@@ -86,11 +86,6 @@ interface CertificationItem {
     year?: string;
 }
 
-interface LanguageItem {
-    language: string;
-    proficiency: string;
-}
-
 export function AiDiffModal({ open, onOpenChange, currentCV, patch, onApply }: AiDiffModalProps) {
     const hasChanges = Object.keys(patch).length > 0;
 

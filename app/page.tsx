@@ -196,7 +196,7 @@ export default function Home() {
                   description: 'Upload an existing PDF and our AI extracts content to pre-fill the editor in seconds.',
                   color: '#b8ff00'
                 },
-              ].map((feature, i) => (
+              ].map((feature) => (
                 <div 
                   key={feature.title}
                   className="group bg-[#0a0a12] border border-zinc-800 hover:border-[var(--color)] p-8 transition-all duration-300 hover:-translate-y-1"

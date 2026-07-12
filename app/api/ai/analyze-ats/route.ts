@@ -38,7 +38,7 @@ You must return the following JSON structure exactly:
 - Keyword Match: If a Job Description is provided, compare the skills and buzzwords in the text to the JD. If no JD is provided, base it on generalized best practices for their explicit role (if guessable) and return null for the keywordMatch numeric score.
 - Missing Info: Check for phone, email, missing dates, etc.`;
 
-function parseModelResponse(raw: string): any {
+function parseModelResponse(raw: string): Record<string, unknown> {
   try { return JSON.parse(raw); } catch { /* fall through */ }
   const fenceMatch = raw.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
   if (fenceMatch) {

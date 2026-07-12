@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Loader2, Terminal } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PrivacyNotice } from "./PrivacyNotice";
@@ -108,7 +108,7 @@ export function AiOptimizePanel({ messages, onMessagesChange, onLoadingChange }:
             setIsLoading(false);
             onLoadingChange?.(false);
         }
-    }, [input, isLoading, messages, buildApiHistory, personalInfo, summary, experience, skills, certifications, projects, education, languages, customSection, onMessagesChange]);
+    }, [input, isLoading, messages, buildApiHistory, personalInfo, summary, experience, skills, certifications, projects, education, languages, customSection, cvLanguage, onLoadingChange, onMessagesChange]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === "Enter" && !e.shiftKey) {

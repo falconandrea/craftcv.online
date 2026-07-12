@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
     
     return new NextResponse(null, { status: 204 });
-  } catch (err) {
+  } catch {
     // Return graceful 204 on bad JSON to prevent client-side noise
     return new NextResponse(null, { status: 204 });
   }
