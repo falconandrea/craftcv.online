@@ -3,6 +3,8 @@
 import { CheckCircle2, AlertTriangle, XCircle, RefreshCw, ChevronRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DeterministicCheck } from "@/lib/ats-rules";
+import type { GapReport } from "@/lib/jd-types";
+import { GapReport as GapReportComponent } from "@/components/ats/GapReport";
 
 export interface AtsScoreData {
   score: number;
@@ -19,6 +21,7 @@ export interface AtsScoreData {
   }>;
   deterministicChecks?: DeterministicCheck[];
   lintScore?: number;
+  gapReport?: GapReport;
 }
 
 interface ResultsDashboardProps {
@@ -143,6 +146,11 @@ export function ResultsDashboard({ data, onReset }: ResultsDashboardProps) {
             );
           })}
         </div>
+      )}
+
+      {/* Keyword Gap Analysis */}
+      {data.gapReport && (
+        <GapReportComponent gapReport={data.gapReport} />
       )}
 
       {/* Detailed Feedback */}

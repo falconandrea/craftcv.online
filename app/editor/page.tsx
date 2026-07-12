@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { EditorContent } from "@/components/editor/editor-content";
 import { PdfImportDialog } from "@/components/editor/pdf-import-dialog";
@@ -74,6 +74,13 @@ export default function EditorPage() {
   // IDE mode toggle: editor or preview
   const [activeMode, setActiveMode] = useState<EditorMode>("editor");
   const [aiSheetOpen, setAiSheetOpen] = useState(false);
+
+  // Auto-open AI Coach when arriving from gap-analysis CTA (?ai=open)
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.search.includes("ai=open")) {
+      setAiSheetOpen(true);
+    }
+  }, []);
 
   // Selector slices for optimal re-renders
   const personalInfo = useCVStore((state) => state.personalInfo);

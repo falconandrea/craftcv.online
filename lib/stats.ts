@@ -24,6 +24,7 @@ async function getStats(): Promise<Stats> {
       pdf_uploaded: 0,
       ats_tests: 0,
       ats_lint_checks: 0,
+      jd_analyze: 0,
     };
   }
 }

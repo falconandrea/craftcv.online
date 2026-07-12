@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import { PDFParse } from "pdf-parse";
 import { incrementCounter } from "@/lib/stats";
 import { runAllChecks } from "@/lib/ats-rules";
+import { extractKeywords, computeGapReport } from "@/lib/jd-analyze";
 
 export const maxDuration = 60; // Increase max duration for Vercel if needed
 
@@ -94,6 +95,19 @@ export async function POST(req: NextRequest) {
     const { checks: deterministicChecks, lintScore } = runAllChecks(parsedText, pdfFile.name);
     incrementCounter("ats_lint_checks").catch(() => { });
 
+    // ── Keyword gap analysis (when JD provided) ───────────────────────
+    let gapReport = undefined;
+    if (jobDescription && jobDescription.trim() !== "") {
+      try {
+        const keywords = await extractKeywords(jobDescription);
+        gapReport = computeGapReport(keywords, parsedText);
+        incrementCounter("jd_analyze").catch(() => {});
+      } catch (err) {
+        // Fail open — don't break ATS test if keyword engine fails
+        console.error("[ATS Score] Keyword gap analysis failed (non-fatal):", err);
+      }
+    }
+
     let userPrompt = `Here is the extracted text from the user's PDF resume:\n\n<resume_text>\n${parsedText}\n</resume_text>\n`;
     userPrompt += `\nPlease act as an ATS parser and evaluate it based on the system instructions.\n`;
 
@@ -124,6 +138,7 @@ export async function POST(req: NextRequest) {
       ...data,
       deterministicChecks,
       lintScore,
+      gapReport,
     });
   } catch (error) {
     console.error("[ATS Score API] Error:", error);
