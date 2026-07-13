@@ -183,7 +183,7 @@ export function PdfImportDialog({ open, onOpenChange }: PdfImportDialogProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
-                className="gap-2 border-[#00f0ff]/30 text-[#00f0ff] hover:bg-[#00f0ff]/10 hover:border-[#00f0ff]/50 bg-transparent font-mono text-xs"
+                className="gap-2 border-[#00f0ff]/30 text-[#00f0ff] hover:bg-[#00f0ff]/10 hover:text-[#00f0ff] hover:border-[#00f0ff]/50 bg-transparent font-mono text-xs"
               >
                 <FileUp className="h-4 w-4" />
                 UPLOAD_PDF

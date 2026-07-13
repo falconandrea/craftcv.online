@@ -1,4 +1,5 @@
 import type { CVState } from "@/state/types";
+import type { GroundingReport } from "@/lib/ai/grounding/types";
 import { maskPii } from "@/lib/pii-masker";
 
 export interface ApiMessage {
@@ -9,6 +10,7 @@ export interface ApiMessage {
 export interface AiOptimizeResponse {
     content: string;
     proposedChanges?: object;
+    groundingReport?: GroundingReport;
     error?: string;
 }
 

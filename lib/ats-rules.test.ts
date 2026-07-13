@@ -90,9 +90,9 @@ describe("checkGitHub", () => {
 });
 
 describe("checkWebsite", () => {
-  it("passes with personal URL", () => {
+  it("warns when personal URL is just a domain", () => {
     const result = checkWebsite("Visit mariorossi.dev");
-    expect(result.status).toBe("passed");
+    expect(result.status).toBe("warning");
   });
 
   it("warns without website", () => {
@@ -157,7 +157,7 @@ describe("checkActionVerbs", () => {
 
 describe("checkBulletLength", () => {
   it("passes with good length bullets", () => {
-    const text = "- Built React components\n- Led engineering team\n- Improved performance by 50%";
+    const text = "- Built scalable React components for the main customer facing dashboard application\n- Led an engineering team of five people to successfully deliver the project\n- Improved performance by 50% which resulted in much better user retention";
     const result = checkBulletLength(text);
     expect(result.status).toBe("passed");
   });
@@ -275,17 +275,17 @@ describe("checkSkillsFormat", () => {
 
 describe("checkFileName", () => {
   it("passes with professional name", () => {
-    const result = checkFileName("Mario_Rossi_CV_2026.pdf");
+    const result = checkFileName("", "Mario_Rossi_CV_2026.pdf");
     expect(result.status).toBe("passed");
   });
 
   it("warns with generic name", () => {
-    const result = checkFileName("resume.pdf");
+    const result = checkFileName("", "resume.pdf");
     expect(result.status).toBe("warning");
   });
 
   it("warns without filename", () => {
-    const result = checkFileName();
+    const result = checkFileName("");
     expect(result.status).toBe("warning");
   });
 });
@@ -300,7 +300,7 @@ describe("runAllChecks", () => {
     +39 123 456 7890
     linkedin.com/in/mariorossi
     github.com/mariorossi
-    mariorossi.dev
+    https://mariorossi.dev
 
     Professional Summary
     Senior software engineer with 10 years of experience.
@@ -308,17 +308,17 @@ describe("runAllChecks", () => {
     Work Experience
     Senior Developer, Tech Corp
     2020 – Present
-    - Led a team of 5 engineers building React applications
-    - Increased API performance by 40% through caching
-    - Implemented CI/CD pipeline reducing deployment time
-    - Mentored 3 junior developers
+    - Led a cross-functional team of 5 engineers building scalable React applications
+    - Increased API performance by 40% through aggressive caching and database optimization
+    - Implemented a complete CI/CD pipeline reducing deployment time by over 50 percent
+    - Mentored 3 junior developers through pair programming and architectural design sessions
 
     Full Stack Developer, Startup Inc
     2016 – 2020
-    - Built customer-facing dashboard used by 10k users
-    - Reduced page load time by 60%
-    - Wrote comprehensive test suite (90% coverage)
-    - Managed AWS infrastructure for production workloads
+    - Built customer-facing dashboard used by 10k users per month across multiple regions
+    - Reduced page load time by 60% resulting in significantly higher conversion rates
+    - Wrote comprehensive end-to-end test suite achieving 90% coverage on all repositories
+    - Managed AWS infrastructure for production workloads including load balancers and auto-scaling
 
     Education
     University of Milan

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import type { CVState } from "@/state/types";
 import { incrementCounter } from "@/lib/stats";
+import { validatePatch } from "@/lib/ai/grounding/validate-patch";
+import { hasGroundingFlags } from "@/lib/ai/grounding/types";
 
 // (Language detection heuristic removed in favor of explicit user setting cvLanguage)
 
@@ -101,7 +103,17 @@ WRONG output:  "Developed and maintained high-performance REST APIs using Node.j
 ## Guidelines
 - Be specific and actionable. Focus on ATS keyword alignment and quantified achievements.
 - Keep the user's original tone and style while improving the content.
-- If the user has not pasted a job description yet, encourage them to do so.`;
+- If the user has not pasted a job description yet, encourage them to do so.
+
+## Grounding Contract
+Your output will be validated against the user's CV. Inventions and unverifiable claims will be flagged.
+- Only reference skills, tools, roles, and companies that exist in the provided CV data.
+- If the job description requires a skill the user lacks, say so honestly — do NOT fabricate experience.
+- Do NOT alter dates, GPAs, scores, certification IDs, or any verifiable numbers.
+- When suggesting quantified achievements, mark them as estimates the user should verify.
+- Use active verbs (Built, Led, Designed, Implemented) — avoid passive openers (Responsible for, Tasked with).
+- Your changes will be post-validated: invented entities and unverifiable metrics will be surfaced to the user.
+`;
 
 // ---------------------------------------------------------------------------
 // JSON parsing — handles models that wrap JSON in markdown code fences
@@ -192,9 +204,38 @@ export async function POST(req: NextRequest) {
 
     await incrementCounter("ai_messages");
 
+    // ─── Grounding validation ─────────────────────────────────────
+    let finalChanges = parsed.proposedChanges;
+    let groundingReport = undefined;
+
+    if (parsed.proposedChanges && cvData) {
+      try {
+        const { cleanPatch, report } = validatePatch(
+          parsed.proposedChanges as import("@/state/types").CVPatch,
+          cvData
+        );
+        finalChanges = cleanPatch;
+        groundingReport = report;
+
+        // Increment aggregate stats counters
+        if (hasGroundingFlags(report)) {
+          if (report.flaggedInventions.length > 0) {
+            await incrementCounter("grounding_inventions_blocked");
+          }
+          if (report.needsVerification.length > 0) {
+            await incrementCounter("grounding_verifications_requested");
+          }
+        }
+      } catch (groundingError) {
+        // Grounding failure should not crash the response
+        console.error("[AI Grounding] Validation error:", groundingError);
+      }
+    }
+
     return NextResponse.json({
       content: parsed.message ?? "I couldn't generate a response. Please try again.",
-      proposedChanges: parsed.proposedChanges ?? undefined,
+      proposedChanges: finalChanges ?? undefined,
+      groundingReport: groundingReport ?? undefined,
     });
   } catch (error) {
     console.error("[AI Optimize API] Error:", error);

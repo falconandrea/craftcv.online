@@ -128,5 +128,7 @@ export interface AiMessage {
   proposedChanges?: CVPatch;
   /** Whether the user has acted on the proposed changes */
   changeStatus?: "pending" | "applied" | "skipped";
+  /** Grounding validation report from the server-side post-LLM checks */
+  groundingReport?: import("@/lib/ai/grounding/types").GroundingReport;
 }
 

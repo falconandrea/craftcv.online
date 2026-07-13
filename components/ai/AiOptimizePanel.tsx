@@ -92,6 +92,7 @@ export function AiOptimizePanel({ messages, onMessagesChange, onLoadingChange }:
                 content: response.error ? `⚠️ ${response.error}` : response.content,
                 proposedChanges: response.error ? undefined : (response.proposedChanges as CVPatch | undefined),
                 changeStatus: response.proposedChanges && !response.error ? "pending" : undefined,
+                groundingReport: response.error ? undefined : response.groundingReport,
             };
 
             onMessagesChange([...updatedMessages, assistantMessage]);

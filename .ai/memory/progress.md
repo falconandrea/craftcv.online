@@ -28,8 +28,8 @@
 - [x] **JD Tailoring & Keyword Gap Analysis (P0-B)**: LLM-powered keyword extraction from job descriptions + deterministic gap computation. New `/api/ai/jd-analyze` route + integrated into `/api/ai/analyze-ats`. New "Keyword Gap Analysis" section in ResultsDashboard with present/missing breakdown and "Fix in Editor" CTA.
 
 ## Current Context
-- **Goal**: Proceed with backlog — next up is **P1-C: AI Optimize grounding & anti-hallucination**.
-- **Active Feature**: JD Tailoring & Keyword Gap Analysis complete.
+- **Goal**: Proceed with backlog — next up is **P2-D: Structured career data model**.
+- **Active Feature**: AI Optimize grounding & anti-hallucination complete.
 
 ## Features In Progress
 | Feature | Status | Files |
@@ -43,6 +43,7 @@
 | ATS Score Feature | ✅ Done | `.ai/features/ats-score/prd-ats-score.md`, `app/ats-score/page.tsx`, `app/api/ai/analyze-ats/route.ts` |
 | ATS Deterministic Rules Engine (P0-A) | ✅ Done | `.ai/features/ats-score-deterministic/`, `lib/ats-rules.ts`, `lib/ats-rules.test.ts` |
 | JD Tailoring & Keyword Gap Analysis (P0-B) | ✅ Done | `.ai/features/jd-tailoring/`, `lib/jd-types.ts`, `lib/jd-analyze.ts`, `app/api/ai/jd-analyze/route.ts`, `components/ats/GapReport.tsx` |
+| AI Optimize Grounding (P1-C) | ✅ Done | `.ai/features/ai-grounding/`, `lib/ai/grounding/`, `app/api/ai/optimize/route.ts`, `components/ai/ChatMessage.tsx`, `components/ai/AiDiffModal.tsx` |
 
 ## Backlog
 - [x] Add Google Tag Manager (GTM).
@@ -63,7 +64,7 @@ Cross-cutting principle: **determinism before AI** — check with code whatever 
 |---|---|---|---|---|
 | 🔴 P0 | A | ~~ATS Score deterministic rules engine~~ | ✅ **DONE** | Deterministic lint rules (16 checks) for contacts, bullet quality, structure, ATS-specific. Integrated server-side, shown in frontend as "CraftCV Lint Check". |
 | 🔴 P0 | B | ~~JD Tailoring & Keyword Gap Analysis~~ | ✅ **DONE** | LLM keyword extraction + deterministic gap computation. Present/missing breakdown in ATS results. "Fix in Editor" CTA. Re-paste JD in AI Optimize (no transport). |
-| 🟠 P1 | C | AI Optimize grounding & anti-hallucination | [prd-ai-grounding.md](../features/ai-grounding/prd-ai-grounding.md) | Anti-invention guardrail + VERIFIED FACTS protection + "needs verification" flag + STAR/XYZ enforcement. Structural cure for the fact-drift bug class (see `lessons.md`). |
+| 🟠 P1 | C | ~~AI Optimize grounding & anti-hallucination~~ | ✅ **DONE** | Anti-invention guardrail + VERIFIED FACTS protection + "needs verification" flag + STAR/XYZ enforcement. Structural cure for the fact-drift bug class (see `lessons.md`). |
 | 🟡 P2 | D | Structured career data model | [prd-career-data-model.md](../features/career-data-model/prd-career-data-model.md) | TL;DR field per entry + AI quick-reference snapshot (token savings) + skill evidence linking. Enabler for A/B/C. |
 
 **Suggested order**: A → B → C (ship alongside/after B) → D (refactor during A/B/C). **Out of scope (Cluster E)**: multi-platform export (LinkedIn/GitHub/X generators) — scope expansion, noted only.

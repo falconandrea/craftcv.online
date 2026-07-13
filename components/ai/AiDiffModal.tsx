@@ -1,4 +1,4 @@
-import { CheckCheck, ArrowRight, Terminal } from "lucide-react";
+import { CheckCheck, ArrowRight, Terminal, ShieldAlert, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -8,6 +8,10 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import type { CVState, CVPatch } from "@/state/types";
+import type { GroundingReport } from "@/lib/ai/grounding/types";
+import { hasGroundingFlags } from "@/lib/ai/grounding/types";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface AiDiffModalProps {
     open: boolean;
@@ -15,6 +19,7 @@ interface AiDiffModalProps {
     currentCV: CVState;
     patch: CVPatch;
     onApply: () => void;
+    groundingReport?: GroundingReport;
 }
 
 function DiffSection({ title, children }: { title: string; children: React.ReactNode }) {
@@ -86,8 +91,11 @@ interface CertificationItem {
     year?: string;
 }
 
-export function AiDiffModal({ open, onOpenChange, currentCV, patch, onApply }: AiDiffModalProps) {
+export function AiDiffModal({ open, onOpenChange, currentCV, patch, onApply, groundingReport }: AiDiffModalProps) {
     const hasChanges = Object.keys(patch).length > 0;
+    const hasFlags = groundingReport && hasGroundingFlags(groundingReport);
+    const hasUnverified = groundingReport && groundingReport.needsVerification.length > 0;
+    const [confirmed, setConfirmed] = useState(false);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -106,6 +114,73 @@ export function AiDiffModal({ open, onOpenChange, currentCV, patch, onApply }: A
                     {!hasChanges && (
                         <div className="text-center py-8 text-zinc-600 font-mono text-sm">
                             NO_CHANGES_DETECTED
+                        </div>
+                    )}
+
+                    {/* Grounding flags banner */}
+                    {hasFlags && (
+                        <div className="rounded-lg border border-[#00f0ff]/20 bg-[#00f0ff]/5 flex flex-col max-h-[30vh] overflow-hidden">
+                            <div className="flex items-center gap-2 text-xs font-mono text-[#00f0ff] bg-[#00f0ff]/10 px-4 py-2 border-b border-[#00f0ff]/20 shrink-0">
+                                <ShieldAlert className="h-3.5 w-3.5" />
+                                GROUNDING_SUMMARY
+                            </div>
+                            <div className="p-4 space-y-4 overflow-y-auto">
+                                {groundingReport.rejectedVerifiedEdits.length > 0 && (
+                                <div className="space-y-1.5">
+                                    {groundingReport.rejectedVerifiedEdits.map((r, i) => (
+                                        <div key={`rej-${i}`} className="flex items-start gap-2 text-xs font-mono text-zinc-500">
+                                            <span className="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-zinc-700/50 text-zinc-500 border border-zinc-700/30 text-[10px]">
+                                                PROTECTED
+                                            </span>
+                                            <span className="leading-snug">
+                                                &quot;{r.fact.value}&quot; <span className="mx-1">→</span> <span className="line-through text-zinc-600">&quot;{r.proposed}&quot;</span>
+                                                <span className="text-zinc-600 ml-1">— blocked</span>
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {groundingReport.flaggedInventions.length > 0 && (
+                                <div className="space-y-1.5">
+                                    {groundingReport.flaggedInventions.map((f, i) => (
+                                        <div key={`inv-${i}`} className="flex items-start gap-2 text-xs font-mono text-zinc-400">
+                                            <span className="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-[#ff00aa]/15 text-[#ff00aa] border border-[#ff00aa]/20 text-[10px]">
+                                                INVENTION
+                                            </span>
+                                            <span className="leading-snug">
+                                                &quot;{f.term}&quot; — <span className="text-zinc-500">{f.message}</span>
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {groundingReport.needsVerification.length > 0 && (
+                                <div className="space-y-1.5">
+                                    {groundingReport.needsVerification.map((v, i) => (
+                                        <div key={`ver-${i}`} className="flex items-start gap-2 text-xs font-mono text-amber-400">
+                                            <span className="shrink-0 mt-0.5 flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/20 text-[10px]">
+                                                <AlertTriangle className="h-2.5 w-2.5" /> VERIFY
+                                            </span>
+                                            <span className="leading-snug">
+                                                &quot;{v.proposed}&quot; — <span className="text-zinc-500">{v.message}</span>
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {groundingReport.styleWarnings.length > 0 && (
+                                <div className="space-y-1.5">
+                                    {groundingReport.styleWarnings.map((s, i) => (
+                                        <div key={`sty-${i}`} className="flex items-start gap-2 text-xs font-mono text-zinc-500">
+                                            <span className="shrink-0 mt-0.5 px-1.5 py-0.5 rounded bg-zinc-800/60 text-zinc-500 border border-zinc-700/30 text-[10px]">
+                                                STYLE
+                                            </span>
+                                            <span className="leading-snug">{s.message}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            </div>
                         </div>
                     )}
 
@@ -323,6 +398,18 @@ export function AiDiffModal({ open, onOpenChange, currentCV, patch, onApply }: A
                 </div>
 
                 <DialogFooter className="p-4 border-t border-zinc-800/60 bg-[#050508] flex flex-row justify-end items-center gap-2">
+                    {/* Verification acknowledgment checkbox */}
+                    {hasUnverified && (
+                        <label className="flex items-center gap-2 text-[10px] text-amber-400 font-mono mr-auto cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={confirmed}
+                                onChange={(e) => setConfirmed(e.target.checked)}
+                                className="accent-amber-400 h-3.5 w-3.5"
+                            />
+                            I&apos;ve verified the flagged metrics
+                        </label>
+                    )}
                     <Button
                         variant="ghost"
                         onClick={() => onOpenChange(false)}
@@ -335,13 +422,20 @@ export function AiDiffModal({ open, onOpenChange, currentCV, patch, onApply }: A
                             onApply();
                             onOpenChange(false);
                         }}
-                        className="bg-[#b8ff00]/15 hover:bg-[#b8ff00]/25 text-[#b8ff00] border border-[#b8ff00]/30 gap-2 font-mono text-xs"
+                        disabled={hasUnverified && !confirmed}
+                        className={cn(
+                            "gap-2 font-mono text-xs",
+                            hasUnverified && !confirmed
+                                ? "bg-amber-500/10 text-amber-400/50 border border-amber-500/20 cursor-not-allowed"
+                                : "bg-[#b8ff00]/15 hover:bg-[#b8ff00]/25 text-[#b8ff00] border border-[#b8ff00]/30"
+                        )}
                     >
                         <CheckCheck className="w-4 h-4" />
-                        APPLY_CHANGES
+                        {hasUnverified ? "CONFIRM & APPLY" : "APPLY_CHANGES"}
                     </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
     );
 }
+
