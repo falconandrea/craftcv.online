@@ -1,7 +1,7 @@
 # 📊 Progress Logic
 
-> **Current Status**: ✅ Project MVP Completed, AI Feature Live. Dashboard + Editor Cyber Redesign done. ATS Deterministic Rules Engine implemented. JD Tailoring & Keyword Gap Analysis implemented.
-> **Last Update**: 2026-07-13
+> **Current Status**: ✅ Project MVP Completed, AI Feature Live. Dashboard + Editor Cyber Redesign done. ATS Deterministic Rules Engine implemented. JD Tailoring & Keyword Gap Analysis implemented. AI Optimize Grounding shipped with regression coverage. Token accounting live.
+> **Last Update**: 2026-07-14
 
 ## Recent Achievements
 - [x] **Project Setup**: Documentation generated (PRD, Tech Stack, Flows).
@@ -26,7 +26,8 @@
 - [x] **Stats Counters**: Implemented anonymous JSON backend tracking for CV generations, AI messages, PDF uploads, and ATS tests with local Docker volume mapping.
 - [x] **ATS Deterministic Rules Engine (P0-A)**: 16 deterministic lint rules (contacts, bullet quality, structure, ATS-specific) integrated into `/api/ai/analyze-ats`. New "CraftCV Lint Check" section in the frontend with category grouping and lint score.
 - [x] **JD Tailoring & Keyword Gap Analysis (P0-B)**: LLM-powered keyword extraction from job descriptions + deterministic gap computation. New `/api/ai/jd-analyze` route + integrated into `/api/ai/analyze-ats`. New "Keyword Gap Analysis" section in ResultsDashboard with present/missing breakdown and "Fix in Editor" CTA.
-- [x] **Structured Career Data Model (P2-D)**: Implemented TL;DR fields, AI quick-reference snapshot (token savings ~40%), synonym-aware skill evidence linking, and editor UI indicators for unevidenced skills.
+- [x] **Structured Career Data Model (P2-D)**: Implemented TL;DR fields, AI quick-reference snapshot, synonym-aware skill evidence linking, and editor UI indicators for unevidenced skills. PRD Open Questions resolved. Token accounting added to `/api/ai/optimize` (provider-reported usage + estimated snapshot-vs-full-JSON savings) to validate the -40% token success metric.
+- [x] **AI Optimize Grounding (P1-C) — regression hardening**: Added `app/api/ai/optimize/optimize-route.test.ts` covering the snapshot → `validatePatch` composition. "No regression" claim now backed by 116 passing tests + clean `tsc --noEmit`. Manual E2E of the 5 user-facing scenarios remains pending (needs live AI provider + browser session).
 
 ## Current Context
 - **Goal**: All PRDs from the spec backlog are now completed.

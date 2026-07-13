@@ -2,7 +2,7 @@
 
 > **Feature**: TL;DR fields, AI quick-reference snapshot, and skill evidence linking for the CV data model
 > **Cluster**: D (from agentkit-seo research)
-> **Status**: Planning — Spec backlog (not yet implemented)
+> **Status**: ✅ Implemented — see [tasks-career-data-model.md](./tasks-career-data-model.md)
 > **Created**: 2026-07-03
 > **Source**: [`../agentkit-seo-research/research-agentkit-seo.md`](../agentkit-seo-research/research-agentkit-seo.md)
 
@@ -89,8 +89,8 @@ agentkit-seo's spec enforces these as Markdown conventions; CraftCV enforces the
 - Every skill in the skills list is either evidenced or user-confirmed (FR-11 enforced) — 0 "ghost" skills feeding the AI.
 - Zero load failures on pre-feature saved JSON (backward compat = 100%).
 
-## 9. Open Questions
+## 9. Resolved Questions
 
-- **OQ-1**: Should TL;DR auto-generation be offered as a one-click "Generate TL;DRs for all entries" action, or only opportunistically when the AI is already editing an entry? *(Recommendation: opportunistic + a manual "generate all" button.)*
-- **OQ-2**: For skill evidence, do we match on exact term only, or include a built-in synonym map (e.g. "JS" ↔ "JavaScript")? *(Recommendation: ship with a small curated synonym map; keep it editable later.)*
-- **OQ-3**: Is `top_skills` (capped list) user-curated, or auto-derived by frequency across entries? *(Recommendation: auto-derived with manual override, mirroring agentkit-seo's QUICK REFERENCE `top_skills` intent.)*
+- **OQ-1 ✅ RESOLVED — Opportunistic only (no "generate all" button in v1).** The SYSTEM_PROMPT for `/api/ai/optimize` instructs the model to "ALWAYS populate [tldr] if empty or if rewriting the entry". This populates TL;DRs naturally as the user optimizes entries. A manual "generate all" button was deferred — it can be added later if adoption data shows users aren't getting TL;DRs populated fast enough.
+- **OQ-2 ✅ RESOLVED — Shipped with a curated synonym map (~30 pairs).** Implemented in `lib/cv/synonyms.ts` (`ALIAS_PAIRS`): JS↔JavaScript, TS↔TypeScript, k8s↔Kubernetes, AWS↔Amazon Web Services, etc. Used by both `skill-evidence.ts` (linker) and `vocabulary.ts` (grounding). The map is **not** yet user-editable — extension point for later. Synonym matching runs alongside fuzzy suffix-stripping in `vocabulary.ts` (handles "React.js"↔"React").
+- **OQ-3 ✅ RESOLVED — Auto-derived by evidence frequency, no manual override.** `buildQuickReference` (`lib/cv/quick-reference.ts`) sorts skills by `computeSkillEvidence` `evidencedIn.length` (desc) then alphabetically for determinism, takes top 15. No user override UI — the snapshot is a derived/ephemeral view, the source of truth remains the flat `skills[]` array the user edits directly.

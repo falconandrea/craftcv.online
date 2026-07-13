@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import type { CVState } from "@/state/types";
-import { incrementCounter } from "@/lib/stats";
+import { incrementCounter, addToCounter } from "@/lib/stats";
 import { validatePatch } from "@/lib/ai/grounding/validate-patch";
 import { hasGroundingFlags } from "@/lib/ai/grounding/types";
 import { buildQuickReference, toPromptString } from "@/lib/cv/quick-reference";
+import { estimateTokens } from "@/lib/ai/token-estimator";
 
 // (Language detection heuristic removed in favor of explicit user setting cvLanguage)
 
@@ -178,10 +179,19 @@ export async function POST(req: NextRequest) {
       `5. DO NOT output the CV fields in the user's chat language.\n\n`;
 
     const snapshot = buildQuickReference(cvData);
+    const snapshotStr = toPromptString(snapshot);
     let cvContext =
       `\n\n## Current CV Snapshot\n` +
       `The following is a token-efficient summary of the user's CV. Use this as your primary context.\n\n` +
-      `${toPromptString(snapshot)}\n`;
+      `${snapshotStr}\n`;
+
+    // ─── Token accounting ( Cluster D -40% success metric ) ────────
+    // Estimate what the prompt would have cost if we sent the full CV JSON,
+    // so the snapshot savings ratio is measurable in aggregate stats.
+    // Best-effort: must never throw or block the request.
+    const snapshotTokens = estimateTokens(snapshotStr);
+    const fullJsonTokens = estimateTokens(JSON.stringify(cvData));
+    const tokensAvoided = Math.max(0, fullJsonTokens - snapshotTokens);
 
     // Heuristic: include full JSON detail for entries explicitly mentioned in the last user message
     const lastUserMsg = messages[messages.length - 1]?.content.toLowerCase() || "";
@@ -235,6 +245,24 @@ export async function POST(req: NextRequest) {
     const parsed = parseModelResponse(rawContent);
 
     await incrementCounter("ai_messages");
+
+    // ─── Token accounting ( continued ) ────────────────────────────
+    // Actual provider-reported usage + estimated savings. Best-effort.
+    try {
+      const usage = completion.usage;
+      if (usage) {
+        if (typeof usage.prompt_tokens === "number") {
+          await addToCounter("ai_optimize_prompt_tokens", usage.prompt_tokens);
+        }
+        if (typeof usage.completion_tokens === "number") {
+          await addToCounter("ai_optimize_completion_tokens", usage.completion_tokens);
+        }
+      }
+      await addToCounter("ai_optimize_snapshot_tokens", snapshotTokens);
+      await addToCounter("ai_optimize_full_json_tokens_avoided", tokensAvoided);
+    } catch (tokenStatsError) {
+      console.error("[AI Optimize] Token stats error:", tokenStatsError);
+    }
 
     // ─── Grounding validation ─────────────────────────────────────
     let finalChanges = parsed.proposedChanges;

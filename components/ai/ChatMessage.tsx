@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import type { AiMessage, CVPatch, CVState } from "@/state/types";
 import type { GroundingReport } from "@/lib/ai/grounding/types";
 import { hasGroundingFlags } from "@/lib/ai/grounding/types";
+import { summarizeChanges } from "@/lib/ai/summarize-changes";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { AiDiffModal } from "./AiDiffModal";
@@ -14,48 +15,6 @@ interface ChatMessageProps {
     message: AiMessage;
     onApply?: (changes: CVPatch) => void;
     onSkip?: (messageId: string) => void;
-}
-
-/** Generates a human-readable bullet list from a CVPatch */
-function summarizeChanges(patch: CVPatch): string[] {
-    const lines: string[] = [];
-
-    if (patch.summary !== undefined) {
-        lines.push("📝 Summary updated");
-    }
-    if (patch.skills !== undefined) {
-        const count = patch.skills.length;
-        lines.push(`🛠️ Skills: ${count} item${count !== 1 ? "s" : ""} (${patch.skills.slice(0, 3).join(", ")}${count > 3 ? "…" : ""})`);
-    }
-    if (patch.experience !== undefined) {
-        patch.experience.forEach((e) => {
-            lines.push(`💼 Experience: "${e.role}" at ${e.company}`);
-        });
-    }
-    if (patch.education !== undefined) {
-        patch.education.forEach((e) => {
-            lines.push(`🎓 Education: "${e.degree}" – ${e.institution}`);
-        });
-    }
-    if (patch.certifications !== undefined) {
-        patch.certifications.forEach((c) => {
-            lines.push(`🏅 Certification: "${c.title}" by ${c.issuer}`);
-        });
-    }
-    if (patch.projects !== undefined) {
-        patch.projects.forEach((p) => {
-            lines.push(`🚀 Project: "${p.name}"`);
-        });
-    }
-    if (patch.languages !== undefined) {
-        const langs = patch.languages.map((l) => `${l.language} (${l.proficiency})`).join(", ");
-        lines.push(`🌐 Languages: ${langs}`);
-    }
-    if (patch.customSection !== undefined) {
-        lines.push(`✏️ Custom Section: "${patch.customSection.title}"`);
-    }
-
-    return lines;
 }
 
 // ─── Grounding Report Panel ─────────────────────────────────────────────
@@ -204,7 +163,7 @@ export function ChatMessage({ message, onApply, onSkip }: ChatMessageProps) {
         effectivePatch && Object.keys(effectivePatch).length > 0 && message.changeStatus === "pending";
 
     const changeSummary = hasPendingChanges
-        ? summarizeChanges(effectivePatch)
+        ? summarizeChanges(effectivePatch, cv)
         : [];
 
     const [isDiffOpen, setIsDiffOpen] = useState(false);

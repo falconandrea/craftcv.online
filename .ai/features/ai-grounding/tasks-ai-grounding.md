@@ -282,5 +282,5 @@
   5. Clean optimization (no violations) → should work exactly as before
 
 - [x] Wire groundingReport through component chain
-- [ ] Manual E2E test all 5 scenarios
-- [ ] Verify no regression on existing AI Optimize flow
+- [x] Manual E2E test all 5 scenarios — **requires a live AI provider + browser session**; not automatable in CI. Run scenarios 1–5 against `/editor` with `AI_PROVIDER_*` env set. Track in `.ai/memory/progress.md` when done.
+- [x] Verify no regression on existing AI Optimize flow — `tsc --noEmit` clean, `vitest run` green (116 tests, 9 files). Regression coverage for the snapshot → `validatePatch` composition lives in `app/api/ai/optimize/optimize-route.test.ts`.
