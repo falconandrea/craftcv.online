@@ -6,6 +6,7 @@ import { validatePatch } from "@/lib/ai/grounding/validate-patch";
 import { hasGroundingFlags } from "@/lib/ai/grounding/types";
 import { buildQuickReference, toPromptString } from "@/lib/cv/quick-reference";
 import { estimateTokens } from "@/lib/ai/token-estimator";
+import { parseModelResponse } from "@/lib/ai/parse-model-response";
 
 // (Language detection heuristic removed in favor of explicit user setting cvLanguage)
 
@@ -21,6 +22,12 @@ Your role is to help users tailor their CV to specific job descriptions and impr
 1. NEVER modify or suggest changes to personal information (name, email, phone, location, links).
 2. When suggesting CV edits: explain your reasoning in "message", then ALWAYS include the full "proposedChanges" in the SAME response. Do NOT ask a clarifying question before including the changes — the user will decide whether to apply or skip via the UI buttons.
 3. You must ALWAYS respond with a valid JSON object — never wrap it in markdown code fences.
+
+## DESTRUCTIVE CHANGE PREVENTION — CRITICAL
+1. ONLY include in \`proposedChanges\` the SPECIFIC top-level fields you are actually modifying. If the user only asked to improve their experience, return ONLY the \`experience\` field — do NOT also include \`summary\`, \`skills\`, \`education\`, \`languages\`, \`projects\`, \`certifications\`, or \`customSection\`.
+2. NEVER replace existing non-empty content with empty string, null, or empty array. If a field has content, you must preserve it as-is or improve it — never blank it out.
+3. NEVER return a section you did not modify. If the user's request concerns one section, do not touch the others.
+4. When in doubt about whether the user wants a field changed, LEAVE IT OUT of \`proposedChanges\` entirely. Missing fields are interpreted as "no change" by the application.
 
 ## Scope
 You ONLY assist with CV writing, improvement, and job application advice.
@@ -120,29 +127,6 @@ Your output will be validated against the user's CV. Inventions and unverifiable
 `;
 
 // ---------------------------------------------------------------------------
-// JSON parsing — handles models that wrap JSON in markdown code fences
-// ---------------------------------------------------------------------------
-function parseModelResponse(raw: string): { message?: string; proposedChanges?: object } {
-  // 1. Direct parse (ideal)
-  try { return JSON.parse(raw); } catch { /* fall through */ }
-
-  // 2. Strip markdown code fences ```json ... ```
-  const fenceMatch = raw.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
-  if (fenceMatch) {
-    try { return JSON.parse(fenceMatch[1].trim()); } catch { /* fall through */ }
-  }
-
-  // 3. Find first {...} block
-  const braceMatch = raw.match(/\{[\s\S]*\}/);
-  if (braceMatch) {
-    try { return JSON.parse(braceMatch[0]); } catch { /* fall through */ }
-  }
-
-  // 4. Fallback — treat as plain message
-  return { message: raw };
-}
-
-// ---------------------------------------------------------------------------
 // POST /api/ai/optimize
 // ---------------------------------------------------------------------------
 export async function POST(req: NextRequest) {
@@ -221,13 +205,18 @@ export async function POST(req: NextRequest) {
 
     const client = new OpenAI({ apiKey, baseURL });
 
-    // Build the message list with a prefill trick:
-    // The last assistant message ends with "{" to force JSON continuation.
+    // Build the message list. We deliberately do NOT use a prefill trick
+    // (no synthetic assistant "{" message): the trick assumes the provider
+    // natively supports assistant message prefilling, which is true for
+    // Anthropic Claude but breaks for DeepSeek / Llama / Mistral via
+    // OpenAI-compatible proxies — they emit chat-template markers as text
+    // (e.g. "#start#", "# Human:") that corrupt the response. Modern models
+    // follow JSON instructions reliably without prefill; the robust parser
+    // handles any residual messiness.
     const llmMessages = [
       { role: "system" as const, content: languageInstruction + SYSTEM_PROMPT + cvContext },
       ...messages,
       { role: "user" as const, content: `REMINDER: You MUST respond with a raw JSON object starting with {. Include "message" and "proposedChanges" keys. Do NOT use markdown or code fences. Output ONLY valid JSON.` },
-      { role: "assistant" as const, content: `{` },
     ];
 
     const completion = await client.chat.completions.create({
@@ -237,12 +226,9 @@ export async function POST(req: NextRequest) {
       messages: llmMessages,
     });
 
-    // Reconstruct the full JSON from the prefill trick.
-    // If the model echoed its own "{", use the response as-is; otherwise prepend our prefill "{".
-    const modelOutput = completion.choices[0]?.message?.content ?? "}";
-    const rawContent = modelOutput.trimStart().startsWith("{") ? modelOutput : "{" + modelOutput;
+    const modelOutput = completion.choices[0]?.message?.content ?? "";
 
-    const parsed = parseModelResponse(rawContent);
+    const parsed = parseModelResponse(modelOutput);
 
     await incrementCounter("ai_messages");
 

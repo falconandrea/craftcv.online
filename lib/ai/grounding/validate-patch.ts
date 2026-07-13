@@ -102,6 +102,61 @@ export interface ValidatePatchResult {
 }
 
 /**
+ * Check 0 — Destructive change prevention.
+ *
+ * Strips fields where the LLM replaced non-empty content with empty/null/blank.
+ * Mutates `cleanPatch` in place by `delete`-ing the offending keys.
+ *
+ * This catches the most dangerous LLM failure mode: returning a "complete"
+ * CV object where fields it couldn't see in the snapshot get blanked out.
+ * If applied naively, this would destroy user data (summary, languages, etc.).
+ *
+ * We silently drop rather than surface because the user never asked for these
+ * changes — surfacing them in the diff would create noise and confusion.
+ */
+function removeDestructiveChanges(cleanPatch: CVPatch, cv: CVState): void {
+  // summary: non-empty → empty
+  if (cleanPatch.summary !== undefined) {
+    const proposed = cleanPatch.summary;
+    const current = cv.summary;
+    if ((current && current.trim().length > 0) && (!proposed || !proposed.trim())) {
+      console.warn("[AI Grounding] Rejected destructive change: summary would be blanked.");
+      delete cleanPatch.summary;
+    }
+  }
+
+  // skills: non-empty array → empty array
+  if (cleanPatch.skills !== undefined) {
+    if (cv.skills.length > 0 && (!cleanPatch.skills || cleanPatch.skills.length === 0)) {
+      console.warn("[AI Grounding] Rejected destructive change: skills array would be emptied.");
+      delete cleanPatch.skills;
+    }
+  }
+
+  // languages: non-empty array → empty array
+  if (cleanPatch.languages !== undefined) {
+    if (cv.languages.length > 0 && (!cleanPatch.languages || cleanPatch.languages.length === 0)) {
+      console.warn("[AI Grounding] Rejected destructive change: languages array would be emptied.");
+      delete cleanPatch.languages;
+    }
+  }
+
+  // customSection.content: non-empty → empty
+  if (cleanPatch.customSection !== undefined) {
+    const currentContent = cv.customSection?.content;
+    const proposedContent = cleanPatch.customSection.content;
+    if (
+      currentContent && currentContent.trim().length > 0 &&
+      (!proposedContent || !proposedContent.trim())
+    ) {
+      console.warn("[AI Grounding] Rejected destructive change: customSection.content would be blanked.");
+      // Restore the content but keep any other valid change to customSection (e.g. title).
+      cleanPatch.customSection.content = currentContent;
+    }
+  }
+}
+
+/**
  * Validates a proposed CV patch against the original CV.
  * Returns a clean patch (with verified-fact violations removed) and a grounding report.
  */
@@ -115,6 +170,14 @@ export function validatePatch(patch: CVPatch, cv: CVState): ValidatePatchResult 
   const styleWarnings: StyleWarning[] = [];
 
   const cleanPatch: CVPatch = { ...patch };
+
+  // ─── Check 0: Destructive change prevention ─────────────────────
+  // Runs FIRST. Silently strips fields where the LLM replaced non-empty
+  // content with empty/null/blank. This is almost never what the user wants
+  // and is usually a side-effect of the LLM "filling in" fields it couldn't
+  // read from the snapshot. Logged server-side; not surfaced to the UI to
+  // avoid confusing the user with changes they never asked for.
+  removeDestructiveChanges(cleanPatch, cv);
 
   // ─── Check 1: Verified Facts Protection ─────────────────────────
   checkVerifiedFacts(cleanPatch, cv, facts, rejectedVerifiedEdits);

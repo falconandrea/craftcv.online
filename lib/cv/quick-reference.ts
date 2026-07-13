@@ -2,6 +2,7 @@ import type { CVState } from "@/state/types";
 import { computeSkillEvidence } from "./skill-evidence";
 
 export interface QuickReference {
+  summary: string;
   identity: {
     currentTitle?: string;
     location: string;
@@ -19,6 +20,14 @@ export interface QuickReference {
     year?: string;
   }[];
   education: string[];
+  languages: {
+    language: string;
+    proficiency: string;
+  }[];
+  customSection?: {
+    title: string;
+    content: string;
+  };
   links: string[];
 }
 
@@ -44,6 +53,7 @@ export function buildQuickReference(cv: CVState): QuickReference {
   const currentTitle = currentJob ? currentJob.role : undefined;
 
   return {
+    summary: cv.summary || "",
     identity: {
       location: cv.personalInfo?.location || "",
       currentTitle,
@@ -66,6 +76,13 @@ export function buildQuickReference(cv: CVState): QuickReference {
       if (e.year) eduStr += ` (${e.year})`;
       return eduStr;
     }),
+    languages: cv.languages.map(l => ({
+      language: l.language,
+      proficiency: l.proficiency,
+    })),
+    customSection: cv.customSection
+      ? { title: cv.customSection.title, content: cv.customSection.content }
+      : undefined,
     links: cv.personalInfo?.links ? [...cv.personalInfo.links].sort() : [],
   };
 }
@@ -79,7 +96,11 @@ export function toPromptString(ref: QuickReference): string {
   if (ref.identity.currentTitle) output += `Title: ${ref.identity.currentTitle}\n`;
   if (ref.identity.location) output += `Location: ${ref.identity.location}\n`;
   if (ref.links && ref.links.length > 0) output += `Links: ${ref.links.join(" | ")}\n`;
-  
+
+  if (ref.summary) {
+    output += `\n[ SUMMARY ]\n${ref.summary}\n`;
+  }
+
   if (ref.roles && ref.roles.length > 0) {
     output += `\n[ ROLES ]\n`;
     ref.roles.forEach(r => {
@@ -87,24 +108,35 @@ export function toPromptString(ref: QuickReference): string {
       if (r.tldr) output += `  TLDR: ${r.tldr}\n`;
     });
   }
-  
+
   if (ref.topSkills && ref.topSkills.length > 0) {
     output += `\n[ TOP SKILLS ]\n${ref.topSkills.join(", ")}\n`;
   }
-  
+
   if (ref.certs && ref.certs.length > 0) {
     output += `\n[ CERTIFICATIONS ]\n`;
     ref.certs.forEach(c => {
       output += `- ${c.title} by ${c.issuer}${c.year ? ` (${c.year})` : ""}\n`;
     });
   }
-  
+
   if (ref.education && ref.education.length > 0) {
     output += `\n[ EDUCATION ]\n`;
     ref.education.forEach(e => {
       output += `- ${e}\n`;
     });
   }
-  
+
+  if (ref.languages && ref.languages.length > 0) {
+    output += `\n[ LANGUAGES ]\n`;
+    ref.languages.forEach(l => {
+      output += `- ${l.language} (${l.proficiency})\n`;
+    });
+  }
+
+  if (ref.customSection && ref.customSection.content) {
+    output += `\n[ CUSTOM SECTION: ${ref.customSection.title} ]\n${ref.customSection.content}\n`;
+  }
+
   return output.trim();
 }

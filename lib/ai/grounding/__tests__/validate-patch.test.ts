@@ -251,4 +251,88 @@ describe("validatePatch", () => {
       expect(report.styleWarnings.length).toBeGreaterThan(0);
     });
   });
+
+  // ─────────────────────────────────────────────────────────────────────
+  // Destructive change prevention (Check 0)
+  // Catches the LLM "blanking out" fields it couldn't see in the snapshot.
+  // This is the bug class that wiped summary/languages in production.
+  // ─────────────────────────────────────────────────────────────────────
+  describe("Destructive change prevention", () => {
+    it("REGRESSION: drops summary when LLM replaces non-empty summary with empty string", () => {
+      const cv = makeCv({ summary: "Backend engineer with 5 years of experience." });
+      const patch: CVPatch = { summary: "" };
+      const { cleanPatch } = validatePatch(patch, cv);
+      expect(cleanPatch.summary).toBeUndefined();
+    });
+
+    it("REGRESSION: drops languages when LLM replaces non-empty array with []", () => {
+      const cv = makeCv({ languages: [{ language: "English", proficiency: "Fluent" }] });
+      const patch: CVPatch = { languages: [] };
+      const { cleanPatch } = validatePatch(patch, cv);
+      expect(cleanPatch.languages).toBeUndefined();
+    });
+
+    it("REGRESSION: drops skills when LLM replaces non-empty array with []", () => {
+      const cv = makeCv({ skills: ["React", "Node"] });
+      const patch: CVPatch = { skills: [] };
+      const { cleanPatch } = validatePatch(patch, cv);
+      expect(cleanPatch.skills).toBeUndefined();
+    });
+
+    it("REGRESSION: restores customSection.content when LLM blanks it", () => {
+      const cv = makeCv({
+        customSection: { title: "Interests", content: "Open source, climbing" },
+      });
+      const patch: CVPatch = {
+        customSection: { title: "Interests", content: "" },
+      };
+      const { cleanPatch } = validatePatch(patch, cv);
+      // customSection is preserved as an object so other valid changes (e.g. title) can apply,
+      // but content is restored to its non-empty value.
+      expect(cleanPatch.customSection?.content).toBe("Open source, climbing");
+    });
+
+    it("allows summary change when going from empty to non-empty (additive)", () => {
+      const cv = makeCv({ summary: "" });
+      const patch: CVPatch = { summary: "New summary by AI." };
+      const { cleanPatch } = validatePatch(patch, cv);
+      expect(cleanPatch.summary).toBe("New summary by AI.");
+    });
+
+    it("allows summary change when both current and proposed are non-empty (improvement)", () => {
+      const cv = makeCv({ summary: "Old summary." });
+      const patch: CVPatch = { summary: "Improved summary." };
+      const { cleanPatch } = validatePatch(patch, cv);
+      expect(cleanPatch.summary).toBe("Improved summary.");
+    });
+
+    it("allows the user to genuinely clear a field if it was already empty", () => {
+      const cv = makeCv({ summary: "" });
+      const patch: CVPatch = { summary: "" };
+      const { cleanPatch } = validatePatch(patch, cv);
+      // No-op: nothing to clear, nothing destructive.
+      expect(cleanPatch.summary).toBe("");
+    });
+
+    it("preserves unrelated fields in the patch when dropping destructive ones", () => {
+      const cv = makeCv({
+        summary: "Existing summary.",
+        experience: [{
+          company: "Acme", role: "Dev", startDate: "2022-03", endDate: null,
+          description: "• Built things",
+        }],
+      });
+      const patch: CVPatch = {
+        summary: "", // destructive
+        experience: [{
+          company: "Acme", role: "Dev", startDate: "2022-03", endDate: null,
+          description: "• Built scalable things with quantified impact",
+        }],
+      };
+      const { cleanPatch } = validatePatch(patch, cv);
+      expect(cleanPatch.summary).toBeUndefined();
+      expect(cleanPatch.experience).toBeDefined();
+      expect(cleanPatch.experience?.[0].description).toContain("scalable");
+    });
+  });
 });
