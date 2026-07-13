@@ -27,6 +27,8 @@ export interface ExperienceEntry {
   endDate: string | null; // null = "Present"
   location?: string;
   description: string;
+  /** One-sentence summary for AI context and recruiter scanning (≤ 30 words) */
+  tldr?: string;
 }
 
 /**
@@ -46,6 +48,8 @@ export interface Project {
   role: string;
   link: string;
   description: string;
+  /** One-sentence summary for AI context and recruiter scanning (≤ 30 words) */
+  tldr?: string;
 }
 
 /**
@@ -66,9 +70,26 @@ export interface CustomSection {
   content: string;
 }
 
-/**
- * Language Entry
- */
+// ─── Skill Evidence Types (derived, not stored) ────────────────────────────
+
+export type EntryRefType = "experience" | "project" | "certification" | "education";
+
+/** Reference to a CV entry where a skill is evidenced */
+export interface EntryRef {
+  type: EntryRefType;
+  index: number;
+  /** Display label, e.g. "Senior Dev @ Acme" */
+  label: string;
+}
+
+/** Enriched skill with evidence links — computed at read-time, never persisted */
+export interface SkillWithEvidence {
+  name: string;
+  evidencedIn: EntryRef[];
+}
+
+// ─── Language ───────────────────────────────────────────────────────────────
+
 export interface Language {
   language: string;
   proficiency: string;

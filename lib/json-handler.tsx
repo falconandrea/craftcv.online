@@ -87,6 +87,7 @@ export function exportCVAsJSON(
         role: cleanTextForJSON(entry.role),
         location: entry.location ? cleanTextForJSON(entry.location) : undefined,
         description: cleanTextForJSON(entry.description),
+        tldr: entry.tldr ? cleanTextForJSON(entry.tldr) : undefined,
       })),
       skills: cv.skills.map((skill) => cleanTextForJSON(skill)),
       certifications: cv.certifications.map((cert) => ({
@@ -101,6 +102,7 @@ export function exportCVAsJSON(
         role: cleanTextForJSON(project.role),
         link: cleanTextForJSON(project.link),
         description: cleanTextForJSON(project.description),
+        tldr: project.tldr ? cleanTextForJSON(project.tldr) : undefined,
       })),
       education: cv.education.map((edu) => ({
         ...edu,

@@ -7,6 +7,7 @@
 
 import type { CVState } from "@/state/types";
 import type { VocabularyEntry, VocabularyCategory } from "./types";
+import { normalize } from "@/lib/cv/synonyms";
 
 /**
  * Builds the vocabulary set from all CV sections.
@@ -17,7 +18,7 @@ export function buildVocabulary(cv: CVState): VocabularyEntry[] {
   const entries: VocabularyEntry[] = [];
 
   function add(term: string, category: VocabularyCategory): void {
-    const normalized = term.trim().toLowerCase();
+    const normalized = normalize(term);
     if (!normalized || seen.has(normalized)) return;
     seen.add(normalized);
     entries.push({ term: normalized, category });
@@ -58,7 +59,7 @@ const TECH_SUFFIXES = [".js", "js", ".ts", ".py", ".rb", ".go"];
  * Includes fuzzy matching for common tech name variations.
  */
 export function isInVocabulary(term: string, vocab: VocabularyEntry[]): boolean {
-  const normalized = term.trim().toLowerCase();
+  const normalized = normalize(term);
   if (!normalized) return false;
 
   for (const entry of vocab) {

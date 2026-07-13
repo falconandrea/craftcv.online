@@ -4,6 +4,7 @@ import type { CVState } from "@/state/types";
 import { incrementCounter } from "@/lib/stats";
 import { validatePatch } from "@/lib/ai/grounding/validate-patch";
 import { hasGroundingFlags } from "@/lib/ai/grounding/types";
+import { buildQuickReference, toPromptString } from "@/lib/cv/quick-reference";
 
 // (Language detection heuristic removed in favor of explicit user setting cvLanguage)
 
@@ -59,6 +60,7 @@ experience: Array of objects:
   - endDate: string | null  (null = "Present")
   - location: string        (optional)
   - description: string     (see TEXT FORMATTING rules below)
+  - tldr: string            (a one-sentence summary of the role/tech/impact, max 30 words. ALWAYS populate this if empty or if rewriting the entry)
 
 education: Array of objects:
   - degree: string
@@ -76,6 +78,7 @@ projects: Array of objects:
   - role: string
   - link: string
   - description: string     (see TEXT FORMATTING rules below)
+  - tldr: string            (a one-sentence summary of the project/tech/impact, max 30 words. ALWAYS populate this if empty or if rewriting the entry)
 
 skills: string[]            (flat array, e.g. ["TypeScript", "React"])
 
@@ -174,8 +177,37 @@ export async function POST(req: NextRequest) {
       `4. If the CV is not in ${cvLanguage.toUpperCase()}, you must translate it into ${cvLanguage.toUpperCase()} while improving it.\n` +
       `5. DO NOT output the CV fields in the user's chat language.\n\n`;
 
-    const cvContext =
-      `\n\n## Current CV Data (PII has been masked)\n${JSON.stringify(cvData, null, 2)}`;
+    const snapshot = buildQuickReference(cvData);
+    let cvContext =
+      `\n\n## Current CV Snapshot\n` +
+      `The following is a token-efficient summary of the user's CV. Use this as your primary context.\n\n` +
+      `${toPromptString(snapshot)}\n`;
+
+    // Heuristic: include full JSON detail for entries explicitly mentioned in the last user message
+    const lastUserMsg = messages[messages.length - 1]?.content.toLowerCase() || "";
+    const detailedEntries: any[] = [];
+
+    cvData.experience.forEach(exp => {
+      if ((exp.company && lastUserMsg.includes(exp.company.toLowerCase())) || 
+          (exp.role && lastUserMsg.includes(exp.role.toLowerCase()))) {
+        detailedEntries.push({ type: "Experience", ...exp });
+      }
+    });
+
+    cvData.projects.forEach(proj => {
+      if (proj.name && lastUserMsg.includes(proj.name.toLowerCase())) {
+        detailedEntries.push({ type: "Project", ...proj });
+      }
+    });
+
+    // If the user says something very broad like "improve my experience" or "rewrite bullets"
+    // and no specific company matched, we just include all experience/projects to be safe.
+    const broadTriggers = ["experience", "bullet", "project", "rewrite", "improve my cv"];
+    if (detailedEntries.length === 0 && broadTriggers.some(t => lastUserMsg.includes(t))) {
+      cvContext += `\n## Full Detail Context\n(Included because your request was broad)\n${JSON.stringify({ experience: cvData.experience, projects: cvData.projects }, null, 2)}\n`;
+    } else if (detailedEntries.length > 0) {
+      cvContext += `\n## Full Detail Context\n(Included for the specific entries you mentioned)\n${JSON.stringify(detailedEntries, null, 2)}\n`;
+    }
 
     const client = new OpenAI({ apiKey, baseURL });
 

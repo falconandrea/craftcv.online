@@ -26,10 +26,11 @@
 - [x] **Stats Counters**: Implemented anonymous JSON backend tracking for CV generations, AI messages, PDF uploads, and ATS tests with local Docker volume mapping.
 - [x] **ATS Deterministic Rules Engine (P0-A)**: 16 deterministic lint rules (contacts, bullet quality, structure, ATS-specific) integrated into `/api/ai/analyze-ats`. New "CraftCV Lint Check" section in the frontend with category grouping and lint score.
 - [x] **JD Tailoring & Keyword Gap Analysis (P0-B)**: LLM-powered keyword extraction from job descriptions + deterministic gap computation. New `/api/ai/jd-analyze` route + integrated into `/api/ai/analyze-ats`. New "Keyword Gap Analysis" section in ResultsDashboard with present/missing breakdown and "Fix in Editor" CTA.
+- [x] **Structured Career Data Model (P2-D)**: Implemented TL;DR fields, AI quick-reference snapshot (token savings ~40%), synonym-aware skill evidence linking, and editor UI indicators for unevidenced skills.
 
 ## Current Context
-- **Goal**: Proceed with backlog — next up is **P2-D: Structured career data model**.
-- **Active Feature**: AI Optimize grounding & anti-hallucination complete.
+- **Goal**: All PRDs from the spec backlog are now completed.
+- **Active Feature**: P2-D Structured Career Data Model complete.
 
 ## Features In Progress
 | Feature | Status | Files |
@@ -44,6 +45,7 @@
 | ATS Deterministic Rules Engine (P0-A) | ✅ Done | `.ai/features/ats-score-deterministic/`, `lib/ats-rules.ts`, `lib/ats-rules.test.ts` |
 | JD Tailoring & Keyword Gap Analysis (P0-B) | ✅ Done | `.ai/features/jd-tailoring/`, `lib/jd-types.ts`, `lib/jd-analyze.ts`, `app/api/ai/jd-analyze/route.ts`, `components/ats/GapReport.tsx` |
 | AI Optimize Grounding (P1-C) | ✅ Done | `.ai/features/ai-grounding/`, `lib/ai/grounding/`, `app/api/ai/optimize/route.ts`, `components/ai/ChatMessage.tsx`, `components/ai/AiDiffModal.tsx` |
+| Structured Career Data Model (P2-D) | ✅ Done | `.ai/features/career-data-model/`, `lib/cv/quick-reference.ts`, `lib/cv/skill-evidence.ts`, `lib/cv/synonyms.ts`, `components/editor/skills-form.tsx` |
 
 ## Backlog
 - [x] Add Google Tag Manager (GTM).
@@ -65,7 +67,7 @@ Cross-cutting principle: **determinism before AI** — check with code whatever 
 | 🔴 P0 | A | ~~ATS Score deterministic rules engine~~ | ✅ **DONE** | Deterministic lint rules (16 checks) for contacts, bullet quality, structure, ATS-specific. Integrated server-side, shown in frontend as "CraftCV Lint Check". |
 | 🔴 P0 | B | ~~JD Tailoring & Keyword Gap Analysis~~ | ✅ **DONE** | LLM keyword extraction + deterministic gap computation. Present/missing breakdown in ATS results. "Fix in Editor" CTA. Re-paste JD in AI Optimize (no transport). |
 | 🟠 P1 | C | ~~AI Optimize grounding & anti-hallucination~~ | ✅ **DONE** | Anti-invention guardrail + VERIFIED FACTS protection + "needs verification" flag + STAR/XYZ enforcement. Structural cure for the fact-drift bug class (see `lessons.md`). |
-| 🟡 P2 | D | Structured career data model | [prd-career-data-model.md](../features/career-data-model/prd-career-data-model.md) | TL;DR field per entry + AI quick-reference snapshot (token savings) + skill evidence linking. Enabler for A/B/C. |
+| 🟡 P2 | D | ~~Structured career data model~~ | ✅ **DONE** | TL;DR field per entry + AI quick-reference snapshot (token savings) + skill evidence linking. Enabler for A/B/C. |
 
 **Suggested order**: A → B → C (ship alongside/after B) → D (refactor during A/B/C). **Out of scope (Cluster E)**: multi-platform export (LinkedIn/GitHub/X generators) — scope expansion, noted only.
 

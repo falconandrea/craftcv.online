@@ -288,8 +288,8 @@ function checkInventions(
       if (orig) {
         textFields.push({
           field: `experience[${i}].description`,
-          proposed: exp.description,
-          original: orig.description,
+          proposed: [exp.description, exp.tldr].filter(Boolean).join(" "),
+          original: [orig.description, orig.tldr].filter(Boolean).join(" "),
         });
       }
     });
@@ -300,8 +300,8 @@ function checkInventions(
       if (orig) {
         textFields.push({
           field: `projects[${i}].description`,
-          proposed: proj.description,
-          original: orig.description,
+          proposed: [proj.description, proj.tldr].filter(Boolean).join(" "),
+          original: [orig.description, orig.tldr].filter(Boolean).join(" "),
         });
       }
     });
@@ -340,8 +340,8 @@ function checkUnverifiedMetrics(
       const orig = cv.experience[i];
       if (!orig) return;
 
-      const proposedMetrics = extractMetrics(exp.description);
-      const originalMetrics = extractMetrics(orig.description);
+      const proposedMetrics = extractMetrics([exp.description, exp.tldr].filter(Boolean).join(" "));
+      const originalMetrics = extractMetrics([orig.description, orig.tldr].filter(Boolean).join(" "));
       const originalSet = new Set(originalMetrics.map((m) => m.toLowerCase()));
 
       for (const metric of proposedMetrics) {
@@ -365,8 +365,8 @@ function checkUnverifiedMetrics(
       const orig = cv.projects[i];
       if (!orig) return;
 
-      const proposedMetrics = extractMetrics(proj.description);
-      const originalMetrics = extractMetrics(orig.description);
+      const proposedMetrics = extractMetrics([proj.description, proj.tldr].filter(Boolean).join(" "));
+      const originalMetrics = extractMetrics([orig.description, orig.tldr].filter(Boolean).join(" "));
       const originalSet = new Set(originalMetrics.map((m) => m.toLowerCase()));
 
       for (const metric of proposedMetrics) {

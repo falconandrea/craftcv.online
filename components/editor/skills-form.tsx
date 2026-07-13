@@ -18,12 +18,22 @@ import {
   Draggable,
   DropResult,
 } from "@hello-pangea/dnd";
-import { GripVertical } from "lucide-react";
-import { useState, KeyboardEvent } from "react";
+import { GripVertical, AlertTriangle } from "lucide-react";
+import { useState, KeyboardEvent, useMemo } from "react";
+import { computeSkillEvidence } from "@/lib/cv/skill-evidence";
 
 export function SkillsForm() {
-  const { skills, setSkills, reorderSkills } = useCVStore();
+  const cv = useCVStore();
+  const { skills, setSkills, reorderSkills } = cv;
   const [inputValue, setInputValue] = useState("");
+
+  const evidencedSkills = useMemo(() => computeSkillEvidence(cv), [cv]);
+  
+  const getSkillEvidence = (skillName: string) => {
+    return evidencedSkills.find((s) => s.name === skillName);
+  };
+  
+  const unevidencedSkills = evidencedSkills.filter(s => s.evidencedIn.length === 0);
 
   const handleAddSkill = () => {
     const trimmedValue = inputValue.trim();
@@ -87,6 +97,15 @@ export function SkillsForm() {
                       >
                         <GripVertical className="h-3 w-3" />
                       </div>
+                      
+                      {(() => {
+                        const evidence = getSkillEvidence(skill);
+                        if (evidence && evidence.evidencedIn.length > 0) {
+                           return <div className="h-2 w-2 rounded-full bg-emerald-500" title={`Found in ${evidence.evidencedIn.length} entries`} />
+                        }
+                        return <div className="h-2 w-2 rounded-full bg-amber-500" title="Listed but not found in any experience" />
+                      })()}
+                      
                       <span className="text-sm">{skill}</span>
                       <button
                         type="button"
@@ -122,6 +141,25 @@ export function SkillsForm() {
           <Plus className="h-4 w-4" />
         </Button>
       </div>
+
+      {unevidencedSkills.length > 0 && (
+        <div className="mt-6 rounded-md bg-amber-500/10 border border-amber-500/20 p-4">
+          <div className="flex items-center gap-2 text-amber-500 mb-2">
+            <AlertTriangle className="h-4 w-4" />
+            <h4 className="text-sm font-medium">Unevidenced Skills ({unevidencedSkills.length})</h4>
+          </div>
+          <p className="text-xs text-amber-600/80 dark:text-amber-400/80 mb-3">
+            These skills are listed but not found in any experience — recruiters may question them. Consider adding them to your experience descriptions or removing them.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {unevidencedSkills.map((s, idx) => (
+              <Badge key={idx} variant="outline" className="text-xs text-amber-600 border-amber-500/30">
+                {s.name}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

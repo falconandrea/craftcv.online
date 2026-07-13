@@ -53,7 +53,8 @@ Your ONLY task is to read raw text extracted from a PDF resume and return a stru
       "startDate": "string (YYYY-MM)",
       "endDate": "string (YYYY-MM) | null",
       "location": "string",
-      "description": "string"
+      "description": "string",
+      "tldr": "string (A one-sentence summary of the role, core tech, and key result. Max 30 words.)"
     }
   ],
   "education": [
@@ -77,7 +78,8 @@ Your ONLY task is to read raw text extracted from a PDF resume and return a stru
       "name": "string",
       "role": "string",
       "link": "string",
-      "description": "string"
+      "description": "string",
+      "tldr": "string (A one-sentence summary of the project, core tech, and key result. Max 30 words.)"
     }
   ],
   "languages": [

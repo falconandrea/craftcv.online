@@ -18,7 +18,7 @@ describe("buildVocabulary", () => {
     const vocab = buildVocabulary(cv);
     expect(vocab).toHaveLength(3);
     expect(vocab.every((v) => v.category === "skill")).toBe(true);
-    expect(vocab.map((v) => v.term)).toEqual(["react", "typescript", "node.js"]);
+    expect(vocab.map((v) => v.term)).toEqual(["react", "ts", "node"]);
   });
 
   it("extracts companies and roles from experience", () => {
