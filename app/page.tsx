@@ -32,7 +32,7 @@ export default function Home() {
               style={{ animation: 'fade-in-up 0.6s ease-out forwards', opacity: 0 }}
             >
               <Sparkles className="w-4 h-4" />
-              <span>{/* // */} NEW: ATS Score Simulator</span>
+              <span>{/* // */} ATS ENGINE v2 — DETERMINISTIC RULES + KEYWORD GAP</span>
             </div>
 
             <h1 
@@ -87,7 +87,7 @@ export default function Home() {
           <div className="container mx-auto max-w-5xl">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {[
-                { label: 'ATS Simulator', value: 'New', icon: FileText },
+                { label: 'ATS Lint + Gap', value: '16 Rules', icon: FileText },
                 { label: 'Zero Data Stored', value: 'Local', icon: Lock },
                 { label: 'AI Extraction', value: 'PDF', icon: Cpu },
                 { label: 'No Signup', value: 'Free', icon: Database },
@@ -180,8 +180,8 @@ export default function Home() {
               {[
                 {
                   icon: FileText,
-                  title: 'Test Your Score',
-                  description: 'Upload your CV to our new ATS Simulator to see how recruiters software parses your data and formatting.',
+                  title: 'ATS Score + Keyword Gap',
+                  description: 'Upload your CV to test how ATS software parses it (16 deterministic lint rules), then paste a job description to see which keywords you are missing.',
                   color: '#00f0ff'
                 },
                 {

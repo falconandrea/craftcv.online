@@ -16,10 +16,12 @@ A modern, fast, and privacy-focused web application to generate **ATS-optimized 
 - **Export/Import**: Save your progress as a JSON file and resume anytime.
 - **PDF Generation**: High-quality, selectable text PDF output.
 - **Mobile Friendly**: Responsive design for editing on the go.
-- **ATS Score Simulator**: Upload your PDF to instantly test how an Applicant Tracking System reads your formatting and keywords.
+- **ATS Score Simulator**: Upload your PDF to test how an ATS parses your CV with 16 deterministic lint rules (contacts, bullet quality, structure) and a keyword gap analysis against any job description.
 - **AI-Powered**:
   - Optimize your CV based on a Job Description (using LLMs like DeepSeek).
-  - Get actionable advice to improve your content.
+  - Keyword Gap Analysis against any job description.
+  - Built-in AI grounding with anti-hallucination guardrails and verified facts protection.
+  - Token-optimized career data model (TL;DR fields, skill evidence linking) for faster, cheaper AI calls.
 
 ---
 
