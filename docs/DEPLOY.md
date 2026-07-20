@@ -6,25 +6,34 @@ This document describes the deployment strategy for the Craft CV application. Th
 
 ---
 
+## Branching Strategy
+
+- **`develop`** — Default branch. All work happens here. No deployment is triggered on push.
+- **`main`** — Production branch. Only receives merges from `develop` via PR. A push to `main` triggers the full build + deploy pipeline.
+
+---
+
 ## Architecture
 
 ```mermaid
 graph LR
-    A[GitHub Push to main] --> B[GitHub Actions]
-    B --> C[Build Docker Image]
-    C --> D[Push to GHCR]
-    D --> E[SSH to Server]
-    E --> F[Pull Image]
-    F --> G[docker-compose up -d]
-    G --> H[Traefik Routes Traffic]
-    H --> I[https://craftcv.online]
+    A[Push to develop] --> B[Create PR develop → main]
+    B --> C[Merge to main]
+    C --> D[GitHub Actions]
+    D --> E[Build Docker Image]
+    E --> F[Push to GHCR]
+    F --> G[SSH to Server]
+    G --> H[Pull Image]
+    H --> I[docker-compose up -d]
+    I --> J[Traefik Routes Traffic]
+    J --> K[https://craftcv.online]
 ```
 
 ---
 
 ## GitHub Actions Workflow
 
-The deployment is triggered automatically when code is pushed to the `main` branch.
+The deployment is triggered automatically when code is pushed to the `main` branch (typically via a merge from `develop`). Pushes to `develop` do not trigger the pipeline.
 
 ### Workflow Steps
 
