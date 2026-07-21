@@ -1,0 +1,20 @@
+# https://www.rfc-editor.org/rfc/rfc9309 (robots.txt)
+#
+# Content-Signal directives follow draft-romm-aipref-contentsignals:
+# https://datatracker.ietf.org/doc/draft-romm-aipref-contentsignals/
+#
+# Policy intent (as of 2026-07-21):
+#   - search=yes    -> site MAY appear in search indexes and results
+#   - ai-input=yes  -> site MAY be used for RAG / grounding / agentic ingestion
+#                      (paired with Markdown for Agents — see proxy.ts)
+#   - ai-train=no   -> site MAY NOT be used to train or fine-tune AI models
+#
+# When changing these values, also update lib/robots.test.ts which asserts
+# the directive is present and well-formed.
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Content-Signal: ai-train=no, search=yes, ai-input=yes
+
+Sitemap: https://craftcv.online/sitemap.xml
