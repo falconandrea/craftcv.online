@@ -116,7 +116,7 @@ export default function Home() {
                   <span>{/* // */} AI_MODULE_ACTIVE</span>
                 </div>
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-                  Tailor your CV to
+                  Tailor your CV to{" "}
                   <span className="block text-[#00f0ff]">any job — instantly</span>
                 </h2>
                 <p className="text-zinc-400 mb-8 text-lg">

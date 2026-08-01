@@ -4,14 +4,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl = 'https://craftcv.online'
     const lastModified = new Date()
 
+    // Only indexable pages — app routes (/dashboard, /editor) are noindex
+    // and should NOT be in the sitemap. llms.txt is a text file, not HTML.
     const routes = [
         '',
-        '/dashboard',
-        '/editor',
         '/ats-score',
         '/privacy',
         '/cookies',
-        '/llms.txt',
     ].map((route) => ({
         url: `${baseUrl}${route}`,
         lastModified,
