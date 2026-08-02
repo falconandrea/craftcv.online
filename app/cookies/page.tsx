@@ -5,6 +5,8 @@ import { Terminal, Database, Shield, Zap } from "lucide-react";
 export const metadata = {
   title: "Cookie Policy | CraftCV",
   description: "Understanding tracking modules and browser storage.",
+  alternates: { canonical: "/cookies" },
+  openGraph: { url: "/cookies" },
 };
 
 export default function CookiesPage() {

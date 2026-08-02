@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+export const dynamic = "force-dynamic";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
 import { Toaster } from "@/components/ui/sonner";
+import { SITE_URL } from "@/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +16,6 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
-
-const SITE_URL = "https://craftcv.online";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -64,17 +64,19 @@ export const metadata: Metadata = {
   },
 };
 
-// JSON-LD structured data: SoftwareApplication schema for rich snippets.
+// JSON-LD structured data: SoftwareApplication describes the app entity to
+// search engines. Note: a SoftwareApplication rich result additionally
+// requires aggregateRating/review; do not add fabricated ratings — add real
+// data only when it exists.
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "CraftCV",
   applicationCategory: "BusinessApplication",
-  applicationSubCategory: "Resume Builder",
   operatingSystem: "Web",
   url: SITE_URL,
   description:
-    "Free, open-source ATS-optimized CV builder with AI-powered optimization, keyword gap analysis, and PDF export. Privacy-first — all data stays in your browser.",
+    "Free, open-source ATS-optimized CV builder with AI-powered optimization, keyword gap analysis, and PDF export. CV data is stored locally in the browser by default; AI and ATS features send selected content to external providers for processing.",
   offers: {
     "@type": "Offer",
     price: "0",

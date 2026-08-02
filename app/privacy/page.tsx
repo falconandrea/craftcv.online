@@ -5,6 +5,8 @@ import { Shield, Lock } from "lucide-react";
 export const metadata = {
   title: "Privacy Policy | CraftCV",
   description: "Our commitment to your privacy and data security.",
+  alternates: { canonical: "/privacy" },
+  openGraph: { url: "/privacy" },
 };
 
 export default function PrivacyPage() {

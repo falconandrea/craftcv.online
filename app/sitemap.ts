@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
+import { SITE_URL } from '@/lib/site'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://craftcv.online'
     const lastModified = new Date()
 
     // Only indexable pages — app routes (/dashboard, /editor) are noindex
@@ -12,7 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         '/privacy',
         '/cookies',
     ].map((route) => ({
-        url: `${baseUrl}${route}`,
+        url: `${SITE_URL}${route}`,
         lastModified,
         changeFrequency: 'monthly' as const,
         priority: route === '' ? 1 : 0.8,
