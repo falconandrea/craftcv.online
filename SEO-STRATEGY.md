@@ -1,128 +1,162 @@
 # CraftCV — SEO Strategy Plan
 
-> Last updated: 2026-08-01
-> Status: Technical fixes done (branch `fix/seo-improvements`), content/distribution phase pending.
+> Last updated: 2026-08-02
+> Status: Technical fixes revised on `fix/seo-improvements`. Content/distribution
+> phase is **opinion-based until backed by real data** (see Phase 0). Do not
+> treat keyword/page targets as decisions until Phase 0 produces evidence.
 
-## Current situation
+## Guiding principle
 
-CraftCV is live, technically solid, and has a clear competitive edge:
-**open-source + privacy-first + 16 deterministic ATS rules**. No competitor
-has all three.
+Ranking is the product of **crawlability + intent match + quality + authority +
+links**. This plan addresses all five, but the leverage is different at each
+stage: technical fixes make the site *eligible* to rank; content + E-E-A-T +
+distribution make it *deserve* to rank. Skip the data-gathering phase and you'll
+optimise guesses.
 
-But the site is invisible in search. For "CraftCV" the SERP returns only
-competitors (craft-cv.com, kraftcv.com, visualcv.com). The root cause:
-not enough indexable content. The site is a single-page app with ~200 words.
-Google can't rank what it can't read.
+## Current situation — hypotheses to verify, not facts
 
-## What's already been fixed (branch `fix/seo-improvements`)
+These observations were recorded on **2026-08-01**, from **Italy**, **English
+UI**, **incognito Google SERP**. They need an evidence pass before driving
+decisions:
 
-| # | Fix | File |
-|---|-----|------|
-| 1 | Canonical URL + `metadataBase` | `app/layout.tsx` |
-| 2 | JSON-LD `SoftwareApplication` schema | `app/layout.tsx` |
-| 3 | Open Graph + Twitter Card tags | `app/layout.tsx` |
-| 4 | Removed `force-dynamic` (pages now static-prerendered) | `app/layout.tsx` |
-| 5 | Fixed "toany" typo | `app/page.tsx` |
-| 6 | `noindex` on `/dashboard` and `/editor` | their layouts |
-| 7 | Sitemap cleaned (removed app pages + `llms.txt`) | `app/sitemap.ts` |
-| 8 | Security headers + `poweredByHeader: false` + asset cache | `next.config.ts` |
+- CraftCV appears to have little indexable content (the site is essentially a
+  single-page app). **Verify:** run it through Google Search Console and confirm
+  indexed page count + word count per URL.
+- For the query `CraftCV` the SERP surfaces competitors (craft-cv.com,
+  kraftcv.com, visualcv.com). **Verify:** is this branded-query competition or a
+  site not being crawled/indexed? Check GSC "URL inspection".
+- Competitive moat hypothesis: **open-source + privacy-first + deterministic ATS
+  rules**. **Verify:** build a real comparison table (feature × competitor) before
+  claiming "no competitor has all three".
 
-**Action required before merge:** create `/public/og.png` (1200×630).
+These three checks are Phase 0. Everything below assumes Phase 0 confirms the
+direction; if it doesn't, revisit before building content.
+
+## What's fixed on this branch (`fix/seo-improvements`)
+
+| # | Fix | File | Notes |
+|---|-----|------|-------|
+| 1 | `metadataBase` + per-page canonical (self-referencing) | `app/layout.tsx`, `app/ats-score/layout.tsx`, `app/privacy/page.tsx`, `app/cookies/page.tsx` | Root canonical was `/` and inherited by every route; each indexable page now points to itself. |
+| 2 | Open Graph + Twitter Card tags | `app/layout.tsx` | `openGraph.url` overridden per page too. |
+| 3 | JSON-LD `SoftwareApplication` | `app/layout.tsx` | Removed invalid `applicationSubCategory`; fixed inaccurate privacy claims; not rich-result-eligible until real ratings exist (see to.md). |
+| 4 | `noindex` on `/dashboard` and `/editor` | their layouts | Consistent with `robots.txt` (not disallowed, so the noindex is crawlable). |
+| 5 | Sitemap cleaned (removed app pages + `llms.txt`) | `app/sitemap.ts` | `/privacy` and `/cookies` kept; consider dropping them (not strategic). |
+| 6 | Security headers + `poweredByHeader: false` + asset cache | `next.config.ts` | |
+| 7 | Shared `SITE_URL` (env-overridable) | `lib/site.ts` | Removes duplication between layout + sitemap. |
+| 8 | "toany" typo fix | `app/page.tsx` | |
+
+### Intentionally NOT changed (trade-offs)
+
+- **`force-dynamic` kept on the root layout.** Removing it would statically
+  prerender pages, but GTM is read from a runtime env (`GTM_ID`) that is not a
+  Docker build ARG — static build = no GTM = analytics regression. Keep dynamic
+  until GTM is migrated to a build-time `NEXT_PUBLIC_GTM_ID` (see to.md).
+- **`/og.png` referenced but not yet committed.** Without the asset, OG/Twitter
+  images 404. This is a **merge blocker** (see to.md).
 
 ---
 
-## Phase 1 — Landing pages (Week 1-2)
+## Phase 0 — Evidence & baseline (do this first, ~1 week)
 
-The homepage alone can't rank for competitive terms. We need dedicated
-content pages that target specific search intents. Each one is a real page
-(500-800 words), not a clone of the homepage.
+Before writing a single line of content, remove guesswork.
 
-| Route | Target keyword | Search intent |
-|-------|---------------|---------------|
-| `/ats-checker` | "ats checker", "ats resume checker" | Tool / validation |
-| `/cv-templates` | "ats friendly cv template" | Browse / compare |
-| `/ai-cv-writer` | "ai resume writer", "ai cv builder" | Find a tool |
-| `/keyword-match` | "resume keyword checker", "ats keywords" | Gap analysis tool |
+- [ ] **Confirm GSC** ownership is verified (progress.md marks it done — confirm
+  the property still resolves and data is flowing).
+- [ ] **Submit `sitemap.xml`** in GSC; wait for indexing status.
+- [ ] **Collect a real baseline** (2-4 weeks): indexed pages, impressions,
+  clicks, average position, top queries, CTR. Record numbers, not vibes.
+- [ ] **Own your brand SERP**: search `CraftCV` (and `craft cv`, `craft cv
+  builder`) incognito from your target market. You should rank #1 for your brand.
+  If not, that's the first thing to fix (homepage copy + a few brand backlinks).
+- [ ] **Keyword research with a tool** (Ahrefs free / GSC / Keyword Planner /
+  manual SERP): for each candidate term capture **volume, difficulty, intent,
+  SERP composition**. Replace the candidate keywords below with evidenced ones.
+- [ ] **Wire conversion tracking** in GTM/GA4 (`cta_start_build`, `pdf_export`,
+  `ats_score_run`, `ai_message_sent`). Traffic without conversion data is vanity.
 
-**Why it works:** This is exactly how Resume Worded, Jobscan, and VisualCV
-built their traffic — each intent gets its own indexable page with a CTA to
-the tool. The `/ats-score` route already exists and can be the foundation
-for `/ats-checker`.
+Only after Phase 0 do Phases 1-4 make sense.
 
-## Phase 2 — Blog (Week 3-4)
+## Phase 1 — Consolidate, then expand (after Phase 0)
 
-The blog wins long-tail SEO. CraftCV's audience (job seekers, career
-changers) actively searches for guides on ATS, keywords, and CV writing.
+The homepage alone won't rank for competitive terms, but **don't spin up four
+new pages for four keywords** — that's how cannibalisation starts.
 
-**Content clusters (20+ articles target):**
+- [ ] **Make `/ats-score` a complete SEO landing/tool page first.** It already
+  exists. Do **not** also create `/ats-checker` — pick one canonical URL and point
+  everything there (301 the other if it ever existed). One strong page beats two
+  competing ones.
+- [ ] Only add more routes if the intent is genuinely different **and** you can
+  serve it well:
+  - `/cv-templates` — **only if multiple real, comparable templates exist.** A
+    single-template "templates" page is thin content.
+  - `/ai-cv-writer`, `/keyword-match` — defer until keyword research proves
+    volume/intent worth a dedicated page.
+- [ ] **Word count is not the goal.** The goal is *complete coverage of the
+  search intent*. Match what the SERP actually rewards, not an arbitrary
+  "500-800 words".
 
-### Cluster: ATS
-- What is an ATS? (Complete guide)
-- How to beat ATS in 2026
-- ATS-friendly format guide (with examples)
-- Top 10 ATS mistakes that get your CV rejected
-- ATS vs human recruiter: what's different?
+## Phase 2 — Content + E-E-A-T (small, high-quality)
 
-### Cluster: CV / Resume writing
-- How to write bullet points with AI
-- Quantify achievements: the complete guide
-- CV format guide for software engineers
-- How long should a CV be in 2026?
-- Action verbs for resumes (200+ examples)
+The blog wins long-tail, but for a brand-new domain the **Helpful Content
+System** filters generic SEO prose. Quality and demonstrated experience matter
+more than volume.
 
-### Cluster: AI + Privacy
-- AI resume optimizer comparison (ChatGPT vs CraftCV vs others)
-- Is AI CV writing safe? (PII concerns)
-- ChatGPT vs specialized CV tools
-- Privacy-first resume tools: why it matters
+- [ ] **Start with 3-5 pillar articles**, each grounded in *this project's real
+  experience* (e.g., "How I built a deterministic ATS lint engine", "What 16 ATS
+  rules catch that ChatGPT misses"). Real experience = E-E-A-T signal.
+- [ ] **Add a real author/About page**: Andrea's bio, link to GitHub + profile.
+  Consider `Person`/`ProfilePage` schema. An anonymous blog on a new domain is
+  an E-E-A-T liability.
+- [ ] **Internal linking**: every article links to the relevant tool page
+  (`/ats-score`) — this is how tool pages earn relevance.
+- [ ] **Don't target 20+ articles as a first milestone.** Ship 3-5, measure,
+  then decide.
 
-### Cluster: Keywords
-- Resume keywords for software engineers
-- Keyword density for ATS: myth vs reality
-- How to find resume keywords from any job description
-- Keyword stuffing: how ATS detect and penalize it
+> Note on rich results: Google heavily restricted `FAQPage` and `HowTo` rich
+> results (FAQ now mostly limited to gov/health sites; HowTo visibility very
+> low). Don't build content chasing these snippets — they're not a priority.
 
-**Format:** Next.js MDX blog under `/blog/[slug]`. Each article links to
-the relevant tool page (internal linking).
+## Phase 3 — Distribution (measure, don't assume)
 
-## Phase 3 — Backlinks & distribution (Ongoing)
+| Channel | Action | Realistic expectation |
+|---------|--------|-----------------------|
+| GitHub README | Keyword-rich anchor to live site | Cheap, lasting backlink + referral. **Highest reliable ROI.** |
+| Dev.to / Hashnode | Technical write-ups (the ATS engine, determinism) | Lasting backlinks, developer audience. |
+| LinkedIn | Andrea's posts | Brand awareness, low SEO weight. |
+| Product Hunt | Launch/relaunch | One-time spike; timing + assets matter. |
+| HackerNews | "Show HN" | **Hypothesis, not fact** that it's high-ROI. Often sinks; depends on timing/luck. |
+| Reddit | r/jobs, r/cscareerquestions, r/resumes | Self-promotion rules are strict — be a real participant first or get banned. |
 
-| Channel | Action | Angle |
-|---------|--------|-------|
-| GitHub README | Link to live site with keyword-rich anchor | "ATS-optimized CV builder" |
-| Product Hunt | Launch / relaunch | Open-source + privacy + AI |
-| HackerNews | "Show HN" post | Open-source ATS engine, deterministic rules |
-| Reddit | r/jobs, r/cscareerquestions, r/resumes | Answer questions, link when relevant |
-| Dev.to / Hashnode | Technical articles | "How I built a deterministic ATS lint engine" |
-| LinkedIn | Andrea's posts | Tool-focused, not just process |
+**Priority order is evidence-based:** GitHub + DEV.to first (cheap, lasting);
+HN/PH/Reddit after, measuring traffic *and* conversions per channel.
 
-**Priority:** HackerNews "Show HN" has the highest ROI — the open-source
-+ privacy angle plays perfectly to that audience.
+## Phase 4 — Technical SEO (ongoing)
 
-## Phase 4 — Technical SEO (Ongoing)
+- [ ] Core Web Vitals: monitor LCP/CLS/INP in GSC + CrUX.
+- [ ] `next/dynamic` for below-the-fold components to cut JS / improve LCP.
+- [ ] Re-enable static prerender once GTM is a build-time public var (see to.md).
+- [ ] Add a Content-Security-Policy (with GTM inlined, decide nonce vs hash vs
+  `unsafe-inline`); then `X-Frame-Options` can be replaced by `frame-ancestors`.
+- [ ] When real ratings/reviews exist, add `aggregateRating` to the
+  `SoftwareApplication` schema (never fabricate).
 
-- [ ] Verify property in Google Search Console
-- [ ] Submit `sitemap.xml` in GSC
-- [ ] Add `HowTo` + `FAQPage` schema on new content pages
-- [ ] Internal linking: every blog post → relevant tool page
-- [ ] Page speed: `next/dynamic` for below-the-fold components
-- [ ] Core Web Vitals: monitor LCP/CLS/INP in GSC
+## KPIs (baseline first, then targets)
 
-## KPIs
+Record the **today** column from GSC after Phase 0 — the values below are
+placeholders until then.
 
-| Metric | Today | 3-month target | 6-month target |
-|--------|-------|----------------|----------------|
-| Indexed pages (GSC) | ~4 | 15+ | 30+ |
-| Monthly impressions | <100 | 2.000+ | 10.000+ |
-| Monthly organic clicks | ~0 | 50+ | 300+ |
-| Backlinks (Ahrefs free) | ~0 | 10+ | 30+ |
-| Referring domains | ~0 | 5+ | 15+ |
+| Metric | Today (from GSC) | 3-month target | 6-month target |
+|--------|------------------|----------------|----------------|
+| Indexed pages | _ | +1-3 (real content pages) | +5-10 |
+| Monthly impressions | _ | TBD from baseline | TBD |
+| Monthly organic clicks | _ | TBD from baseline | TBD |
+| Backlinks / referring domains | _ | 5+ / 3+ | 15+ / 8+ |
+| Conversions (build/export) | _ | track, then target | track, then target |
 
-## Priority order
+## Priority order (revised)
 
-1. **Create `/public/og.png`** — without it, social shares are invisible
-2. **Verify GSC** — without Search Console, you're flying blind
-3. **Ship one content page** (`/ats-checker` or `/cv-templates`) — more
-   impactful than the blog because it converts
-4. **Write 3-5 blog articles** — establish topical authority
-5. **HackerNews / Product Hunt launch** — backlinks + referral traffic
+1. **Fix blockers** (og.png, decide GTM strategy) — see `to.md`.
+2. **Phase 0** — GSC baseline + keyword research + conversion tracking.
+3. **Make `/ats-score` a real SEO landing** (consolidate, don't duplicate).
+4. **3-5 experience-grounded articles** + author/About (E-E-A-T).
+5. **Distribution** — GitHub + DEV.to first; HN/PH/Reddit last, measured.
