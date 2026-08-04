@@ -6,10 +6,31 @@
 
 ---
 
+## Entry Format
+
+Each entry must be exactly **one line** following a git-log style format. Do not write multiple paragraphs or blocks. Keep details of the fix or decisions inside PRs, Task files, or Architectural Decision Records (ADRs), and link to them.
+
+**Concision is mandatory.** A reader should grasp the lesson in <2 seconds. If you can't fit it in one line, the lesson is too generic — narrow it or drop it.
+
+Format:
+`- [YYYY-MM-DD] [[Category]] [One-line summary of mistake and fix]. Refs: [file-name](relative/path/to/file), [PR #ID], or [ADR-name](relative/path/to/adr)`
+
+### What NOT to log (drop these)
+- Generic framework knowledge anyone can google ("eager load to avoid N+1", "use transactions for atomic writes", "type your props").
+- Bugs that were typos, one-off mistakes, or already-fixed-by-tooling (caught by Pint/PHPStan/ESLint).
+- Vague entries without a concrete trigger ("be careful with timestamps").
+- Entries older than 12 months with no living Refs.
+
+### Good examples
+`- [2026-07-12] [Laravel] Eager load 'profile' to prevent N+1 in /users index (only happens when profile is shown in table). Refs: [tasks-user.md](.ai/features/user/tasks-user.md), [PR #45]`
+`- [2026-07-10] [Next] Don't import 'lodash' in Server Components — pulls 70KB into the bundle. Refs: [PR #43]`
+
+---
+
 ## 📚 Lessons Log
 
-- [2026-03-15] [Deployment/Dependencies] DOMMatrix reference error in pdf-parse in Docker production — Node 20 lacks DOMMatrix and Next.js standalone output strips dynamic imports. Fixed by upgrading to Node 22, installing @napi-rs/canvas, and explicitly COPY-ing @napi-rs, pdf-parse, and pdfjs-dist into the Docker image. Refs: [Dockerfile](../../Dockerfile), [package.json](../../package.json)
-- [2026-02-26] [AI Integration] AI returned false-positive "changes" identical to current CV data — system prompt schema encouraged full-object returns and frontend lacked deep equality check. Fixed by instructing the LLM to emit only modified fields and adding a getEffectivePatch filter in the UI. Refs: [route.ts](../../app/api/ai/optimize/route.ts), [ChatMessage.tsx](../../components/ai/ChatMessage.tsx)
-- [2026-07-14] [AI Integration] PROPOSED_CHANGES summary listed every item of an array patch as "changed", even items the LLM returned unchanged. Root cause: the system prompt tells the LLM to return the ENTIRE array when modifying one item ("return the ENTIRE array including ALL existing items that you did NOT modify"), but `summarizeChanges` iterated the full array without per-item comparison. Fix: pass `currentCV` into `summarizeChanges` and use deep-equality (`JSON.stringify`) to filter per-index. Same trap can re-appear in any UI that renders `proposedChanges.X[]` without comparing item-by-item to the current state. Refs: [summarize-changes.ts](../../lib/ai/summarize-changes.ts), [summarize-changes.test.ts](../../lib/ai/summarize-changes.test.ts)
-- [2026-07-14] [AI Integration] **DATA LOSS**: LLM returned `summary: ""` and `languages: []` when asked to "improve my first experience", which would have wiped user data on APPLY. Root cause: the snapshot sent to the LLM (`buildQuickReference`) did NOT include `summary`, `languages`, or `customSection`, so the LLM couldn't preserve them and filled with empty defaults when constructing a "complete" `proposedChanges`. Three-layer fix: (1) extend the snapshot to include all user-facing fields, (2) strengthen the system prompt with an explicit "DESTRUCTIVE CHANGE PREVENTION" section forbidding non-empty → empty transitions and forbidding inclusion of unchanged top-level fields, (3) add a server-side safety guard `removeDestructiveChanges` in `validate-patch.ts` that silently strips blanked fields from the patch. General principle: any field the LLM is allowed to edit MUST be visible to it in the prompt context, AND the server should never trust the LLM to preserve content it can't see. Refs: [quick-reference.ts](../../lib/cv/quick-reference.ts), [route.ts](../../app/api/ai/optimize/route.ts), [validate-patch.ts](../../lib/ai/grounding/validate-patch.ts)
-- [2026-07-14] [AI Integration] **Prefill trick breaks on non-OpenAI providers**. The route used `{ role: "assistant", content: "{" }` (assistant prefill) to force JSON continuation. This works natively on Anthropic Claude and mostly on OpenAI, but on **DeepSeek** (and other models via OpenAI-compatible proxies: Llama, Mistral, etc.) the proxy translates the message list into the provider's chat template, the prefill `{` ends up in a wrong position, and the model emits chat-template markers as literal text (`"#start#"`, `"# Human:"`) before/inside the JSON. The greedy regex parser `\{[\s\S]*\}` then grabbed from the wrong brace and failed. Fix: (1) removed the prefill trick entirely — modern models follow JSON instructions without it, (2) extracted the parser into `lib/ai/parse-model-response.ts` with balanced brace matching that tries every `{` position and returns the first valid object, handling garbage prefixes. General principle: never use provider-specific tricks (prefill, logit bias, response_format) when targeting a generic OpenAI-compatible endpoint — they only work on the providers that natively support them and break elsewhere. Refs: [parse-model-response.ts](../../lib/ai/parse-model-response.ts), [route.ts](../../app/api/ai/optimize/route.ts)
+- [2026-07-14] [AI Integration] Prevent array patch summaries from reporting unchanged items by comparing each item with currentCV before rendering. Refs: [summarize-changes.ts](../../lib/ai/summarize-changes.ts), [summarize-changes.test.ts](../../lib/ai/summarize-changes.test.ts)
+- [2026-07-14] [AI Integration] Prevent destructive AI patches by including every editable field in the snapshot, forbidding non-empty-to-empty changes, and stripping blanked fields server-side. Refs: [quick-reference.ts](../../lib/cv/quick-reference.ts), [route.ts](../../app/api/ai/optimize/route.ts), [validate-patch.ts](../../lib/ai/grounding/validate-patch.ts)
+- [2026-07-14] [AI Integration] Avoid assistant-prefill tricks on generic OpenAI-compatible endpoints; use balanced-brace parsing to recover JSON with provider-specific garbage. Refs: [parse-model-response.ts](../../lib/ai/parse-model-response.ts), [route.ts](../../app/api/ai/optimize/route.ts)
+- [2026-03-15] [Deployment/Dependencies] Fix DOMMatrix errors in production PDF parsing by upgrading to Node 22, installing @napi-rs/canvas, and explicitly copying required packages into the Docker image. Refs: [Dockerfile](../../Dockerfile), [package.json](../../package.json)
+- [2026-02-26] [AI Integration] Filter no-op AI changes with getEffectivePatch after instructing the model to emit modified fields only. Refs: [route.ts](../../app/api/ai/optimize/route.ts), [ChatMessage.tsx](../../components/ai/ChatMessage.tsx)

@@ -1,7 +1,7 @@
 # 📊 Progress Logic
 
 > **Current Status**: ✅ Project MVP Completed, AI Feature Live. Dashboard + Editor Cyber Redesign done. ATS Deterministic Rules Engine implemented. JD Tailoring & Keyword Gap Analysis implemented. AI Optimize Grounding shipped with regression coverage. Token accounting live. Markdown for Agents content negotiation enabled. Content Signals declared in robots.txt.
-> **Last Update**: 2026-07-21
+> **Last Update**: 2026-08-04
 
 ## Recent Achievements
 - [x] **Project Setup**: Documentation generated (PRD, Tech Stack, Flows).
@@ -30,6 +30,8 @@
 - [x] **AI Optimize Grounding (P1-C) — regression hardening**: Added `app/api/ai/optimize/optimize-route.test.ts` covering the snapshot → `validatePatch` composition. "No regression" claim now backed by 116 passing tests + clean `tsc --noEmit`. Manual E2E of the 5 user-facing scenarios remains pending (needs live AI provider + browser session).
 - [x] **Markdown for Agents (content negotiation)**: Implemented application-level `Accept: text/markdown` content negotiation so AI agents get a markdown representation of public pages while browsers keep getting HTML. Spec: https://developers.cloudflare.com/fundamentals/reference/markdown-for-agents/. Files: `proxy.ts` (was `middleware.ts` in pre-Next.js-16 naming), `lib/markdown/agent-content.ts` (per-route markdown registry for `/`, `/privacy`, `/cookies`, `/ats-score`), `lib/markdown/negotiate.ts` (Accept parser + token estimator), `lib/markdown/negotiate.test.ts` (19 unit tests). Response sets `Content-Type: text/markdown; charset=utf-8`, `Vary: Accept`, and `x-markdown-tokens`. Verified end-to-end with curl on the running server: markdown served for `Accept: text/markdown` (and q-value preferences honored, including explicit `q=0` refusal); HTML served for browsers; API routes and unknown paths correctly bypassed. Added `lib/markdown/drift.test.ts` (45 invariants across 4 routes) to catch HTML/markdown drift.
 - [x] **Content Signals (robots.txt)**: Declared AI content usage preferences via `Content-Signal: ai-train=no, search=yes, ai-input=yes` (draft-romm-aipref-contentsignals). Policy choice: indexed + agent-consumable (aligned with Markdown for Agents), but NOT available for AI training. Implementation: swapped `app/robots.ts` for a static `public/robots.txt` because Next.js's `MetadataRoute.Robots` serializer drops unknown directives like `Content-Signal`. Regression coverage in `lib/robots.test.ts` (7 assertions: directive presence, exact 3-category value set, policy values, placement inside User-agent block).
+- [x] **Lessons Memory Gardening**: Compressed five lessons into concise, date-sorted entries while preserving all references and the existing preamble.
+- [x] **Agent Context Routing**: Added area-based context loading and proportional/manual verification policies to `AGENTS.md`, adapted for the Next.js stack.
 
 ## Current Context
 - **Goal**: All PRDs from the spec backlog are now completed.
