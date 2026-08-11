@@ -1,7 +1,7 @@
 # 📊 Progress Logic
 
-> **Current Status**: ✅ Project MVP Completed, AI Feature Live. Dashboard + Editor Cyber Redesign done. ATS Deterministic Rules Engine implemented. JD Tailoring & Keyword Gap Analysis implemented. AI Optimize Grounding shipped with regression coverage. Token accounting live. Markdown for Agents content negotiation enabled. Content Signals declared in robots.txt.
-> **Last Update**: 2026-08-04
+> **Current Status**: ✅ Project MVP Completed, AI Feature Live. Dashboard + Editor Cyber Redesign done. ATS Deterministic Rules Engine implemented. JD Tailoring & Keyword Gap Analysis implemented. AI Optimize Grounding shipped with regression coverage. Token accounting live. Markdown for Agents content negotiation enabled. Content Signals declared in robots.txt. SEO: `/ats-score` turned into a real landing page, dynamic OG image + per-page social metadata fixed, sitemap carries real per-route dates. ATS pipeline hardened against the `aiUnavailable` contract + keyword ground truth, type regressions and shared constants (on `fix/ats-score-hardening`, pending merge + manual E2E).
+> **Last Update**: 2026-08-11
 
 ## Recent Achievements
 - [x] **Project Setup**: Documentation generated (PRD, Tech Stack, Flows).
@@ -32,10 +32,13 @@
 - [x] **Content Signals (robots.txt)**: Declared AI content usage preferences via `Content-Signal: ai-train=no, search=yes, ai-input=yes` (draft-romm-aipref-contentsignals). Policy choice: indexed + agent-consumable (aligned with Markdown for Agents), but NOT available for AI training. Implementation: swapped `app/robots.ts` for a static `public/robots.txt` because Next.js's `MetadataRoute.Robots` serializer drops unknown directives like `Content-Signal`. Regression coverage in `lib/robots.test.ts` (7 assertions: directive presence, exact 3-category value set, policy values, placement inside User-agent block).
 - [x] **Lessons Memory Gardening**: Compressed five lessons into concise, date-sorted entries while preserving all references and the existing preamble.
 - [x] **Agent Context Routing**: Added area-based context loading and proportional/manual verification policies to `AGENTS.md`, adapted for the Next.js stack.
+- [x] **SEO — `/ats-score` landing page** (merged to `develop`): rewrote the bare upload widget into a ~925-word server-rendered landing page (`components/ats/AtsScoreContent.tsx`) with H1→H2→H3 hierarchy; interactive widget split out as `components/ats/AtsScoreTool.tsx` to keep the SEO copy out of the client bundle. Every claim checked against `lib/ats-rules.ts` + `app/api/ai/analyze-ats/route.ts`. No FAQPage schema on purpose (Google restricted it); H1 left untouched pending Phase 0 keyword research.
+- [x] **SEO — social metadata + sitemap** (merged to `develop`): dynamic OG image via `next/og` (`app/opengraph-image.tsx`, `force-static` to prerender at build), `pageOpenGraph()` helper in `lib/site.ts` to restate shared OG fields per page (Next merges `openGraph` wholesale in child segments), dropped root `twitter` title/description that masked per-page cards, fixed double "| CraftCV" suffix on `/privacy`+`/cookies`. Sitemap now carries real per-route `lastModified` instead of `new Date()` on every deploy.
+- [x] **ATS pipeline hardening — two-axis code review** (on `fix/ats-score-hardening`, pushed, **not merged yet**): reviewed the branch (Spec + Standards) and fixed the two contract bugs flagged. (1) `aiUnavailable` now honored when the AI provider is unconfigured — the route serves the deterministic report with `aiUnavailable:true` (200) instead of a pre-parse `503`. (2) Keyword ground-truth enforced: `componentScores.keywordMatch` is overwritten with `gapReport.keywordScore` when concrete, so the two keyword numbers on screen cannot disagree. Plus type-safety restored (`FeedbackCategory`/`FeedbackStatus`/`FeedbackItem` exported, no more bare `string`), shared `lib/ats-constants.ts` (kills the duplicated `MAX_PDF_BYTES`/`MAX_JD_CHARS`), and `ATS_RULES.md` D08/A03 rows aligned to the engine's real behaviour. `tsc --noEmit` clean, 78 vitest assertions pass. **Pending: manual E2E of the unconfigured-AI path, then merge to `develop`.**
 
 ## Current Context
 - **Goal**: All PRDs from the spec backlog are now completed.
-- **Active Feature**: P2-D Structured Career Data Model complete.
+- **Active Feature**: ATS pipeline hardening on `fix/ats-score-hardening` (pushed, not merged). Next: manual E2E of the unconfigured-AI path, then merge to `develop`. Deferred from review (conscious): smell-baseline items S1–S4 (duplicated regex in `checkRecentEndDate`, magic numbers, single-field `Bucket` interface, duplicated score banding) and the §7 scope creep (`optimize/route.ts` types, `verified-facts.ts` cleanup, `jd-analyze` rate limit, `app/ats-score/error.tsx`) — candidates for a separate cleanup PR.
 
 ## Features In Progress
 | Feature | Status | Files |
@@ -51,6 +54,7 @@
 | JD Tailoring & Keyword Gap Analysis (P0-B) | ✅ Done | `.ai/features/jd-tailoring/`, `lib/jd-types.ts`, `lib/jd-analyze.ts`, `app/api/ai/jd-analyze/route.ts`, `components/ats/GapReport.tsx` |
 | AI Optimize Grounding (P1-C) | ✅ Done | `.ai/features/ai-grounding/`, `lib/ai/grounding/`, `app/api/ai/optimize/route.ts`, `components/ai/ChatMessage.tsx`, `components/ai/AiDiffModal.tsx` |
 | Structured Career Data Model (P2-D) | ✅ Done | `.ai/features/career-data-model/`, `lib/cv/quick-reference.ts`, `lib/cv/skill-evidence.ts`, `lib/cv/synonyms.ts`, `components/editor/skills-form.tsx` |
+| ATS Pipeline Hardening (review pass) | ⏳ On branch `fix/ats-score-hardening` — pushed, pending manual E2E + merge | `app/api/ai/analyze-ats/route.ts`, `lib/ats-ai-response.ts`, `lib/ats-constants.ts`, `components/ats/ResultsDashboard.tsx`, `components/ats/Dropzone.tsx`, `docs/ATS_RULES.md` |
 
 ## Backlog
 - [x] Add Google Tag Manager (GTM).
