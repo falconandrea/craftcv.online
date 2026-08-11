@@ -44,7 +44,7 @@ score, because its own message tells the user the item is optional.
 | D03 | LinkedIn URL | 1 | Full URL or abbreviated `/in/username` |
 | D04 | GitHub URL | 0 | Optional — informational only |
 | D05 | Personal website | 0 | Optional. A bare domain passes; email domains are not counted |
-| D08 | Location / timezone | 1 | City+country, city+US state, or an uppercase timezone. `Remote`/`Hybrid` alone is a warning |
+| D08 | Location / timezone | 1 | Passes on city+country (when the country or the city is in a known list), city+US state, or an uppercase timezone. `Remote`/`Hybrid` alone is a warning |
 | B01 | Action verbs | 1 | ≥70% of bullets starting with an action verb passes, ≥40% warns |
 | B02 | Bullet length | 1 | Flags bullets under 10 or over 40 words |
 | B03 | Measurable metrics | 1 | ≥50% of bullets with a quantity passes, ≥25% warns |
@@ -54,7 +54,7 @@ score, because its own message tells the user the item is optional.
 | S04 | Roles without end date | 1 | Flags a range whose end is missing (a dangling dash) |
 | A01 | Special characters | 1 | Emoji, private-use icon glyphs, box drawing, `U+FFFD`. Non-Latin scripts are fine |
 | A02 | Skills parsability | 1 | A dedicated skills section in a separable format |
-| A03 | File name | 1 | Flags generic names and draft markers (`final`, `v3`, `copy`, `(1)`) |
+| A03 | File name | 1 | Flags generic names, draft markers (`final`, `v3`, `copy`, `(1)`), and spaces or special characters (`# % & { }`) some ATS struggle with |
 
 ### Bullet extraction
 
