@@ -197,6 +197,15 @@ export async function POST(req: NextRequest) {
     // Fire-and-forget: a stats failure must not discard a completed analysis.
     incrementCounter("ats_tests").catch(() => { });
 
+    // Ground-truth enforcement (ATS_RULES.md "API contract"): when the
+    // deterministic scan produced a concrete keyword score, the AI's
+    // keywordMatch is overwritten with it so the two numbers shown side by
+    // side cannot contradict each other. A null score (posting lists no
+    // must-have skills) leaves the AI's value untouched.
+    if (evaluation && gapReport && gapReport.keywordScore !== null) {
+      evaluation.componentScores.keywordMatch = gapReport.keywordScore;
+    }
+
     return NextResponse.json({
       ...(evaluation ?? {}),
       aiUnavailable: evaluation === null,
