@@ -30,7 +30,12 @@ export interface KeywordAnalysis {
 }
 
 export interface GapReport {
-  keywordScore: number;
+  /**
+   * Share of must-have keywords found in the CV, or null when the posting
+   * lists no must-haves — in that case there is nothing to score against and
+   * a fabricated 100% would be misleading.
+   */
+  keywordScore: number | null;
   totalMustHave: number;
   presentMustHave: number;
   present: KeywordMatchDetail[];

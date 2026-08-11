@@ -88,7 +88,7 @@ const QUESTIONS = [
   },
   {
     q: "Why two scores?",
-    a: "The lint score is the percentage of the 16 deterministic checks your CV passes: pure functions, same input, same output, every time. The ATS score is the AI evaluation, which reads the extracted text and judges formatting, impact and completeness the way a screener would. They answer different questions, so they are kept separate instead of averaged into one meaningless number.",
+    a: "The lint score comes from the 16 deterministic checks: pure functions, same input, same output, every time. A passed check counts as full credit, a warning as half, and the two checks whose own advice calls them optional (GitHub, personal website) are left out of the score entirely, so a CV is never penalised for advice it can legitimately ignore. The ATS score is the AI evaluation, which reads the extracted text and judges formatting, impact and completeness the way a screener would. They answer different questions, so they are kept separate instead of averaged into one meaningless number.",
   },
   {
     q: "What does adding a job description change?",
