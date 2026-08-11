@@ -11,9 +11,6 @@ import type { VerifiedFact } from "./types";
 /** Regex for percentages, multipliers, counts with context */
 const NUMERIC_PATTERN = /(?<!\w)(\d[\d,.]*(?:[%x×]|))(?!\w)/g;
 
-/** Regex for date patterns like "2022-03", "2021", "March 2022" */
-const DATE_PATTERN = /\b((?:19|20)\d{2}(?:-\d{2})?)\b/g;
-
 /**
  * Extracts all verifiable facts from a CV.
  * Facts include: dates, years, numeric metrics, certification/education identifiers.

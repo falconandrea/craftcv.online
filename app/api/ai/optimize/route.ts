@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
-import type { CVState } from "@/state/types";
+import type { CVState, ExperienceEntry, Project } from "@/state/types";
 import { incrementCounter, addToCounter } from "@/lib/stats";
 import { validatePatch } from "@/lib/ai/grounding/validate-patch";
 import { hasGroundingFlags } from "@/lib/ai/grounding/types";
@@ -179,7 +179,11 @@ export async function POST(req: NextRequest) {
 
     // Heuristic: include full JSON detail for entries explicitly mentioned in the last user message
     const lastUserMsg = messages[messages.length - 1]?.content.toLowerCase() || "";
-    const detailedEntries: any[] = [];
+    // Tagged so the model can tell the two shapes apart in the JSON dump.
+    type DetailedEntry =
+      | ({ type: "Experience" } & ExperienceEntry)
+      | ({ type: "Project" } & Project);
+    const detailedEntries: DetailedEntry[] = [];
 
     cvData.experience.forEach(exp => {
       if ((exp.company && lastUserMsg.includes(exp.company.toLowerCase())) || 

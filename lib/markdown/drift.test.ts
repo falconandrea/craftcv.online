@@ -23,8 +23,10 @@ import { MARKDOWN_BY_PATH } from "./agent-content";
 //                                     (or pick a more durable invariant).
 
 interface RouteContract {
-  // Path to the page.tsx source, relative to the project root.
-  pageSource: string;
+  // Path(s) to the source files that render the route, relative to the project
+  // root. A route whose copy lives in extracted components must list them all,
+  // otherwise the invariants silently stop matching and drift goes undetected.
+  pageSource: string | string[];
   // Strings that MUST appear verbatim in both sources. Pick fragments that
   // are stable across restyling: section headings, contact info, brand names,
   // distinctive copy. Avoid styling-adjacent text (button labels that might
@@ -68,11 +70,15 @@ const ROUTES: Record<string, RouteContract> = {
     ],
   },
   "/ats-score": {
-    pageSource: "app/ats-score/page.tsx",
+    pageSource: [
+      "app/ats-score/page.tsx",
+      "components/ats/AtsScoreTool.tsx",
+      "components/ats/AtsScoreContent.tsx",
+    ],
     invariants: [
-      "Applicant Tracking System",
       "Workday, Taleo",
-      "missing keywords",
+      "16 deterministic checks",
+      "keyword gap report",
     ],
   },
 };
@@ -91,10 +97,10 @@ describe("markdown drift contracts", () => {
 
 for (const [routePath, contract] of Object.entries(ROUTES)) {
   const markdownBody = MARKDOWN_BY_PATH[routePath]?.body ?? "";
-  const pageSource = readFileSync(
-    resolve(process.cwd(), contract.pageSource),
-    "utf8",
-  );
+  const sources = Array.isArray(contract.pageSource) ? contract.pageSource : [contract.pageSource];
+  const pageSource = sources
+    .map((file) => readFileSync(resolve(process.cwd(), file), "utf8"))
+    .join("\n");
 
   describe(`drift: ${routePath} (${contract.pageSource})`, () => {
     for (const invariant of contract.invariants) {

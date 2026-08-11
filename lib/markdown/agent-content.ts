@@ -134,11 +134,16 @@ This is an AI-powered simulation of generic enterprise ATS logic (like Workday, 
 
 **Privacy note**: The raw text extracted from your PDF is sent to our AI providers for parsing. Please do not upload sensitive documents if you do not consent to this.
 
+## The two layers of the report
+
+1. **Deterministic rules** — 16 deterministic checks implemented as pure functions, no AI involved: contact details, bullet quality, document structure and ATS-specific parsing traps. A passed check counts as full credit and a warning as half; the two checks whose own advice calls them optional (GitHub, personal website) never lower the score.
+2. **AI evaluation** — a language model reads the extracted text and scores formatting, impact and completeness, then lists what to change. Paste a job description and it also produces a keyword gap report naming the terms your CV is missing.
+
 ## How to use
 
 1. Visit https://craftcv.online/ats-score
-2. Upload your CV PDF.
-3. (Optional) Paste a job description to compare keywords.
+2. Upload your CV PDF (max 5 MB).
+3. (Optional) Paste a job description to turn on the keyword gap report.
 4. Review the report: missing keywords, formatting errors, and actionable feedback.
 
 This is an interactive, client-rendered tool. The HTML page is required to use it.

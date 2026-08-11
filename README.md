@@ -16,7 +16,7 @@ A modern, fast, and privacy-focused web application to generate **ATS-optimized 
 - **Export/Import**: Save your progress as a JSON file and resume anytime.
 - **PDF Generation**: High-quality, selectable text PDF output.
 - **Mobile Friendly**: Responsive design for editing on the go.
-- **ATS Score Simulator**: Upload your PDF to test how an ATS parses your CV with 16 deterministic lint rules (contacts, bullet quality, structure) and a keyword gap analysis against any job description.
+- **ATS Score Simulator**: Upload your PDF to test how an ATS parses your CV with 16 deterministic lint rules (contacts, bullet quality, structure) and a keyword gap analysis against any job description. The lint score is weighted — a warning is half credit and the two optional checks never lower it — and it stays separate from the AI score instead of being averaged into one number. Rules and scoring: [`docs/ATS_RULES.md`](./docs/ATS_RULES.md).
 - **AI-Powered**:
   - Optimize your CV based on a Job Description (using LLMs like DeepSeek).
   - Keyword Gap Analysis against any job description.

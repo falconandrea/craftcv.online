@@ -88,7 +88,7 @@ const QUESTIONS = [
   },
   {
     q: "Why two scores?",
-    a: "The lint score is the percentage of the 16 deterministic checks your CV passes: pure functions, same input, same output, every time. The ATS score is the AI evaluation, which reads the extracted text and judges formatting, impact and completeness the way a screener would. They answer different questions, so they are kept separate instead of averaged into one meaningless number.",
+    a: "The lint score comes from the 16 deterministic checks: pure functions, same input, same output, every time. A passed check counts as full credit, a warning as half, and the two checks whose own advice calls them optional (GitHub, personal website) are left out of the score entirely, so a CV is never penalised for advice it can legitimately ignore. The ATS score is the AI evaluation, which reads the extracted text and judges formatting, impact and completeness the way a screener would. They answer different questions, so they are kept separate instead of averaged into one meaningless number.",
   },
   {
     q: "What does adding a job description change?",
@@ -125,9 +125,10 @@ export function AtsScoreContent() {
             </h3>
             <p className="text-sm">
               16 checks implemented as pure functions — no AI, no randomness. The
-              same CV always produces the same result, and every finding names
-              the rule it came from, so you can verify it yourself instead of
-              trusting a score.
+              same CV always produces the same result (an open-ended role marked
+              &ldquo;Present&rdquo; is measured against today&apos;s date), and every finding
+              names the rule it came from, so you can verify it yourself instead
+              of trusting a score.
             </p>
           </div>
           <div className="border border-white/10 bg-white/[0.02] p-5">
@@ -202,7 +203,7 @@ export function AtsScoreContent() {
           Fixing these by hand in a word processor tends to reintroduce them. The{" "}
           <Link
             href="/editor"
-            className="text-[#b8ff00] underline underline-offset-4 hover:no-underline"
+            className="text-white/60 underline underline-offset-4 transition-colors hover:text-[#b8ff00]"
           >
             CraftCV editor
           </Link>{" "}
