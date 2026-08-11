@@ -5,7 +5,8 @@ import React from "react";
  * Generates an ATS-optimized PDF from CV state using @react-pdf/renderer.
  * Matches preview layout for consistency.
  *
- * ATS Rules (from ATS_RULES.md):
+ * ATS Rules (from the authoring section of ATS_RULES.md — the lint engine
+ * section further down that doc documents lib/ats-rules.ts, not this file):
  * - No tables, columns, icons, images
  * - Clear section headers
  * - Consistent date formats
