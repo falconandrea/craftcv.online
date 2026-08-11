@@ -245,7 +245,7 @@ export function AtsScoreContent() {
               underline inherits currentColor, so text and rule move together. */}
           <Link
             href="/dashboard"
-            className="text-[#b8ff00] underline underline-offset-4 transition-colors"
+            className="text-white/60 underline underline-offset-4 transition-colors hover:text-[#b8ff00]"
           >
             Build an ATS-ready CV →
           </Link>
