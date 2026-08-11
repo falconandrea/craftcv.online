@@ -3,6 +3,7 @@
 import { CheckCircle2, AlertTriangle, XCircle, RefreshCw, ChevronRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DeterministicCheck } from "@/lib/ats-rules";
+import type { FeedbackItem } from "@/lib/ats-ai-response";
 import type { GapReport } from "@/lib/jd-types";
 import { GapReport as GapReportComponent } from "@/components/ats/GapReport";
 
@@ -18,12 +19,7 @@ export interface AtsScoreData {
     impact?: number | null;
     keywordMatch?: number | null;
   };
-  feedback?: Array<{
-    category: string;
-    status: string;
-    title: string;
-    description: string;
-  }>;
+  feedback?: FeedbackItem[];
   aiUnavailable?: boolean;
   deterministicChecks?: DeterministicCheck[];
   lintScore?: number;

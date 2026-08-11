@@ -7,8 +7,35 @@
  * only report.
  */
 
-const FEEDBACK_CATEGORIES = new Set(["formatting", "impact", "keyword", "missing_info"]);
-const FEEDBACK_STATUSES = new Set(["passed", "warning", "failed"]);
+export type FeedbackCategory = "formatting" | "impact" | "keyword" | "missing_info";
+export type FeedbackStatus = "passed" | "warning" | "failed";
+
+const FEEDBACK_CATEGORIES: ReadonlySet<FeedbackCategory> = new Set<FeedbackCategory>([
+  "formatting",
+  "impact",
+  "keyword",
+  "missing_info",
+]);
+const FEEDBACK_STATUSES: ReadonlySet<FeedbackStatus> = new Set<FeedbackStatus>([
+  "passed",
+  "warning",
+  "failed",
+]);
+
+/** Type guards so the validators below narrow unknown model output safely. */
+function isFeedbackCategory(value: string): value is FeedbackCategory {
+  return (FEEDBACK_CATEGORIES as ReadonlySet<string>).has(value);
+}
+function isFeedbackStatus(value: string): value is FeedbackStatus {
+  return (FEEDBACK_STATUSES as ReadonlySet<string>).has(value);
+}
+
+export interface FeedbackItem {
+  category: FeedbackCategory;
+  status: FeedbackStatus;
+  title: string;
+  description: string;
+}
 
 export interface AiEvaluation {
   score: number;
@@ -17,12 +44,7 @@ export interface AiEvaluation {
     impact: number | null;
     keywordMatch: number | null;
   };
-  feedback: Array<{
-    category: string;
-    status: string;
-    title: string;
-    description: string;
-  }>;
+  feedback: FeedbackItem[];
 }
 
 /** Pull a JSON object out of a raw completion, tolerating code fences. */
@@ -59,12 +81,16 @@ export function normalizeAiEvaluation(raw: Record<string, unknown>): AiEvaluatio
 
   const feedback = feedbackRaw
     .filter((item): item is Record<string, unknown> => typeof item === "object" && item !== null)
-    .map(item => ({
-      category: FEEDBACK_CATEGORIES.has(String(item.category)) ? String(item.category) : "formatting",
-      status: FEEDBACK_STATUSES.has(String(item.status)) ? String(item.status) : "warning",
-      title: String(item.title ?? "Untitled check").slice(0, 200),
-      description: String(item.description ?? "").slice(0, 2000),
-    }))
+    .map(item => {
+      const category = String(item.category);
+      const status = String(item.status);
+      return {
+        category: isFeedbackCategory(category) ? category : "formatting",
+        status: isFeedbackStatus(status) ? status : "warning",
+        title: String(item.title ?? "Untitled check").slice(0, 200),
+        description: String(item.description ?? "").slice(0, 2000),
+      };
+    })
     .filter(item => item.description.length > 0)
     .slice(0, 30);
 
