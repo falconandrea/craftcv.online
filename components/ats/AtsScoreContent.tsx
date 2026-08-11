@@ -203,7 +203,7 @@ export function AtsScoreContent() {
           Fixing these by hand in a word processor tends to reintroduce them. The{" "}
           <Link
             href="/editor"
-            className="text-[#b8ff00] underline underline-offset-4 hover:no-underline"
+            className="text-white/60 underline underline-offset-4 transition-colors hover:text-[#b8ff00]"
           >
             CraftCV editor
           </Link>{" "}
