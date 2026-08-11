@@ -5,15 +5,12 @@ import { UploadCloud, FileText, Briefcase, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { MAX_PDF_BYTES, MAX_JD_CHARS } from "@/lib/ats-constants";
 
 interface DropzoneProps {
   onAnalyze: (file: File, jobDescription: string) => void;
   isLoading?: boolean;
 }
-
-/** Kept in sync with MAX_PDF_BYTES / MAX_JD_CHARS in the analyze-ats route. */
-const MAX_SIZE_BYTES = 5 * 1024 * 1024;
-const MAX_JD_CHARS = 8000;
 
 export function Dropzone({ onAnalyze, isLoading }: DropzoneProps) {
   const [file, setFile] = useState<File | null>(null);
@@ -43,7 +40,7 @@ export function Dropzone({ onAnalyze, isLoading }: DropzoneProps) {
       rejectFile("Please upload a PDF file.");
       return;
     }
-    if (candidate.size > MAX_SIZE_BYTES) {
+    if (candidate.size > MAX_PDF_BYTES) {
       rejectFile("File is too large. Maximum size is 5 MB.");
       return;
     }

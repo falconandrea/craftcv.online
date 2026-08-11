@@ -6,13 +6,12 @@ import { runAllChecks } from "@/lib/ats-rules";
 import { extractKeywords, computeGapReport } from "@/lib/jd-analyze";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { evaluationFromCompletion, type AiEvaluation } from "@/lib/ats-ai-response";
+import { MAX_PDF_BYTES, MAX_JD_CHARS } from "@/lib/ats-constants";
 
 export const maxDuration = 60; // Increase max duration for Vercel if needed
 
 /** Same limits as /api/ai/import-pdf — both routes feed the same prompt path. */
-const MAX_PDF_BYTES = 5 * 1024 * 1024;
 const MAX_TEXT_CHARS = 15000;
-const MAX_JD_CHARS = 8000;
 
 /** Two LLM calls per request, so the quota is deliberately tight. */
 const RATE_LIMIT_MAX = 10;
