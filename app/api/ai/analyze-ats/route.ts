@@ -52,16 +52,12 @@ You must return the following JSON structure exactly:
 
 export async function POST(req: NextRequest) {
   try {
+    // The AI layer is best-effort: when the provider is not configured the
+    // route still serves the deterministic report (aiUnavailable: true)
+    // instead of failing the whole request. ATS_RULES.md "API contract".
     const baseURL = process.env.AI_PROVIDER_BASE_URL;
     const apiKey = process.env.AI_PROVIDER_API_KEY;
     const model = process.env.AI_PROVIDER_MODEL;
-
-    if (!baseURL || !apiKey || !model) {
-      return NextResponse.json(
-        { error: "AI provider is not configured. Please check environment variables." },
-        { status: 503 }
-      );
-    }
 
     const limit = rateLimit(
       `analyze-ats:${clientKey(req.headers)}`,
@@ -169,28 +165,33 @@ export async function POST(req: NextRequest) {
     }
 
     // ── AI evaluation (best effort) ────────────────────────────────────
-    // A model failure must not throw away the deterministic report the user
-    // is already entitled to, so it degrades instead of returning an error.
+    // A model failure — or a missing provider config — must not throw away
+    // the deterministic report the user is already entitled to, so it
+    // degrades instead of returning an error.
     let evaluation: AiEvaluation | null = null;
-    try {
-      const client = new OpenAI({ apiKey, baseURL });
-      const completion = await client.chat.completions.create({
-        model,
-        max_tokens: 2000,
-        temperature: 0.2, // low temperature for strict, analytical response
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userPrompt }
-        ],
-      });
+    if (baseURL && apiKey && model) {
+      try {
+        const client = new OpenAI({ apiKey, baseURL });
+        const completion = await client.chat.completions.create({
+          model,
+          max_tokens: 2000,
+          temperature: 0.2, // low temperature for strict, analytical response
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: userPrompt }
+          ],
+        });
 
-      const rawContent = completion.choices[0]?.message?.content ?? "{}";
-      evaluation = evaluationFromCompletion(rawContent);
-      if (!evaluation) {
-        console.error("[ATS Score] AI response did not contain a usable score:", rawContent.slice(0, 500));
+        const rawContent = completion.choices[0]?.message?.content ?? "{}";
+        evaluation = evaluationFromCompletion(rawContent);
+        if (!evaluation) {
+          console.error("[ATS Score] AI response did not contain a usable score:", rawContent.slice(0, 500));
+        }
+      } catch (err) {
+        console.error("[ATS Score] AI evaluation failed (non-fatal):", err);
       }
-    } catch (err) {
-      console.error("[ATS Score] AI evaluation failed (non-fatal):", err);
+    } else {
+      console.warn("[ATS Score] AI provider not configured — serving deterministic report only.");
     }
 
     // Fire-and-forget: a stats failure must not discard a completed analysis.
