@@ -6,69 +6,69 @@
 
 ## 1. Goal
 
-Aggiungere un layer di regole **deterministiche** (no AI) all'attuale ATS Score Simulator, in modo da rendere l'analisi riproducibile, spiegabile e testabile. Le regole girano lato server dopo il parsing del PDF e prima dell'invocazione all'LLM.
+Add a layer of **deterministic** rules (no AI) to the current ATS Score Simulator, to make the analysis reproducible, explainable and testable. The rules run server-side after PDF parsing and before the LLM invocation.
 
-Principio guida: **determinismo prima dell'AI** — ciò che può essere controllato con codice va controllato con codice. L'AI resta solo per analisi soggettiva (keyword match vs JD, valutazione qualitativa dell'impatto).
+Guiding principle: **determinism before AI** — whatever can be controlled with code must be controlled with code. AI remains only for subjective analysis (keyword match vs JD, qualitative impact assessment).
 
-## 2. Architettura
+## 2. Architecture
 
-### Flusso attuale
+### Current flow
 ```
-Upload PDF → Parsing testo → AI (LLM) → JSON punteggio
-```
-
-### Nuovo flusso
-```
-Upload PDF → Parsing testo → REGOLE DETERMINISTICHE → AI (solo keyword match + subjective) → Unione risultati → JSON finale
+Upload PDF → Text parsing → AI (LLM) → Score JSON
 ```
 
-Tutto nella stessa API route `/api/ai/analyze-ats`. La risposta JSON unifica entrambi i layer.
+### New flow
+```
+Upload PDF → Text parsing → DETERMINISTIC RULES → AI (only keyword match + subjective) → Merge results → Final JSON
+```
 
-### Dove girano le regole
-Lato **server** (Node.js nella API route). Il testo estratto dal PDF viene passato a funzioni pure che restituiscono risultati deterministici.
+Everything in the same API route `/api/ai/analyze-ats`. The JSON response unifies both layers.
 
-## 3. Regole Deterministiche
+### Where rules run
+**Server-side** (Node.js in the API route). The text extracted from the PDF is passed to pure functions that return deterministic results.
 
-Organizzate in categorie:
+## 3. Deterministic Rules
 
-### 📞 Contatti
-| ID | Regola | Implementazione |
+Organized into categories:
+
+### 📞 Contacts
+| ID | Rule | Implementation |
 |----|--------|----------------|
-| D01 | Email presente | Regex `^[^\s@]+@[^\s@]+\.[^\s@]+$` sul testo |
-| D02 | Email formato valido | Stessa regex — se match, valido |
-| D03 | Telefono presente | Regex per pattern telefonici internazionali |
-| D04 | Telefono con prefisso | Prefisso +39 / +1 / +44 etc. |
+| D01 | Email present | Regex `^[^\s@]+@[^\s@]+\.[^\s@]+$` on the text |
+| D02 | Valid email format | Same regex — if match, valid |
+| D03 | Phone present | Regex for international phone patterns |
+| D04 | Phone with prefix | Prefix +39 / +1 / +44 etc. |
 | D05 | LinkedIn URL | `linkedin.com/in/` |
 | D06 | GitHub URL | `github.com/` |
-| D07 | Sito personale/portfolio | URL personale (non linkedin/github) |
-| D08 | Location/Timezone presente | Città, paese o fuso orario nei contatti |
+| D07 | Personal website/portfolio | Personal URL (not linkedin/github) |
+| D08 | Location/Timezone present | City, country or timezone in the contacts |
 
-### 🔫 Qualità Bullet Points
-| ID | Regola | Implementazione |
+### 🔫 Bullet Point Quality
+| ID | Rule | Implementation |
 |----|--------|----------------|
-| B01 | Action verbs presenti | Wordlist di ~100 action verbs (developed, led, created, implemented, etc.) |
-| B02 | Bullet troppo corte | < 10 parole = warning |
-| B03 | Bullet troppo lunghe | > 40 parole = warning |
-| B04 | Metriche/Misurabilità | Presenza di numeri, %, $, €, timeframe nelle bullet |
+| B01 | Action verbs present | Wordlist of ~100 action verbs (developed, led, created, implemented, etc.) |
+| B02 | Bullets too short | < 10 words = warning |
+| B03 | Bullets too long | > 40 words = warning |
+| B04 | Metrics/Measurability | Presence of numbers, %, $, €, timeframes in the bullets |
 
-### 📋 Struttura
-| ID | Regola | Implementazione |
+### 📋 Structure
+| ID | Rule | Implementation |
 |----|--------|----------------|
-| S01 | Sezioni standard riconoscibili | Headers come "Experience", "Education", "Skills", "Summary" |
-| S02 | Date presenti | Pattern data (MM/YYYY, Month YYYY, etc.) |
-| S03 | Date gap rilevanti | Gap > 6 mesi tra esperienze consecutive |
-| S04 | Esperienze recenti senza fine | Ruolo recente senza anno di fine (se non "Present") |
+| S01 | Recognizable standard sections | Headers like "Experience", "Education", "Skills", "Summary" |
+| S02 | Dates present | Date pattern (MM/YYYY, Month YYYY, etc.) |
+| S03 | Relevant date gaps | Gap > 6 months between consecutive experiences |
+| S04 | Recent experiences without end date | Recent role without end year (if not "Present") |
 
 ### 🤖 ATS-Specific
-| ID | Regola | Implementazione |
+| ID | Rule | Implementation |
 |----|--------|----------------|
-| A01 | Caratteri speciali/emoji | Rilevazione caratteri Unicode non-standard |
-| A02 | Skills in formato leggibile | Skills separati da virgola/punto e virgola/linea |
-| A03 | Nome file caricato | "resume.pdf" o "CV.pdf" → suggerisci nome personalizzato |
+| A01 | Special characters/emoji | Detect non-standard Unicode characters |
+| A02 | Skills in readable format | Skills separated by comma/semicolon/line |
+| A03 | Uploaded file name | "resume.pdf" or "CV.pdf" → suggest a custom name |
 
-## 4. Formato Risposta
+## 4. Response Format
 
-Estensione del JSON attuale. Aggiungiamo un campo `deterministicChecks`:
+Extension of the current JSON. We add a `deterministicChecks` field:
 
 ```json
 {
@@ -96,44 +96,44 @@ Estensione del JSON attuale. Aggiungiamo un campo `deterministicChecks`:
 }
 ```
 
-Il frontend (`ResultsDashboard`) mostra i check deterministici in una nuova sezione visiva, prima o integrata con i feedback AI.
+The frontend (`ResultsDashboard`) shows the deterministic checks in a new visual section, before or integrated with the AI feedback.
 
-## 5. Impatto sul Punteggio
+## 5. Impact on the Score
 
-Le regole deterministiche **non modificano** direttamente il punteggio AI. Serve una discussione su come integrarle:
+Deterministic rules **do not directly modify** the AI score. A discussion is needed on how to integrate them:
 
-- **Opzione 1**: Punteggio separato "Lint Score" (0-100) mostrato insieme al punteggio AI
-- **Opzione 2**: Il punteggio AI "eredita" i fallimenti deterministici (se fallisci contatti, l'AI vede il warning e abbassa il punteggio)
-- **Opzione 3**: Solo warning qualitativi, nessun impatto sul numero
+- **Option 1**: Separate "Lint Score" (0-100) shown alongside the AI score
+- **Option 2**: The AI score "inherits" deterministic failures (if you fail contacts, the AI sees the warning and lowers the score)
+- **Option 3**: Only qualitative warnings, no impact on the number
 
-**Raccomandata**: Opzione 1 — punteggio lint separato, mostrato come "CraftCV Lint Check". Trasparente e spiegabile.
+**Recommended**: Option 1 — separate lint score, shown as "CraftCV Lint Check". Transparent and explainable.
 
-### Implementato (delta rispetto a questo PRD)
+### Implemented (delta vs this PRD)
 
-Opzione 1, con due precisazioni decise in fase di hardening:
+Option 1, with two clarifications decided during hardening:
 
-- Il lint score è **ponderato**, non una percentuale di check passati:
-  `passed = 1`, `warning = 0.5`, `failed = 0`. Un warning segnala qualcosa da
-  migliorare, non un documento rotto.
-- D04 (GitHub) e D05 (sito personale) hanno **peso 0**: il loro stesso
-  messaggio li dichiara opzionali, quindi vengono mostrati con badge
-  `OPTIONAL` ma restano fuori dal denominatore. Nella risposta arrivano con
+- The lint score is **weighted**, not a percentage of passed checks:
+  `passed = 1`, `warning = 0.5`, `failed = 0`. A warning signals something to
+  improve, not a broken document.
+- D04 (GitHub) and D05 (personal website) have **weight 0**: their own
+  message declares them optional, so they are shown with the `OPTIONAL` badge
+  but stay out of the denominator. In the response they arrive with
   `informational: true`.
 
-La risposta include inoltre `lintScore`, `aiUnavailable` (true quando il layer
-AI fallisce e si serve solo il report deterministico), `textTruncated` e
-`gapReport`. Contratto completo e tabella delle 16 regole con i pesi:
+The response also includes `lintScore`, `aiUnavailable` (true when the AI
+layer fails and only the deterministic report is served), `textTruncated` and
+`gapReport`. Full contract and table of the 16 rules with weights:
 `docs/ATS_RULES.md`.
 
 ## 6. Testing
 
-- Ogni regola è una funzione pura → testabile con input mock
-- Test specifici con un CV CraftCV noto (deve passare tutte le regole)
-- Test con edge case: CV vuoto, CV con solo testo, CV con caratteri speciali
-- Nessuna dipendenza da LLM per il testing delle regole
+- Each rule is a pure function → testable with mock input
+- Specific tests with a known CraftCV CV (must pass all rules)
+- Tests with edge cases: empty CV, text-only CV, CV with special characters
+- No LLM dependency for testing the rules
 
-## 7. Non incluso (scope chiuso)
+## 7. Not included (closed scope)
 
-- Regole semantiche complesse (es. "il contenuto della summary è rilevante per il ruolo")
-- Analisi di tono/formalità
-- Modifiche al layout del frontend oltre all'aggiunta di una sezione lint check
+- Complex semantic rules (e.g. "the summary content is relevant to the role")
+- Tone/formality analysis
+- Frontend layout changes beyond adding a lint check section

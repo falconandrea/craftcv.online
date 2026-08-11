@@ -13,132 +13,132 @@
 
 ---
 
-### U1. Regola: Contatti — Email
+### U1. Rule: Contacts — Email
 
 **Files:**
 - Create: `lib/ats-rules.ts`
 
-**Scenari:**
-- Testo contiene `nome@dominio.com` → passed
-- Testo contiene `email@` → failed (manca dominio)
-- Testo senza email → failed
-- Testo contiene `example@email.com` → warning (dominio example)
+**Scenarios:**
+- Text contains `nome@dominio.com` → passed
+- Text contains `email@` → failed (missing domain)
+- Text without email → failed
+- Text contains `example@email.com` → warning (example domain)
 
-### U2. Regola: Contatti — Telefono con prefisso internazionale
-
-**Files:**
-- Modify: `lib/ats-rules.ts`
-
-**Scenari:**
-- Testo contiene `+39 123 456 7890` → passed
-- Testo contiene `123-456-7890` → warning (manca prefisso)
-- Testo senza telefono → failed
-
-### U3. Regola: Contatti — LinkedIn, GitHub, Sito personale, Location
+### U2. Rule: Contacts — Phone with international prefix
 
 **Files:**
 - Modify: `lib/ats-rules.ts`
 
-**Scenari:**
+**Scenarios:**
+- Text contains `+39 123 456 7890` → passed
+- Text contains `123-456-7890` → warning (missing prefix)
+- Text without phone → failed
+
+### U3. Rule: Contacts — LinkedIn, GitHub, Personal website, Location
+
+**Files:**
+- Modify: `lib/ats-rules.ts`
+
+**Scenarios:**
 - `linkedin.com/in/username` → passed
 - `github.com/username` → passed
-- `mariosite.com` (non linkedin/github) → passed (sito personale)
+- `mariosite.com` (not linkedin/github) → passed (personal website)
 - `New York, NY` / `Italy` / `CET` → passed (location)
-- Tutti assenti → failed per ogni missing
+- All missing → failed for each missing
 
-### U4. Regola: Bullet — Action Verbs
-
-**Files:**
-- Modify: `lib/ats-rules.ts`
-
-**Scenari:**
-- Bullet che iniziano con "Developed", "Led", "Created", "Implemented", "Managed" → passed
-- Bullet che iniziano con "Was responsible for", "Worked on", "Involved in" → warning
-- Wordlist di ~100 action verbs inclusa
-- Nessuna bullet → skipped
-
-### U5. Regola: Bullet — Lunghezza e Metriche
+### U4. Rule: Bullet — Action Verbs
 
 **Files:**
 - Modify: `lib/ats-rules.ts`
 
-**Scenari:**
-- Bullet < 10 parole → warning "troppo corta"
-- Bullet > 40 parole → warning "troppo lunga"
-- Bullet contiene numeri (%, $, €, numbers) → passed per metriche
-- Nessuna metrica in nessuna bullet → warning
+**Scenarios:**
+- Bullets starting with "Developed", "Led", "Created", "Implemented", "Managed" → passed
+- Bullets starting with "Was responsible for", "Worked on", "Involved in" → warning
+- Wordlist of ~100 action verbs included
+- No bullets → skipped
 
-### U6. Regola: Struttura — Sezioni e Date
-
-**Files:**
-- Modify: `lib/ats-rules.ts`
-
-**Scenari:**
-- Headers "Experience", "Education", "Skills" presenti → passed
-- Pattern data `MM/YYYY` o `Month YYYY` trovato → passed
-- Gap > 6 mesi tra date consecutive → warning
-- Ruolo recente senza data fine (e senza "Present"/"Current") → warning
-
-### U7. Regola: ATS-Specific — Caratteri speciali, Skills, Nome file
+### U5. Rule: Bullet — Length and Metrics
 
 **Files:**
 - Modify: `lib/ats-rules.ts`
 
-**Scenari:**
-- Emoji o caratteri Unicode non-standard nel testo → warning
-- Skills separati da virgola/punto e virgola/newline → passed
-- Skills in formato testo libero → warning (non chiaramente parsabile)
-- Nome file "resume.pdf" o "CV.pdf" (case insensitive) → warning (nome generico)
+**Scenarios:**
+- Bullet < 10 words → warning "too short"
+- Bullet > 40 words → warning "too long"
+- Bullet contains numbers (%, $, €, numbers) → passed for metrics
+- No metrics in any bullet → warning
+
+### U6. Rule: Structure — Sections and Dates
+
+**Files:**
+- Modify: `lib/ats-rules.ts`
+
+**Scenarios:**
+- Headers "Experience", "Education", "Skills" present → passed
+- Date pattern `MM/YYYY` or `Month YYYY` found → passed
+- Gap > 6 months between consecutive dates → warning
+- Recent role without end date (and without "Present"/"Current") → warning
+
+### U7. Rule: ATS-Specific — Special characters, Skills, File name
+
+**Files:**
+- Modify: `lib/ats-rules.ts`
+
+**Scenarios:**
+- Emoji or non-standard Unicode characters in the text → warning
+- Skills separated by comma/semicolon/newline → passed
+- Skills in free-text format → warning (not clearly parseable)
+- File name "resume.pdf" or "CV.pdf" (case insensitive) → warning (generic name)
 
 ### U8. Rules Runner — `runAllChecks(text, fileName?)`
 
 **Files:**
 - Modify: `lib/ats-rules.ts`
 
-**Scenari:**
-- Esegue tutte le regole in ordine e restituisce `DeterministicCheck[]`
-- Calcola `lintScore` (percentuale di check passed su totali)
-- Se il testo è vuoto, tutti i check → failed con messaggio appropriato
+**Scenarios:**
+- Runs all rules in order and returns `DeterministicCheck[]`
+- Computes `lintScore` (percentage of passed checks over total)
+- If text is empty, all checks → failed with appropriate message
 
-### U9. Test unitari
+### U9. Unit tests
 
 **Files:**
 - Create: `lib/ats-rules.test.ts`
 
-**Scenari:**
-- Mock CV "buono" (CraftCV) — passa tutte le regole
-- Mock CV vuoto — tutti failed
-- Mock CV con solo testo — no contatti, no bullet, no sezioni → failed mirati
-- Mock CV con emoji e caratteri speciali — warning su A01
+**Scenarios:**
+- Mock "good" CV (CraftCV) — passes all rules
+- Mock empty CV — all failed
+- Mock text-only CV — no contacts, no bullets, no sections → targeted failures
+- Mock CV with emoji and special characters — warning on A01
 
-### U10. Integrazione API Route
+### U10. API Route Integration
 
 **Files:**
 - Modify: `app/api/ai/analyze-ats/route.ts`
 
-**Azioni:**
-- Dopo il parsing PDF, chiamare `runAllChecks(parsedText, pdfFile.name)`
-- Includere `deterministicChecks` e `lintScore` nella risposta JSON
-- Mantenere retrocompatibilità (campi AI esistenti invariati)
+**Actions:**
+- After PDF parsing, call `runAllChecks(parsedText, pdfFile.name)`
+- Include `deterministicChecks` and `lintScore` in the JSON response
+- Keep backward compatibility (existing AI fields unchanged)
 
-### U11. Frontend — Sezione Deterministic Checks
+### U11. Frontend — Deterministic Checks Section
 
 **Files:**
 - Modify: `components/ats/ResultsDashboard.tsx`
 
-**Azioni:**
-- Importare `DeterministicCheck` da `lib/ats-rules.ts`
-- Aggiornare `AtsScoreData` interface per includere `deterministicChecks` e `lintScore`
-- Nuova sezione "CraftCV Lint Check" con:
-  - Punteggio lint (0-100) con grafico a barra
-  - Lista di check raggruppati per categoria (contacts, bullet_quality, structure, ats_specific)
-  - Icone passed/warning/failed uguali allo stile esistente
+**Actions:**
+- Import `DeterministicCheck` from `lib/ats-rules.ts`
+- Update `AtsScoreData` interface to include `deterministicChecks` and `lintScore`
+- New "CraftCV Lint Check" section with:
+  - Lint score (0-100) with bar chart
+  - List of checks grouped by category (contacts, bullet_quality, structure, ats_specific)
+  - passed/warning/failed icons matching the existing style
 
-### U12. Stats counter (opzionale)
+### U12. Stats counter (optional)
 
 **Files:**
 - Modify: `lib/stats.ts`
 
-**Azioni:**
-- Aggiungere `ats_lint_checks` alla `Stats` type
-- Chiamare `incrementCounter("ats_lint_checks")` nella API route dopo il run
+**Actions:**
+- Add `ats_lint_checks` to the `Stats` type
+- Call `incrementCounter("ats_lint_checks")` in the API route after the run
