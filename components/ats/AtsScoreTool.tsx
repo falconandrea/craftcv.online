@@ -64,6 +64,7 @@ export function AtsScoreTool() {
 
   const handleReset = () => {
     setResults(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
