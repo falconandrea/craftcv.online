@@ -1,10 +1,13 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Footer } from "@/components/layout/Footer";
 import { Shield, Lock } from "lucide-react";
+import { pageOpenGraph } from "@/lib/site";
 
 export const metadata = {
-  title: "Privacy Policy | CraftCV",
+  title: "Privacy Policy",
   description: "Our commitment to your privacy and data security.",
+  alternates: { canonical: "/privacy" },
+  openGraph: pageOpenGraph("/privacy"),
 };
 
 export default function PrivacyPage() {

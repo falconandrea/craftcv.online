@@ -155,35 +155,43 @@ export function computeGapReport(keywords: KeywordAnalysis, cvText: string): Gap
   const missing: KeywordMatchDetail[] = [];
   const cvLower = cvText.toLowerCase();
 
+  // The LLM can repeat a skill under different casing; keep the first mention.
+  const seen = new Set<string>();
+
+  let totalMustHave = 0;
+  let presentMustHave = 0;
+
   for (const skill of keywords.hard_skills) {
     // Skip empty keywords
-    if (!skill.keyword.trim()) continue;
+    const keyword = skill.keyword.trim();
+    if (!keyword) continue;
 
-    const pattern = `\\b${escapeRegex(skill.keyword)}\\b`;
-    const regex = new RegExp(pattern, "i");
+    const dedupeKey = keyword.toLowerCase();
+    if (seen.has(dedupeKey)) continue;
+    seen.add(dedupeKey);
+
+    const regex = new RegExp(`\\b${escapeRegex(keyword)}\\b`, "i");
     const found = regex.test(cvText);
 
+    if (skill.importance === "must_have") {
+      totalMustHave++;
+      if (found) presentMustHave++;
+    }
+
     if (found) {
-      const context = extractContext(cvLower, skill.keyword);
-      present.push({ ...skill, status: "present", context, cvPhrasing: undefined });
+      const context = extractContext(cvLower, keyword);
+      present.push({ ...skill, keyword, status: "present", context, cvPhrasing: undefined });
     } else {
-      missing.push({ ...skill, status: "missing" });
+      missing.push({ ...skill, keyword, status: "missing" });
     }
   }
 
-  const mustHaves = keywords.hard_skills.filter((s) => s.importance === "must_have" && s.keyword.trim());
-  const totalMustHave = mustHaves.length;
-  const presentMustHave = mustHaves.filter((s) => {
-    const pattern = `\\b${escapeRegex(s.keyword)}\\b`;
-    return new RegExp(pattern, "i").test(cvText);
-  }).length;
-
-  const keywordScore = totalMustHave > 0 ? Math.round((presentMustHave / totalMustHave) * 100) : 100;
+  // No must-haves in the posting means there is nothing to score against.
+  const keywordScore = totalMustHave > 0 ? Math.round((presentMustHave / totalMustHave) * 100) : null;
 
   // Top gaps: must_have missing first, then nice_to_have missing, max 5
-  const topGaps = [...missing]
-    .sort((a) => (a.importance === "must_have" ? -1 : 1))
-    .slice(0, 5);
+  const importanceRank = (s: KeywordMatchDetail) => (s.importance === "must_have" ? 0 : 1);
+  const topGaps = [...missing].sort((a, b) => importanceRank(a) - importanceRank(b)).slice(0, 5);
 
   return {
     keywordScore,

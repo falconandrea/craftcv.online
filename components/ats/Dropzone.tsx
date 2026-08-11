@@ -2,8 +2,10 @@
 
 import { useState, useRef, ChangeEvent, DragEvent } from "react";
 import { UploadCloud, FileText, Briefcase, Plus, X } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { MAX_PDF_BYTES, MAX_JD_CHARS } from "@/lib/ats-constants";
 
 interface DropzoneProps {
   onAnalyze: (file: File, jobDescription: string) => void;
@@ -26,29 +28,38 @@ export function Dropzone({ onAnalyze, isLoading }: DropzoneProps) {
     }
   };
 
+  const rejectFile = (message: string) => {
+    toast.error(message, { className: "border-[#ff00aa] bg-black text-[#ff00aa]" });
+  };
+
+  /** Same rules the API enforces, checked here so the upload never starts. */
+  const acceptFile = (candidate: File) => {
+    const isPdf =
+      candidate.type === "application/pdf" || candidate.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      rejectFile("Please upload a PDF file.");
+      return;
+    }
+    if (candidate.size > MAX_PDF_BYTES) {
+      rejectFile("File is too large. Maximum size is 5 MB.");
+      return;
+    }
+    setFile(candidate);
+  };
+
   const handleDrop = (e: DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const droppedFile = e.dataTransfer.files[0];
-      if (droppedFile.type === "application/pdf") {
-        setFile(droppedFile);
-      } else {
-        alert("Please upload a PDF file.");
-      }
+      acceptFile(e.dataTransfer.files[0]);
     }
   };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      if (selectedFile.type === "application/pdf") {
-        setFile(selectedFile);
-      } else {
-        alert("Please upload a PDF file.");
-      }
+      acceptFile(e.target.files[0]);
     }
   };
 
@@ -140,10 +151,16 @@ export function Dropzone({ onAnalyze, isLoading }: DropzoneProps) {
         <Textarea
           placeholder="Paste the job description here to get a customized keyword match score..."
           value={jobDescription}
-          onChange={(e) => setJobDescription(e.target.value)}
+          onChange={(e) => setJobDescription(e.target.value.slice(0, MAX_JD_CHARS))}
+          maxLength={MAX_JD_CHARS}
           className="min-h-[120px] bg-black/40 border-white/10 text-white/80 placeholder:text-white/30 focus-visible:ring-[#b8ff00] resize-none"
           disabled={isLoading}
         />
+        {jobDescription.length > MAX_JD_CHARS * 0.9 && (
+          <p className="text-xs font-mono text-white/40 text-right">
+            {jobDescription.length} / {MAX_JD_CHARS} characters
+          </p>
+        )}
       </div>
 
       <div className="pt-4">

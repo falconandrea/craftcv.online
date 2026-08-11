@@ -24,11 +24,13 @@ export function GapReport({ gapReport }: GapReportProps) {
 
   // Score color
   const scoreColor =
-    keywordScore >= 80
-      ? "text-[#b8ff00]"
-      : keywordScore >= 50
-        ? "text-yellow-400"
-        : "text-[#ff00aa]";
+    keywordScore === null
+      ? "text-white/30"
+      : keywordScore >= 80
+        ? "text-[#b8ff00]"
+        : keywordScore >= 50
+          ? "text-yellow-400"
+          : "text-[#ff00aa]";
 
   // Headline text
   const headline =
@@ -45,8 +47,15 @@ export function GapReport({ gapReport }: GapReportProps) {
           Keyword Gap Analysis
         </h3>
         {hasData && (
-          <span className={`text-2xl font-bold font-mono ${scoreColor}`}>
-            {keywordScore}%
+          <span
+            className={`text-2xl font-bold font-mono ${scoreColor}`}
+            title={
+              keywordScore === null
+                ? "The posting lists no must-have skills, so there is nothing to score against."
+                : undefined
+            }
+          >
+            {keywordScore === null ? "N/A" : `${keywordScore}%`}
           </span>
         )}
       </div>

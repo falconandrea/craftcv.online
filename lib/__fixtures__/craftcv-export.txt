@@ -1,0 +1,25 @@
+Mario Rossi
+Milan, Italy • mario.rossi@gmail.com • linkedin.com/in/mariorossi • github.com/mariorossi • mariorossi.dev
+SUMMARY
+Backend engineer with 8 years of experience building distributed systems in Go and Python.
+EXPERIENCES
+Senior Engineer January 2020 – Present • Milan, Italy
+Acme Corp
+• Led a team of 6 engineers to rebuild the billing pipeline, cutting processing time by 40%
+• Designed and deployed a Kafka-based event bus handling 12M events per day for the platform
+• Mentored 4 junior developers through structured code review and pairing sessions each week
+Full Stack Developer March 2016 – December 2019 • Turin, Italy
+Startup Inc
+• Built a customer-facing dashboard used by 10k users per month across three regions
+• Reduced page load time by 60% by introducing server-side rendering and asset caching
+• Wrote an end-to-end test suite achieving 90% coverage on the main product repository
+EDUCATION
+MSc Computer Science
+Politecnico di Milano • Milan, Italy • 2016
+SKILLS
+Go, Python, Kubernetes, Kafka, PostgreSQL, Terraform
+CERTIFICATIONS
+AWS Solutions Architect
+Amazon - 2021
+-- 1 of 1 --
+

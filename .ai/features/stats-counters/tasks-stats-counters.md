@@ -20,23 +20,23 @@ Update after completing each sub-task, not just parent tasks.
 
 ## Tasks
 
-- [x] 1.0 Configurazione Server e Docker
-  - [x] 1.1 Aggiungere volume bind `volumes: - ./data:/app/data` a `docker-compose.yml`.
-  - [x] 1.2 Aggiungere `mkdir -p data && chmod 777 data` in `deploy.sh`.
-- [x] 2.0 Implementazione Utility Backend
-  - [x] 2.1 Creare file `lib/stats.ts`.
-  - [x] 2.2 Scrivere funzione `incrementCounter(metric: string)` con gestione errori e defaults.
-- [x] 3.0 Aggiornamento Endpoints AI Esistenti
-  - [x] 3.1 Aggiungere `incrementCounter("ai_messages")` in `app/api/ai/optimize/route.ts`.
-  - [x] 3.2 Aggiungere `incrementCounter("ats_tests")` in `app/api/ai/analyze-ats/route.ts`.
-  - [x] 3.3 Aggiungere `incrementCounter("pdf_uploaded")` in `app/api/ai/import-pdf/route.ts`.
-- [x] 4.0 Creazione Route Background Frontend
-  - [x] 4.1 Creare `app/api/stats/increment/route.ts` (POST) che accetta JSON tipo `{ metric: 'cv_created' }`.
-  - [x] 4.2 Restituire HTTP 200/204 senza attendere i.e. "fire and forget".
-- [x] 5.0 Aggiornamento Componenti Frontend
-  - [x] 5.1 Individuare il pulsante/handler che genera o scarica il PDF finale.
-  - [x] 5.2 Introdurre funzione `fetch("/api/stats/increment")` silente in background.
-- [x] 6.0 Testing e Verifica Local
-  - [x] 6.1 Avviare container o next dev app locale.
-  - [x] 6.2 Cliccare download PDF.
-  - [x] 6.3 Verificare la creazione `data/stats.json` incrementato.
+- [x] 1.0 Server and Docker Configuration
+  - [x] 1.1 Add bind volume `volumes: - ./data:/app/data` to `docker-compose.yml`.
+  - [x] 1.2 Add `mkdir -p data && chmod 777 data` in `deploy.sh`.
+- [x] 2.0 Backend Utility Implementation
+  - [x] 2.1 Create `lib/stats.ts` file.
+  - [x] 2.2 Write `incrementCounter(metric: string)` function with error handling and defaults.
+- [x] 3.0 Update Existing AI Endpoints
+  - [x] 3.1 Add `incrementCounter("ai_messages")` in `app/api/ai/optimize/route.ts`.
+  - [x] 3.2 Add `incrementCounter("ats_tests")` in `app/api/ai/analyze-ats/route.ts`.
+  - [x] 3.3 Add `incrementCounter("pdf_uploaded")` in `app/api/ai/import-pdf/route.ts`.
+- [x] 4.0 Create Background Frontend Route
+  - [x] 4.1 Create `app/api/stats/increment/route.ts` (POST) accepting JSON like `{ metric: 'cv_created' }`.
+  - [x] 4.2 Return HTTP 200/204 without waiting i.e. "fire and forget".
+- [x] 5.0 Update Frontend Components
+  - [x] 5.1 Identify the button/handler that generates or downloads the final PDF.
+  - [x] 5.2 Introduce silent background `fetch("/api/stats/increment")` function.
+- [x] 6.0 Local Testing and Verification
+  - [x] 6.1 Start the container or next dev local app.
+  - [x] 6.2 Click PDF download.
+  - [x] 6.3 Verify the `data/stats.json` file is incremented.

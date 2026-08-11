@@ -1,10 +1,13 @@
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Footer } from "@/components/layout/Footer";
 import { Terminal, Database, Shield, Zap } from "lucide-react";
+import { pageOpenGraph } from "@/lib/site";
 
 export const metadata = {
-  title: "Cookie Policy | CraftCV",
+  title: "Cookie Policy",
   description: "Understanding tracking modules and browser storage.",
+  alternates: { canonical: "/cookies" },
+  openGraph: pageOpenGraph("/cookies"),
 };
 
 export default function CookiesPage() {

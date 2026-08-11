@@ -22,6 +22,33 @@ To update: `npx skills update`
 
 ## 🎯 Core Directives
 
+## Context Routing
+
+Load context **by area**, not "everything upfront". Read a file only if the task touches that area.
+
+| Task area | Read / activate |
+|---|---|
+| General orientation | `AGENTS.md`, `.ai/context/TECH_STACK.md`, `.ai/memory/progress.md`, `.ai/memory/lessons.md` |
+| Next.js API / server code | `.ai/context/TECH_STACK.md` + `next-best-practices` |
+| React / Tailwind / JSX UI | `.ai/context/FRONTEND_GUIDELINES.md` (mandatory) + `frontend-design` + the one relevant UI skill |
+| Hard bug / regression | `diagnosing-bugs` |
+| Completion claim | `verification-before-completion` only when the user asked for verification |
+
+`.ai/context/APP_FLOW.md`, `GLOSSARY.md`, and `database_schema.mmd` are read **only** when the requested area needs them. Do not preload them.
+
+## Verification Policy
+
+**Default — minimal and proportional:**
+
+- For a behavior change, run only the smallest verification that proves it: one targeted test, the affected route, or a typecheck on the touched area.
+- **Never** run the full suite, lint everything, or rebuild unless the user asks or the change clearly requires it.
+- No "while I'm here" extra checks — they add cost without value.
+
+**Manual mode** — when the user says "verifica manuale" / "manual verify" / "don't run anything":
+
+- Do **not** run tests, lint, typecheck, build, or browser checks.
+- Output the exact commands the user should run, explain what each command verifies and what success looks like, and wait for failures before touching code again.
+
 ### Session Start Protocol
 1. Read `.ai/memory/progress.md` - current state
 2. Read `.ai/memory/lessons.md` - past mistakes
