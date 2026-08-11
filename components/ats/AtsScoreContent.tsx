@@ -241,21 +241,23 @@ export function AtsScoreContent() {
           re-run this check on the export until nothing is flagged.
         </p>
         <div className="flex flex-wrap gap-4 text-sm font-mono">
+          {/* Underline is always visible; hover only shifts the colour. The
+              underline inherits currentColor, so text and rule move together. */}
           <Link
             href="/dashboard"
-            className="text-[#b8ff00] underline underline-offset-4 hover:no-underline"
+            className="text-[#b8ff00] underline underline-offset-4 transition-colors"
           >
             Build an ATS-ready CV →
           </Link>
           <Link
             href="/"
-            className="text-white/60 underline underline-offset-4 hover:no-underline"
+            className="text-white/60 underline underline-offset-4 transition-colors hover:text-[#b8ff00]"
           >
             What CraftCV does
           </Link>
           <Link
             href="/privacy"
-            className="text-white/60 underline underline-offset-4 hover:no-underline"
+            className="text-white/60 underline underline-offset-4 transition-colors hover:text-[#b8ff00]"
           >
             How your data is handled
           </Link>
