@@ -44,6 +44,8 @@ direction; if it doesn't, revisit before building content.
 | 6 | Security headers + `poweredByHeader: false` + asset cache | `next.config.ts` | |
 | 7 | Shared `SITE_URL` (env-overridable) | `lib/site.ts` | Removes duplication between layout + sitemap. |
 | 8 | "toany" typo fix | `app/page.tsx` | |
+| 9 | Dynamic OG image (1200×630) generated with `next/og` | `app/opengraph-image.tsx` | `force-static` so it is prerendered at build time (the root layout's `force-dynamic` would otherwise propagate and rasterise on every crawler hit). Replaces the never-committed `/og.png`. |
+| 10 | `pageOpenGraph()` helper for non-root pages | `lib/site.ts`, `app/ats-score/layout.tsx`, `app/privacy/page.tsx`, `app/cookies/page.tsx` | Next replaces `openGraph` wholesale in child segments, so `/ats-score`, `/privacy` and `/cookies` were emitting **no** `og:image`, `og:site_name` or `og:type` at all. Verified in the served HTML. |
 
 ### Intentionally NOT changed (trade-offs)
 
@@ -51,8 +53,9 @@ direction; if it doesn't, revisit before building content.
   prerender pages, but GTM is read from a runtime env (`GTM_ID`) that is not a
   Docker build ARG — static build = no GTM = analytics regression. Keep dynamic
   until GTM is migrated to a build-time `NEXT_PUBLIC_GTM_ID` (see to.md).
-- **`/og.png` referenced but not yet committed.** Without the asset, OG/Twitter
-  images 404. This is a **merge blocker** (see to.md).
+- **Static prerender for page routes.** Only `/opengraph-image` and
+  `/sitemap.xml` are static; all page routes stay dynamic because of the GTM env
+  above. Impact is TTFB and CDN cacheability, not ranking.
 
 ---
 
@@ -155,7 +158,8 @@ placeholders until then.
 
 ## Priority order (revised)
 
-1. **Fix blockers** (og.png, decide GTM strategy) — see `to.md`.
+1. ~~Fix blockers~~ — OG image done (generated); GTM stays runtime-env +
+   `force-dynamic` by decision. See `to.md`.
 2. **Phase 0** — GSC baseline + keyword research + conversion tracking.
 3. **Make `/ats-score` a real SEO landing** (consolidate, don't duplicate).
 4. **3-5 experience-grounded articles** + author/About (E-E-A-T).

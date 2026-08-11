@@ -36,21 +36,14 @@ export const metadata: Metadata = {
       "Create professional, ATS-optimized CVs in minutes. Free CV builder with AI-powered optimization and PDF export. No login required, local-first privacy.",
     siteName: "CraftCV",
     locale: "en_US",
-    images: [
-      {
-        url: "/og.png",
-        width: 1200,
-        height: 630,
-        alt: "CraftCV - ATS-Ready CV Generator",
-      },
-    ],
+    // og:image comes from app/opengraph-image.tsx (generated at build time).
   },
   twitter: {
+    // No title/description here on purpose: child segments would inherit these
+    // verbatim and every page's Twitter card would read "CraftCV - ATS-Ready CV
+    // Generator". Twitter falls back to og:title/og:description, which are
+    // already per-page. twitter:image is reused from app/opengraph-image.tsx.
     card: "summary_large_image",
-    title: "CraftCV - ATS-Ready CV Generator",
-    description:
-      "Create professional, ATS-optimized CVs in minutes. Free CV builder with AI-powered optimization.",
-    images: ["/og.png"],
   },
   robots: {
     index: true,

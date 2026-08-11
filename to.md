@@ -5,9 +5,11 @@
 
 ## 🔴 Merge blockers (do before merging `fix/seo-improvements`)
 
-- [ ] **Create `/public/og.png` (1200×630).** It's referenced in OG/Twitter tags
-      but not committed → social shares return a 404 image (worse than no image).
-      Either add the asset or remove the `images` blocks from `app/layout.tsx`.
+- [x] ~~**Create `/public/og.png` (1200×630).**~~ **Done differently:** replaced by
+      a generated card at `app/opengraph-image.tsx` (`next/og`), prerendered to a
+      static PNG at build time. No asset to maintain, no runtime cost. Also fixed
+      the pages that were silently dropping `og:image` (see `lib/site.ts`
+      `pageOpenGraph`).
 - [ ] **Decide the GTM strategy.** Right now the root layout keeps
       `export const dynamic = "force-dynamic"` so GTM (read from the runtime env
       `GTM_ID`) actually renders. Removing `force-dynamic` (as the first version
@@ -19,7 +21,10 @@
         inject it as a **build ARG** (`Dockerfile` + `.github/workflows/deploy.yml`
         + `server/docker-compose.yml` build args), then remove `force-dynamic`.
         This is the "better" long-term state but is a coordinated deploy change.
-      Tell the agent which path; it can implement (B) end-to-end.
+      **Decision (2026-08-11): (A).** The GTM container ID is public in the HTML
+      anyway, but it stays out of the public repo; `force-dynamic` costs TTFB and
+      CDN cacheability, not ranking. Revisit (B) only if traffic grows or a cache
+      goes in front.
 
 ## 🟠 Evidence / setup (do before content work — see Phase 0)
 
