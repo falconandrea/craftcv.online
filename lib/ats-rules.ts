@@ -84,7 +84,10 @@ function isMostlyUppercase(line: string): boolean {
   return upper / letters.length >= 0.6;
 }
 
-const BULLET_MARKER_RE = /^[-*•→‣⁃▪▸●○◦›»]\s+/;
+// The space after the glyph is optional: PDF text extraction often glues the
+// bullet to the first word ("•Led a team..."). A letter must follow, so a
+// line starting with "-40% churn" is not read as a bullet.
+const BULLET_MARKER_RE = /^[-*•→‣⁃▪▸●○◦›»][ \t]*(?=[A-Za-z])/;
 const NUMBERED_MARKER_RE = /^\d+[.)]\s+/;
 
 /** Remove the leading bullet glyph / list number from a line. */
@@ -407,6 +410,11 @@ export function checkWebsite(text: string): DeterministicCheck {
     const tld = domainMatch[1].toLowerCase();
     const full = domainMatch[0].toLowerCase();
 
+    // Skip the domain part of an email address (mario@rossi.dev) and any
+    // fragment of a longer host (sub.example.com already matched above).
+    const prev = domainMatch.index > 0 ? text[domainMatch.index - 1] : "";
+    if (prev === "@" || prev === ".") continue;
+
     // Skip false positives (tech names, common email domains)
     if (TECH_FALSE_POSITIVES.has(full)) continue;
     if (full.includes("linkedin") || full.includes("github")) continue;
@@ -418,7 +426,9 @@ export function checkWebsite(text: string): DeterministicCheck {
   }
 
   if (personalDomains.length > 0) {
-    return warning("D05", "contacts", "Personal Website / Portfolio", "Possible domain found but not a full URL.", personalDomains[0]);
+    return passed("D05", "contacts", "Personal Website / Portfolio",
+      "Personal website found (bare domain). Adding https:// makes it clickable in most ATS previews.",
+      personalDomains[0]);
   }
   return warning("D05", "contacts", "Personal Website / Portfolio", "No personal website found. Optional but adds credibility.");
 }
@@ -462,7 +472,7 @@ export function checkLocation(text: string): DeterministicCheck {
   const matches: string[] = [];
 
   // Pattern 1: "City, Country" — limit city to 1-2 words to avoid greedy grabs
-  const cityCountryRegex = /(?:^|\n|\s)([A-Z][a-zà-ÿ]+(?:\s[A-Z][a-zà-ÿ]+)?),\s*([A-Za-zà-ÿ]+(?:\s[A-Za-zà-ÿ]+)*)/g;
+  const cityCountryRegex = /(?:^|[\n\r\t •|])([A-Z][a-zà-ÿ]+(?:[ \t][A-Z][a-zà-ÿ]+)?),[ \t]*([A-Za-zà-ÿ]+(?:[ \t][A-Za-zà-ÿ]+)*)/g;
   let m: RegExpExecArray | null;
   while ((m = cityCountryRegex.exec(text)) !== null) {
     const city = m[1].toLowerCase();
@@ -473,7 +483,7 @@ export function checkLocation(text: string): DeterministicCheck {
   }
 
   // Pattern 2: "City, ST" (US state abbreviation)
-  const cityStateRegex = /([A-Z][a-z]+(?:\s[A-Z][a-z]+)?),\s*([A-Z]{2})\b/g;
+  const cityStateRegex = /([A-Z][a-z]+(?:[ \t][A-Z][a-z]+)?),[ \t]*([A-Z]{2})\b/g;
   let m2: RegExpExecArray | null;
   while ((m2 = cityStateRegex.exec(text)) !== null) {
     if (US_STATES.has(m2[2].toLowerCase())) {

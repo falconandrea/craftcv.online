@@ -92,8 +92,14 @@ describe("checkGitHub", () => {
 });
 
 describe("checkWebsite", () => {
-  it("warns when personal URL is just a domain", () => {
+  it("accepts a bare personal domain", () => {
     const result = checkWebsite("Visit mariorossi.dev");
+    expect(result.status).toBe("passed");
+    expect(result.details).toBe("mariorossi.dev");
+  });
+
+  it("does not mistake an email domain for a personal website", () => {
+    const result = checkWebsite("Contact: mario.rossi@email.com");
     expect(result.status).toBe("warning");
   });
 

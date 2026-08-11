@@ -125,9 +125,10 @@ export function AtsScoreContent() {
             </h3>
             <p className="text-sm">
               16 checks implemented as pure functions — no AI, no randomness. The
-              same CV always produces the same result, and every finding names
-              the rule it came from, so you can verify it yourself instead of
-              trusting a score.
+              same CV always produces the same result (an open-ended role marked
+              &ldquo;Present&rdquo; is measured against today&apos;s date), and every finding
+              names the rule it came from, so you can verify it yourself instead
+              of trusting a score.
             </p>
           </div>
           <div className="border border-white/10 bg-white/[0.02] p-5">

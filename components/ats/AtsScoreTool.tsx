@@ -36,10 +36,20 @@ export function AtsScoreTool() {
         throw new Error(data.error || "Failed to analyze the PDF.");
       }
 
-      setResults(data as AtsScoreData);
-      toast.success("Ready! Here is your ATS report.", {
-        className: "border-[#b8ff00] bg-black text-[#b8ff00]"
-      });
+      const results = data as AtsScoreData;
+      setResults(results);
+
+      // The API degrades to the deterministic report when the model fails, so
+      // don't announce a full report the dashboard is not showing.
+      if (results.aiUnavailable) {
+        toast.warning("Deterministic checks are ready — the AI review failed this time.", {
+          className: "border-yellow-500 bg-black text-yellow-500"
+        });
+      } else {
+        toast.success("Ready! Here is your ATS report.", {
+          className: "border-[#b8ff00] bg-black text-[#b8ff00]"
+        });
+      }
 
     } catch (err: unknown) {
       console.error(err);
