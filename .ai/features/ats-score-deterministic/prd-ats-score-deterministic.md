@@ -108,6 +108,23 @@ Le regole deterministiche **non modificano** direttamente il punteggio AI. Serve
 
 **Raccomandata**: Opzione 1 — punteggio lint separato, mostrato come "CraftCV Lint Check". Trasparente e spiegabile.
 
+### Implementato (delta rispetto a questo PRD)
+
+Opzione 1, con due precisazioni decise in fase di hardening:
+
+- Il lint score è **ponderato**, non una percentuale di check passati:
+  `passed = 1`, `warning = 0.5`, `failed = 0`. Un warning segnala qualcosa da
+  migliorare, non un documento rotto.
+- D04 (GitHub) e D05 (sito personale) hanno **peso 0**: il loro stesso
+  messaggio li dichiara opzionali, quindi vengono mostrati con badge
+  `OPTIONAL` ma restano fuori dal denominatore. Nella risposta arrivano con
+  `informational: true`.
+
+La risposta include inoltre `lintScore`, `aiUnavailable` (true quando il layer
+AI fallisce e si serve solo il report deterministico), `textTruncated` e
+`gapReport`. Contratto completo e tabella delle 16 regole con i pesi:
+`docs/ATS_RULES.md`.
+
 ## 6. Testing
 
 - Ogni regola è una funzione pura → testabile con input mock
