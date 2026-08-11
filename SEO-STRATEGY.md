@@ -84,10 +84,17 @@ Only after Phase 0 do Phases 1-4 make sense.
 The homepage alone won't rank for competitive terms, but **don't spin up four
 new pages for four keywords** — that's how cannibalisation starts.
 
-- [ ] **Make `/ats-score` a complete SEO landing/tool page first.** It already
-  exists. Do **not** also create `/ats-checker` — pick one canonical URL and point
-  everything there (301 the other if it ever existed). One strong page beats two
-  competing ones.
+- [x] **Make `/ats-score` a complete SEO landing/tool page first.** Done
+  structurally (2026-08-11): the page was a bare upload widget with ~80 words of
+  indexable text; it now carries ~925 words in a real H1→H2→H3 hierarchy — how
+  the two scoring layers work, the 16 deterministic checks grouped by failure
+  mode, five concrete parsing failures, and five plain questions. Static copy
+  lives in `components/ats/AtsScoreContent.tsx` (server component); the widget
+  moved to `components/ats/AtsScoreTool.tsx` so the copy stays out of the client
+  bundle. Internal links to `/dashboard`, `/editor` and `/privacy`.
+  **Still open:** the H1 is unchanged (`ATS Score Simulator`) — deliberately not
+  gambled on unresearched keywords. Revisit it after Phase 0 keyword research.
+  Do **not** create `/ats-checker` — one canonical URL.
 - [ ] Only add more routes if the intent is genuinely different **and** you can
   serve it well:
   - `/cv-templates` — **only if multiple real, comparable templates exist.** A
