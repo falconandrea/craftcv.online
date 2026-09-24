@@ -273,7 +273,7 @@ const IconLinkedIn = () => (
 function getLinkDisplay(url: string): { icon: React.ReactElement | null; text: string } {
   if (url.includes("github.com")) {
     const username = url.replace(/https?:\/\/(www\.)?github\.com\//, "").replace(/\/$/, "");
-    return { icon: <IconGitHub />, text: username };
+    return { icon: <IconGitHub />, text: `github.com/${username}` };
   }
   if (url.includes("linkedin.com")) {
     const path = url.replace(/https?:\/\/(www\.)?linkedin\.com/, "").replace(/\/$/, "");

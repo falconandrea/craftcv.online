@@ -1,8 +1,24 @@
 import { describe, it, expect } from "vitest";
+import { isValidElement, type ReactNode } from "react";
+import { Link } from "@react-pdf/renderer";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { runAllChecks, extractBullets } from "./ats-rules";
+import { CVDocument } from "@/components/pdf/cv-document";
+import { defaultCVState } from "@/state/types";
+import { runAllChecks, extractBullets, checkGitHub } from "./ats-rules";
+
+function findPdfLinkTexts(node: ReactNode): string[] {
+  if (Array.isArray(node)) return node.flatMap(findPdfLinkTexts);
+  if (!isValidElement<{ children?: ReactNode }>(node)) return [];
+
+  const { children } = node.props;
+  if (node.type === Link) {
+    return typeof children === "string" ? [children] : [];
+  }
+
+  return findPdfLinkTexts(children);
+}
 
 /**
  * Regression suite against REAL extracted text.
@@ -22,6 +38,21 @@ const exportedText = readFileSync(
 );
 
 describe("real pdf-parse output from a CraftCV export", () => {
+  it("renders the GitHub domain so the ATS check detects the exported profile", () => {
+    const cv = {
+      ...defaultCVState,
+      personalInfo: {
+        ...defaultCVState.personalInfo,
+        links: ["https://github.com/mariorossi"],
+      },
+    };
+    const document = CVDocument({ cv });
+    const linkText = findPdfLinkTexts(document).find(text => text.includes("mariorossi"));
+
+    expect(linkText).toBe("github.com/mariorossi");
+    expect(checkGitHub(linkText ?? "").status).toBe("passed");
+  });
+
   it("finds the section headings that survive extraction", () => {
     const result = runAllChecks(exportedText, "Mario_Rossi_CV_2026.pdf");
     const sections = result.checks.find(c => c.id === "S01")!;
