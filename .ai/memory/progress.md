@@ -1,9 +1,10 @@
 # 📊 Progress Logic
 
 > **Current Status**: ✅ Project MVP Completed, AI Feature Live. Dashboard + Editor Cyber Redesign done. ATS Deterministic Rules Engine implemented. JD Tailoring & Keyword Gap Analysis implemented. AI Optimize Grounding shipped with regression coverage. Token accounting live. Markdown for Agents content negotiation enabled. Content Signals declared in robots.txt. SEO: `/ats-score` turned into a real landing page, dynamic OG image + per-page social metadata fixed, sitemap carries real per-route dates. ATS pipeline hardened against the `aiUnavailable` contract + keyword ground truth, type regressions and shared constants (merged to `develop`). "Test Another PDF" resets to top of page.
-> **Last Update**: 2026-08-11
+> **Last Update**: 2026-09-24
 
 ## Recent Achievements
+- [x] **Career-Ops Assessment**: Reviewed the upstream project and CraftCV's ATS/JD tailoring implementation. Recommended selectively adapting requirement-to-evidence reporting and carrying JD context into AI Optimize; details in [research-career-ops.md](../features/career-ops-research/research-career-ops.md).
 - [x] **Project Setup**: Documentation generated (PRD, Tech Stack, Flows).
 - [x] **Analysis**: Analyzed current `app/editor/page.tsx` and Docker config.
 - [x] **Foundation**: Removed Laravel refs, refactored store.
