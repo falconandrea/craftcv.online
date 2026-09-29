@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
-import type { CVState, ExperienceEntry, Project } from "@/state/types";
+import type { CVState } from "@/state/types";
 import { incrementCounter, addToCounter } from "@/lib/stats";
 import { validatePatch } from "@/lib/ai/grounding/validate-patch";
 import { hasGroundingFlags } from "@/lib/ai/grounding/types";
 import { buildQuickReference, toPromptString } from "@/lib/cv/quick-reference";
+import { buildCvContext } from "@/lib/ai/context-selection";
 import { estimateTokens } from "@/lib/ai/token-estimator";
 import { parseModelResponse } from "@/lib/ai/parse-model-response";
 
@@ -164,10 +165,6 @@ export async function POST(req: NextRequest) {
 
     const snapshot = buildQuickReference(cvData);
     const snapshotStr = toPromptString(snapshot);
-    let cvContext =
-      `\n\n## Current CV Snapshot\n` +
-      `The following is a token-efficient summary of the user's CV. Use this as your primary context.\n\n` +
-      `${snapshotStr}\n`;
 
     // ─── Token accounting ( Cluster D -40% success metric ) ────────
     // Estimate what the prompt would have cost if we sent the full CV JSON,
@@ -177,35 +174,13 @@ export async function POST(req: NextRequest) {
     const fullJsonTokens = estimateTokens(JSON.stringify(cvData));
     const tokensAvoided = Math.max(0, fullJsonTokens - snapshotTokens);
 
-    // Heuristic: include full JSON detail for entries explicitly mentioned in the last user message
-    const lastUserMsg = messages[messages.length - 1]?.content.toLowerCase() || "";
-    // Tagged so the model can tell the two shapes apart in the JSON dump.
-    type DetailedEntry =
-      | ({ type: "Experience" } & ExperienceEntry)
-      | ({ type: "Project" } & Project);
-    const detailedEntries: DetailedEntry[] = [];
-
-    cvData.experience.forEach(exp => {
-      if ((exp.company && lastUserMsg.includes(exp.company.toLowerCase())) || 
-          (exp.role && lastUserMsg.includes(exp.role.toLowerCase()))) {
-        detailedEntries.push({ type: "Experience", ...exp });
-      }
-    });
-
-    cvData.projects.forEach(proj => {
-      if (proj.name && lastUserMsg.includes(proj.name.toLowerCase())) {
-        detailedEntries.push({ type: "Project", ...proj });
-      }
-    });
-
-    // If the user says something very broad like "improve my experience" or "rewrite bullets"
-    // and no specific company matched, we just include all experience/projects to be safe.
-    const broadTriggers = ["experience", "bullet", "project", "rewrite", "improve my cv"];
-    if (detailedEntries.length === 0 && broadTriggers.some(t => lastUserMsg.includes(t))) {
-      cvContext += `\n## Full Detail Context\n(Included because your request was broad)\n${JSON.stringify({ experience: cvData.experience, projects: cvData.projects }, null, 2)}\n`;
-    } else if (detailedEntries.length > 0) {
-      cvContext += `\n## Full Detail Context\n(Included for the specific entries you mentioned)\n${JSON.stringify(detailedEntries, null, 2)}\n`;
-    }
+    // Language-aware context selection (lib/ai/context-selection.ts):
+    // compact snapshot-only, targeted detail entries, or whole-CV detail
+    // for explicit review requests — deterministic and unit-tested.
+    const cvContext = buildCvContext(
+      cvData,
+      messages[messages.length - 1]?.content
+    );
 
     const client = new OpenAI({ apiKey, baseURL });
 

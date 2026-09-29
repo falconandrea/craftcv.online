@@ -149,3 +149,89 @@ describe("toPromptString", () => {
     expect(output).not.toContain("[ CUSTOM SECTION");
   });
 });
+
+describe("REGRESSION: projects in the snapshot", () => {
+  // Synthetic reproduction of the reported shape:
+  // populated projects, populated experience descriptions, NO certifications.
+  const cvWithProjects = {
+    ...defaultCVState,
+    experience: [
+      {
+        company: "Acme Corp",
+        role: "Senior Developer",
+        startDate: "2021",
+        endDate: null,
+        description: "• Built platform services\n• Led team of 4",
+        tldr: "Platform lead for high-traffic services.",
+      },
+      {
+        company: "Beta Labs",
+        role: "Developer",
+        startDate: "2018",
+        endDate: "2021",
+        description: "• Shipped e-commerce checkout",
+        tldr: "E-commerce checkout developer.",
+      },
+    ],
+    projects: [
+      {
+        name: "CraftCV",
+        role: "Solo Developer",
+        link: "https://craftcv.online",
+        description: "• Full CV builder with ATS scoring",
+        tldr: "ATS-aware CV builder used by 2k users.",
+      },
+      {
+        name: "OpenRails",
+        role: "Maintainer",
+        link: "https://github.com/example/openrails",
+        description: "• Open-source train scheduling library",
+        // no tldr on purpose: project must still appear
+      },
+      {
+        name: "Sudoku Solver",
+        role: "Author",
+        link: "",
+        description: "• Constraint solver toy project",
+        tldr: "Backtracking constraint solver.",
+      },
+    ],
+    certifications: [],
+  };
+
+  it("every source project name appears in the prompt string", () => {
+    const ref = buildQuickReference(cvWithProjects);
+    const output = toPromptString(ref);
+
+    expect(output).toContain("[ PROJECTS ]");
+    expect(output).toContain("CraftCV");
+    expect(output).toContain("OpenRails");
+    expect(output).toContain("Sudoku Solver");
+  });
+
+  it("keeps projects visible when optional tldr or link are missing", () => {
+    const ref = buildQuickReference(cvWithProjects);
+    const output = toPromptString(ref);
+
+    // OpenRails has no tldr, Sudoku Solver has no link — both must still be listed
+    expect(output).toContain("OpenRails");
+    expect(output).toContain("Sudoku Solver");
+    expect(ref.projects).toHaveLength(3);
+  });
+
+  it("preserves the user's CV order for projects", () => {
+    const ref = buildQuickReference(cvWithProjects);
+    expect(ref.projects.map(p => p.name)).toEqual([
+      "CraftCV",
+      "OpenRails",
+      "Sudoku Solver",
+    ]);
+  });
+
+  it("does not invent certifications when the source array is empty", () => {
+    const ref = buildQuickReference(cvWithProjects);
+    expect(ref.certs).toEqual([]);
+    const output = toPromptString(ref);
+    expect(output).not.toContain("[ CERTIFICATIONS ]");
+  });
+});

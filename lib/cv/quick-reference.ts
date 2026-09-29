@@ -13,6 +13,12 @@ export interface QuickReference {
     period: string;
     tldr?: string;
   }[];
+  projects: {
+    name: string;
+    role: string;
+    tldr?: string;
+    link: string;
+  }[];
   topSkills: string[];
   certs: {
     title: string;
@@ -64,6 +70,13 @@ export function buildQuickReference(cv: CVState): QuickReference {
       period: `${e.startDate} - ${e.endDate || "Present"}`,
       tldr: e.tldr,
     })),
+    // Preserve the user's CV order; missing tldr/link must not drop the entry
+    projects: cv.projects.map(p => ({
+      name: p.name,
+      role: p.role,
+      tldr: p.tldr,
+      link: p.link || "",
+    })),
     topSkills,
     certs: cv.certifications.map(c => ({
       title: c.title,
@@ -106,6 +119,16 @@ export function toPromptString(ref: QuickReference): string {
     ref.roles.forEach(r => {
       output += `- ${r.title} @ ${r.company} (${r.period})\n`;
       if (r.tldr) output += `  TLDR: ${r.tldr}\n`;
+    });
+  }
+
+  if (ref.projects && ref.projects.length > 0) {
+    output += `\n[ PROJECTS ]\n`;
+    ref.projects.forEach(p => {
+      output += `- ${p.name} (${p.role})`;
+      if (p.link) output += ` — ${p.link}`;
+      output += `\n`;
+      if (p.tldr) output += `  TLDR: ${p.tldr}\n`;
     });
   }
 
