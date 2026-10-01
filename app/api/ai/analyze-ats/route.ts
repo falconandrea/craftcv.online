@@ -7,6 +7,7 @@ import { extractKeywords, computeGapReport } from "@/lib/jd-analyze";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { evaluationFromCompletion, type AiEvaluation } from "@/lib/ats-ai-response";
 import { MAX_PDF_BYTES, MAX_JD_CHARS } from "@/lib/ats-constants";
+import { ANALYZE_ATS_SYSTEM_PROMPT } from "@/lib/ai/prompts/analyze-ats";
 
 export const maxDuration = 60; // Increase max duration for Vercel if needed
 
@@ -17,37 +18,9 @@ const MAX_TEXT_CHARS = 15000;
 const RATE_LIMIT_MAX = 10;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 
-const SYSTEM_PROMPT = `You are a strict, enterprise-grade Applicant Tracking System (ATS) parser and recruiter AI.
-Your job is to read the extracted text of a user's PDF resume and provide a realistic ATS evaluation score.
-
-## Rules
-1. You MUST ALWAYS return a raw JSON object (no markdown, no code fences).
-2. Be strict but constructive. Simulate how actual ATS (like Workday, Taleo) might struggle with weird formatting or missing dates, and how recruiters look for impact metrics.
-
-## JSON Format
-You must return the following JSON structure exactly:
-{
-  "score": <number 0-100>,
-  "componentScores": {
-    "formatting": <number 0-100>,
-    "impact": <number 0-100>,
-    "keywordMatch": <number 0-100, or null if no Job Description was provided>
-  },
-  "feedback": [
-    {
-      "category": "formatting" | "impact" | "keyword" | "missing_info",
-      "status": "passed" | "warning" | "failed",
-      "title": "Short title of the check",
-      "description": "Actionable explanation of why it passed or failed."
-    }
-  ]
-}
-
-## Guidelines for Scoring:
-- Formatting: Check if it's readable. Are sections clear? Are contact info and dates present? Do NOT penalize the use of "Present", "Current", or similar words for an end date (this is industry standard).
-- Impact: Are there action verbs? Are there measurable metrics (numbers, %, $, time)?
-- Keyword Match: If a Job Description is provided, compare the skills and buzzwords in the text to the JD. If no JD is provided, base it on generalized best practices for their explicit role (if guessable) and return null for the keywordMatch numeric score.
-- Missing Info: Check for phone, email, missing dates, etc.`;
+// ---------------------------------------------------------------------------
+// System prompt lives in lib/ai/prompts/analyze-ats.ts (audited 2026-10).
+// ---------------------------------------------------------------------------
 
 export async function POST(req: NextRequest) {
   try {
@@ -176,7 +149,7 @@ export async function POST(req: NextRequest) {
           max_tokens: 2000,
           temperature: 0.2, // low temperature for strict, analytical response
           messages: [
-            { role: "system", content: SYSTEM_PROMPT },
+            { role: "system", content: ANALYZE_ATS_SYSTEM_PROMPT },
             { role: "user", content: userPrompt }
           ],
         });

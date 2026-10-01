@@ -29,6 +29,7 @@ Format:
 
 ## 📚 Lessons Log
 
+- [2026-10-01] [AI Integration] Every untrusted-input prompt surface needs its own explicit untrusted-data boundary — defenses drifted to import-pdf only while JD/ATS lacked one. Refs: [AI_PROMPTS.md](../../docs/AI_PROMPTS.md), [prompts.test.ts](../../lib/ai/prompts/prompts.test.ts)
 - [2026-07-14] [AI Integration] Prevent array patch summaries from reporting unchanged items by comparing each item with currentCV before rendering. Refs: [summarize-changes.ts](../../lib/ai/summarize-changes.ts), [summarize-changes.test.ts](../../lib/ai/summarize-changes.test.ts)
 - [2026-07-14] [AI Integration] Prevent destructive AI patches by including every editable field in the snapshot, forbidding non-empty-to-empty changes, and stripping blanked fields server-side. Refs: [quick-reference.ts](../../lib/cv/quick-reference.ts), [route.ts](../../app/api/ai/optimize/route.ts), [validate-patch.ts](../../lib/ai/grounding/validate-patch.ts)
 - [2026-07-14] [AI Integration] Avoid assistant-prefill tricks on generic OpenAI-compatible endpoints; use balanced-brace parsing to recover JSON with provider-specific garbage. Refs: [parse-model-response.ts](../../lib/ai/parse-model-response.ts), [route.ts](../../app/api/ai/optimize/route.ts)
