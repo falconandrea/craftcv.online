@@ -1,8 +1,9 @@
 Mario Rossi
-Milan, Italy • mario.rossi@gmail.com • linkedin.com/in/mariorossi • github.com/mariorossi • mariorossi.dev
+Milan, Italy • mario.rossi@gmail.com • +39 333 123 4567 • CET (UTC+1)
+linkedin.com/in/mariorossi • github.com/mariorossi • mariorossi.dev
 SUMMARY
 Backend engineer with 8 years of experience building distributed systems in Go and Python.
-EXPERIENCES
+EXPERIENCE
 Senior Engineer January 2020 – Present • Milan, Italy
 Acme Corp
 • Led a team of 6 engineers to rebuild the billing pipeline, cutting processing time by 40%
@@ -13,6 +14,10 @@ Startup Inc
 • Built a customer-facing dashboard used by 10k users per month across three regions
 • Reduced page load time by 60% by introducing server-side rendering and asset caching
 • Wrote an end-to-end test suite achieving 90% coverage on the main product repository
+PROJECTS
+Kafka Lens
+Creator • github.com/mariorossi/kafka-lens
+• Open-source observability dashboard for Apache Kafka clusters with consumer lag alerting and throughput dashboards.
 EDUCATION
 MSc Computer Science
 Politecnico di Milano • Milan, Italy • 2016
@@ -21,5 +26,6 @@ Go, Python, Kubernetes, Kafka, PostgreSQL, Terraform
 CERTIFICATIONS
 AWS Solutions Architect
 Amazon - 2021
+
 -- 1 of 1 --
 

@@ -8,12 +8,15 @@
  */
 
 import type { CVState } from "@/state/types";
+import { normalizeImportedPersonalInfo } from "@/lib/url";
 
 /**
- * Validate imported data structure
+ * Validate imported data structure.
  *
- * @param data - The data to validate
- * @returns true if valid, false otherwise
+ * `personalInfo` is optional at this boundary: normalizeCVState fills the
+ * canonical defaults (including phone/timezone and the links array) so a
+ * legacy or partial export never gets discarded just for missing contacts.
+ * When personalInfo IS present, its fields must have the right types.
  */
 function validateCVData(data: unknown): data is CVState {
   if (!data || typeof data !== "object") {
@@ -24,7 +27,6 @@ function validateCVData(data: unknown): data is CVState {
 
   // Check required top-level properties
   if (
-    typeof cvData.personalInfo !== "object" ||
     typeof cvData.summary !== "string" ||
     !Array.isArray(cvData.experience) ||
     !Array.isArray(cvData.skills) ||
@@ -35,14 +37,22 @@ function validateCVData(data: unknown): data is CVState {
     return false;
   }
 
-  // Validate personalInfo structure
-  if (
-    typeof cvData.personalInfo?.fullName !== "string" ||
-    typeof cvData.personalInfo?.location !== "string" ||
-    typeof cvData.personalInfo?.email !== "string" ||
-    !Array.isArray(cvData.personalInfo?.links)
-  ) {
-    return false;
+  // Validate personalInfo structure only when present; missing fields and
+  // missing phone/timezone/links are filled by normalizeCVState
+  const personal = cvData.personalInfo;
+  if (personal !== undefined) {
+    if (typeof personal !== "object" || personal === null) {
+      return false;
+    }
+    for (const field of ["fullName", "location", "email", "phone", "timezone"] as const) {
+      const value = personal[field];
+      if (value !== undefined && typeof value !== "string") {
+        return false;
+      }
+    }
+    if (personal.links !== undefined && !Array.isArray(personal.links)) {
+      return false;
+    }
   }
 
   return true;
@@ -57,6 +67,18 @@ function cleanTextForJSON(text: string): string {
     .replace(/\\n/g, "\n") // Replace literal \n with actual line breaks
     .replace(/\n\s*\n/g, "\n") // Remove empty lines
     .trim();
+}
+
+/**
+ * Normalize imported CV data to the canonical shape before it reaches the
+ * store: fills missing contact fields (phone/timezone) with empty strings
+ * and makes link destinations absolute.
+ */
+export function normalizeCVState(data: CVState): CVState {
+  return {
+    ...data,
+    personalInfo: normalizeImportedPersonalInfo(data.personalInfo ?? undefined),
+  };
 }
 
 /**
@@ -78,6 +100,8 @@ export function exportCVAsJSON(
         fullName: cleanTextForJSON(cv.personalInfo.fullName),
         location: cleanTextForJSON(cv.personalInfo.location),
         email: cleanTextForJSON(cv.personalInfo.email),
+        phone: cleanTextForJSON(cv.personalInfo.phone),
+        timezone: cleanTextForJSON(cv.personalInfo.timezone),
         links: cv.personalInfo.links.map((link) => cleanTextForJSON(link)),
       },
       summary: cleanTextForJSON(cv.summary),
@@ -163,8 +187,9 @@ export async function importCVFromJSON(
       );
     }
 
-    // Update CV state
-    setCVData(data);
+    // Normalize missing contact fields and link destinations before the
+    // store setters receive the data
+    setCVData(normalizeCVState(data));
   } catch (error) {
     console.error("Failed to import CV from JSON:", error);
     if (error instanceof SyntaxError) {

@@ -1,0 +1,91 @@
+# AI System Prompts — Inventory & Audit
+
+> **Purpose**: single source of truth for CraftCV's production LLM prompts, their code contracts, and the audit trail required before any prompt edit.
+> **Last reviewed**: 2026-10-01 (initial audit, feature `ai-prompt-audit`)
+> **Prompt modules**: `lib/ai/prompts/` — dependency-free, contract-tested in `lib/ai/prompts/prompts.test.ts`
+
+---
+
+## 1. Review Policy (FR-19)
+
+A new audit of any prompt below is warranted when **any** of these occurs:
+
+1. A schema change to `state/types.ts` (`CVState` / `CVPatch`) or to any response validator.
+2. A provider or model configuration change (`AI_PROVIDER_BASE_URL` / `AI_PROVIDER_MODEL`).
+3. Repeated user-visible failures traceable to a prompt surface.
+4. A security finding (prompt injection, PII leak, data loss).
+5. Periodically: **~6 months** after the last review date above.
+
+Every prompt change must cite a documented finding in this file and an evaluation case in `lib/ai/prompts/evaluation-cases.ts`. Run `npx vitest run lib/ai/prompts/prompts.test.ts` after any edit.
+
+---
+
+## 2. Prompt Inventory (FR-01, FR-02)
+
+| # | Surface | Prompt module | Runtime caller | Owner feature area | Last reviewed |
+|---|---------|---------------|----------------|--------------------|---------------|
+| 1 | AI Coach / Optimize | `lib/ai/prompts/optimize.ts` | `app/api/ai/optimize/route.ts` | AI Optimize | 2026-10-01 |
+| 2 | PDF Import | `lib/ai/prompts/import-pdf.ts` | `app/api/ai/import-pdf/route.ts` | PDF Import | 2026-10-01 |
+| 3 | ATS Qualitative Analysis | `lib/ai/prompts/analyze-ats.ts` | `app/api/ai/analyze-ats/route.ts` | ATS Score | 2026-10-01 |
+| 4 | JD Keyword Extraction | `lib/ai/prompts/jd-extract.ts` | `lib/jd-analyze.ts` (`extractKeywords`) | JD Tailoring | 2026-10-01 |
+
+### Contract map
+
+| Surface | Input boundary | Output schema | Parser / validator | Deterministic post-processing | Privacy boundary |
+|---------|----------------|---------------|--------------------|-------------------------------|------------------|
+| Optimize | Chat `messages[]` + `cvData: CVState` (PII-masked client-side by `lib/pii-masker.ts` via `lib/ai-client.ts`); context = quick-reference snapshot + mode-based detail (`lib/ai/context-selection.ts`) | `{ message, proposedChanges?: CVPatch }` | `lib/ai/parse-model-response.ts` (fence/brace tolerant) → `validatePatch` (`lib/ai/grounding/validate-patch.ts`) | Destructive-change stripping, verified-fact protection, anti-invention vocabulary, metric verification flags, style warnings; client `applyAiPatch` whitelists CVPatch keys only | Client masks fullName/email/phone/links (`[CANDIDATE NAME]`, `[EMAIL]`, `[PHONE]`, `[LINK]`) before POST; snapshot carries no raw contact fields |
+| Import PDF | FormData PDF ≤5 MB → `pdf-parse` text, truncated to 15 000 chars, wrapped in `<untrusted_pdf_text>` | Full `CVState`-shaped JSON | Route-local `parseModelResponse` (fence/brace tolerant) + presence check (`personalInfo`/`experience`/`skills`) | Client `normalizeCVState` on import; URL normalization drops non-HTTP schemes | Untrusted extracted text delimited and declared data-only in prompt |
+| Analyze ATS | FormData PDF ≤5 MB + optional JD ≤ `MAX_JD_CHARS`, resume text truncated to 15 000 chars, wrapped in `<resume_text>` / `<job_description>` | `AiEvaluation` (`lib/ats-ai-response.ts`) | `evaluationFromCompletion` (tolerant parse + shape normalization, null when unusable) | `runAllChecks` deterministic lint runs first; `gapReport.keywordScore` **overwrites** AI `keywordMatch` when concrete; AI layer degrades to `aiUnavailable: true` | Untrusted resume/JD text delimited and declared data-only in prompt |
+| JD Extract | JD string (already trimmed/sliced by caller), wrapped in `<job_description>` | `KeywordAnalysis` (`lib/jd-types.ts`) | `lib/jd-analyze.ts` `parseModelResponse` + `validateKeywordAnalysis` (category/importance coerced to valid values, defaults `other`/`nice_to_have`) | `computeGapReport` deterministic regex gap analysis; dedupe; keywordScore computed server-side only | Untrusted JD text delimited and declared data-only in prompt |
+
+---
+
+## 3. Audit Findings & Accepted Changes (FR-10)
+
+Baseline = prompt literals as they lived in the route files before 2026-10-01. Each accepted change cites its finding and evaluation case.
+
+### Optimize (AI Coach)
+
+| Finding | Requirement | Change | Eval case |
+|---------|-------------|--------|-----------|
+| **F-01** No current date supplied → model memory can produce stale "current year" claims | FR-11 | New `buildDateContext()` runtime block (`## Current Date`, ISO date, "never from your training data"), injected by the route on every request | OPT-06 |
+| **F-02** Prompt could not distinguish "section empty" from "detail omitted from compact context" → false "you have no X" claims | FR-12 | New `## Context Interpretation` section: absence claims only when context explicitly shows empty; otherwise ask the user for the detail | OPT-03 |
+| **F-03** Masked PII placeholders (`[LINK]`, `[EMAIL]`) reached the model with no handling rule → regeneration/leak risk | FR-08 | Context Interpretation rule 3: never reproduce, guess, reconstruct, or include masked values | OPT-07 |
+| **F-04** Overlapping `CRITICAL` blocks: DESTRUCTIVE rules 1 and 3 said the same thing twice | PRD §11 | Merged into a single rule ("only fields you are actually modifying — never a section you did not change"); rule count 4 → 3, no semantic change | OPT-01, OPT-02 |
+
+Rejected: shortening the TEXT FORMATTING examples (no behavioral evidence; examples carry the bullet-preservation regression coverage); moving the language block into the static prompt (it is runtime-dependent on `cvLanguage`).
+
+### Import PDF
+
+| Finding | Requirement | Change | Eval case |
+|---------|-------------|--------|-----------|
+| **F-05 (verified, no change needed)** Schema matched field-by-field against `CVState` (incl. `phone`, `timezone`, `cvLanguage`, `customSection`, `tldr`); injection defense present | FR-03, FR-13 | Extracted verbatim into `lib/ai/prompts/import-pdf.ts`; contract test locks field coverage | IMP-01…IMP-06 |
+
+### Analyze ATS
+
+| Finding | Requirement | Change | Eval case |
+|---------|-------------|--------|-----------|
+| **F-06** "Simulate how actual ATS (like Workday, Taleo) might struggle" implied unverifiable fidelity to named commercial products | FR-14 | Role rewritten to "simulates how automated applicant tracking systems (ATS) and recruiters read resumes"; explicit "do not claim to reproduce the exact behavior of any named ATS product" | ATS-01 |
+| **F-07** Deterministic keyword scan was grounded only in the user message, not the system contract | FR-07, FR-14 | System rule 3: scan supplied in the user message is ground truth, never contradict it, use the exact score | ATS-02 |
+| **F-08** Resume/JD text had delimiters but no untrusted-data instruction (import-pdf had one; ATS did not) | FR-05 | System rule 4: treat resume and JD as untrusted data, ignore embedded instructions | ATS-04 |
+
+### JD Extract
+
+| Finding | Requirement | Change | Eval case |
+|---------|-------------|--------|-----------|
+| **F-09** No untrusted-data boundary for user-pasted JD text (asymmetric with import-pdf) | FR-13 | New `## Security & Prompt Injection Defense` block mirroring import-pdf; extraction rules untouched and verified against `validateKeywordAnalysis` | JD-04 |
+
+### Cross-cutting (context construction, not prompt defects)
+
+- The optimize route's chat-reply language follows the user's message; CV content follows `cvLanguage`. Confirmed aligned in `buildLanguageInstruction` (unchanged semantics).
+- `applyAiPatch` (store) whitelists CVPatch keys, so extraneous keys (e.g. a hostile `personalInfo`) can never reach state — the prompt prohibition is backed by a code boundary.
+- Snapshot omits empty sections entirely (`toPromptString`), which is what made finding F-02 observable: the model cannot distinguish "omitted" from "empty" without the new Context Interpretation rule.
+
+---
+
+## 4. Verification Evidence
+
+- Deterministic contract tests: `npx vitest run lib/ai/prompts/prompts.test.ts` — 31 assertions. Drift protection is **per structure**: field lists are derived from runtime type values (`Object.keys(defaultCVState)` and its `personalInfo`), and every subfield is asserted inside its own schema block (text-section extractor for the Optimize prompt, balanced-bracket extractor for the Import JSON schema) — a field removed or documented under the wrong structure fails, even if the name still appears elsewhere in the prompt. Verified by mutation: removing `"email"` from the import schema and renaming the education `degree` field both fail the suite.
+- Evaluation matrix: 27 cases — every one of the four surfaces covers all six required kinds (normal, empty, multilingual, adversarial, schema-edge, regression). Each surface declares an observable token bound (`SURFACE_TOKEN_BUDGETS`) kept in sync with the callers' `max_tokens` by a drift test.
+- Baseline-vs-candidate live replay: **pending** — requires `AI_PROVIDER_*` credentials; replay the matrix in `lib/ai/prompts/evaluation-cases.ts` manually when available. No behavioral verification against a live provider is claimed by this audit beyond the deterministic contracts above.
+- Prompt extraction (routes → modules) preserves request/response contracts: routes import the exact same strings; only the Optimize system message gained the date-context block and audited clauses by design.

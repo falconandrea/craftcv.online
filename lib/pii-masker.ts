@@ -11,6 +11,7 @@ export function maskPii(cvData: CVState): CVState {
         ...masked.personalInfo,
         fullName: "[CANDIDATE NAME]",
         email: "[EMAIL]",
+        phone: "[PHONE]",
         links: masked.personalInfo.links.map(() => "[LINK]"),
     };
 

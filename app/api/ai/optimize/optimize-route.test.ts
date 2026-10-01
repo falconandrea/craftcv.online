@@ -15,13 +15,15 @@ import type { CVState, CVPatch } from "@/state/types";
 import { buildQuickReference, toPromptString } from "@/lib/cv/quick-reference";
 import { validatePatch } from "@/lib/ai/grounding/validate-patch";
 import { estimateTokens } from "@/lib/ai/token-estimator";
+import { buildCvContext } from "@/lib/ai/context-selection";
 
 const baseCv: CVState = {
   personalInfo: {
-    name: "Ada Lovelace",
+    fullName: "Ada Lovelace",
     email: "ada@example.com",
     location: "London, UK",
     phone: "+44 1234",
+    timezone: "",
     links: ["https://github.com/ada"],
   },
   summary: "Backend engineer with 5 years of experience.",
@@ -125,5 +127,99 @@ describe("optimize route pipeline — snapshot + grounding regression", () => {
       toPromptString(ref);
       validatePatch(llmPatch, baseCv);
     }).not.toThrow();
+  });
+});
+
+describe("optimize route — context composition (reported Italian whole-CV review scenario)", () => {
+  // Synthetic reproduction of the user-reported shape:
+  // populated projects, populated experience descriptions, EMPTY certifications.
+  const reportedCv: CVState = {
+    ...baseCv,
+    experience: [
+      {
+        company: "Acme Corp",
+        role: "Senior Developer",
+        startDate: "2021",
+        endDate: null,
+        description: "• Built platform services\n• Led team of 4",
+        tldr: "Platform lead for high-traffic services.",
+      },
+      {
+        company: "Beta Labs",
+        role: "Developer",
+        startDate: "2018",
+        endDate: "2021",
+        description: "• Shipped e-commerce checkout",
+        tldr: "E-commerce checkout developer.",
+      },
+    ],
+    projects: [
+      {
+        name: "CraftCV",
+        role: "Solo Developer",
+        link: "https://craftcv.online",
+        description: "• Full CV builder with ATS scoring",
+        tldr: "ATS-aware CV builder used by 2k users.",
+      },
+      {
+        name: "OpenRails",
+        role: "Maintainer",
+        link: "https://github.com/example/openrails",
+        description: "• Open-source train scheduling library",
+      },
+      {
+        name: "Sudoku Solver",
+        role: "Author",
+        link: "",
+        description: "• Constraint solver toy project",
+        tldr: "Backtracking constraint solver.",
+      },
+    ],
+    certifications: [],
+  };
+
+  it("Italian general review receives all project names and full experience/project detail", () => {
+    const context = buildCvContext(reportedCv, "Ciao! Puoi fare una revisione completa del mio cv?");
+
+    // Snapshot evidence: every project is visible to the model
+    expect(context).toContain("[ PROJECTS ]");
+    expect(context).toContain("CraftCV");
+    expect(context).toContain("OpenRails");
+    expect(context).toContain("Sudoku Solver");
+
+    // Detail evidence: experience and project descriptions are expanded
+    expect(context).toContain("## Full Detail Context");
+    expect(context).toContain("• Built platform services");
+    expect(context).toContain("• Shipped e-commerce checkout");
+    expect(context).toContain("• Full CV builder with ATS scoring");
+    expect(context).toContain("• Open-source train scheduling library");
+    expect(context).toContain("• Constraint solver toy project");
+
+    // Certifications remain genuinely empty — never invented
+    expect(context).not.toContain("[ CERTIFICATIONS ]");
+    expect(buildQuickReference(reportedCv).certs).toEqual([]);
+  });
+
+  it("compact requests avoid the full-detail block and stay smaller than the full JSON", () => {
+    const compactContext = buildCvContext(reportedCv, "what is ATS?");
+    expect(compactContext).not.toContain("## Full Detail Context");
+
+    const compactTokens = estimateTokens(compactContext);
+    const fullTokens = estimateTokens(JSON.stringify(reportedCv));
+    expect(compactTokens).toBeLessThan(fullTokens);
+  });
+
+  it("English general review also receives the full-detail payload", () => {
+    const context = buildCvContext(reportedCv, "can you review my cv?");
+    expect(context).toContain("## Full Detail Context");
+    expect(context).toContain("• Built platform services");
+    expect(context).toContain("• Full CV builder with ATS scoring");
+  });
+
+  it("personal contact fields never enter the context (FR-10)", () => {
+    const context = buildCvContext(reportedCv, "rivedi il mio cv");
+    expect(context).not.toContain("ada@example.com");
+    expect(context).not.toContain("+44 1234");
+    expect(context).not.toContain("Ada Lovelace");
   });
 });

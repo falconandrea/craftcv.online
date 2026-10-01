@@ -8,39 +8,10 @@
 
 import OpenAI from "openai";
 import type { KeywordAnalysis, KeywordMatchDetail, GapReport, KeywordCategory, KeywordImportance } from "@/lib/jd-types";
+import { JD_EXTRACT_SYSTEM_PROMPT } from "@/lib/ai/prompts/jd-extract";
 
 // ─── Stage 1: LLM Keyword Extraction ───────────────────────────────────
-
-const EXTRACT_PROMPT = `You are a keyword extraction engine for job descriptions. Extract structured keywords from the provided job description.
-
-Return ONLY a raw JSON object (no markdown, no code fences) with this exact structure:
-
-{
-  "hard_skills": [
-    {
-      "keyword": "React",
-      "category": "technology" | "tool" | "platform" | "methodology" | "other",
-      "importance": "must_have" | "nice_to_have"
-    }
-  ],
-  "acronyms": [
-    {
-      "acronym": "CI/CD",
-      "expansion": "Continuous Integration / Continuous Deployment"
-    }
-  ]
-}
-
-## Rules
-- Extract ONLY hard skills: technologies, programming languages, frameworks, tools, platforms, methodologies, certifications.
-- DO NOT extract soft skills (leadership, communication, teamwork, etc.).
-- Classify importance based on JD phrasing:
-  - "must_have": required, must have, minimum, need, proven experience in, essential, necessary, prerequisite.
-  - "nice_to_have": preferred, bonus, a plus, nice to have, desirable, beneficial, good to have.
-  - If unclear, default to "nice_to_have".
-- For each acronym extracted, also include its expanded form in the acronyms array.
-- Deduplicate keywords (same normalized form should appear once).
-- Return an empty hard_skills array if no hard skills can be extracted.`;
+// System prompt lives in lib/ai/prompts/jd-extract.ts (audited 2026-10).
 
 function parseModelResponse(raw: string): Record<string, unknown> {
   try {
@@ -108,7 +79,7 @@ export async function extractKeywords(jdText: string): Promise<KeywordAnalysis> 
     max_tokens: 2000,
     temperature: 0.1,
     messages: [
-      { role: "system", content: EXTRACT_PROMPT },
+      { role: "system", content: JD_EXTRACT_SYSTEM_PROMPT },
       {
         role: "user",
         content: `Extract keywords from this job description:\n\n<job_description>\n${jdText}\n</job_description>`,

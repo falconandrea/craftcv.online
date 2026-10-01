@@ -14,6 +14,10 @@ export interface PersonalInfo {
   fullName: string;
   location: string;
   email: string;
+  /** Optional contact phone, free text with recommended international prefix */
+  phone: string;
+  /** Optional manual timezone label, e.g. "CET (UTC+1)" */
+  timezone: string;
   links: string[]; // GitHub, LinkedIn, personal site, etc.
 }
 
@@ -119,6 +123,8 @@ export const defaultCVState: CVState = {
     fullName: "",
     location: "",
     email: "",
+    phone: "",
+    timezone: "",
     links: [],
   },
   summary: "",
