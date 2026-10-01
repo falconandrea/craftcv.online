@@ -19,10 +19,11 @@ import { buildCvContext } from "@/lib/ai/context-selection";
 
 const baseCv: CVState = {
   personalInfo: {
-    name: "Ada Lovelace",
+    fullName: "Ada Lovelace",
     email: "ada@example.com",
     location: "London, UK",
     phone: "+44 1234",
+    timezone: "",
     links: ["https://github.com/ada"],
   },
   summary: "Backend engineer with 5 years of experience.",

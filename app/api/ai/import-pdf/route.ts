@@ -29,7 +29,9 @@ Your ONLY task is to read raw text extracted from a PDF resume and return a stru
 6. Keep the extracted text in the SAME LANGUAGE as the original PDF. Do NOT translate anything.
 7. For the "links" field in personalInfo, extract all URLs found (LinkedIn, GitHub, portfolio, personal site, etc.).
 8. For skills, extract them as a flat array of strings. Combine all skill categories into one flat list.
-9. CRITICAL — For "description" fields (experience, projects): the raw PDF text often has HARD LINE BREAKS in the middle of sentences due to page layout. You MUST join/merge those wrapped lines back into a single continuous sentence. However, if the text contains bullet points (lines starting with •, -, *, or similar markers), preserve each bullet as a separate item separated by "\\n". Each bullet must be a single continuous line with no mid-sentence breaks.
+9. For "phone" in personalInfo, extract the phone number with its international prefix when available (e.g. "+39 333 123 4567"). Use an empty string when absent.
+10. For "timezone" in personalInfo, extract a timezone label when explicitly stated (e.g. "CET (UTC+1)"). Use an empty string when absent — never guess one.
+11. CRITICAL — For "description" fields (experience, projects): the raw PDF text often has HARD LINE BREAKS in the middle of sentences due to page layout. You MUST join/merge those wrapped lines back into a single continuous sentence. However, if the text contains bullet points (lines starting with •, -, *, or similar markers), preserve each bullet as a separate item separated by "\\n". Each bullet must be a single continuous line with no mid-sentence breaks.
    Example input from PDF:
    "• Developed APIs and backend functionalities using Laravel for various projects and also experimenting with different plugins in\\nthe ecosystem, exhibited versatility.\\n• Refactored a legacy platform by redesigning\\nthe database and models."
    Correct output: "• Developed APIs and backend functionalities using Laravel for various projects and also experimenting with different plugins in the ecosystem, exhibited versatility.\\n• Refactored a legacy platform by redesigning the database and models."
@@ -43,6 +45,8 @@ Your ONLY task is to read raw text extracted from a PDF resume and return a stru
     "fullName": "string",
     "location": "string",
     "email": "string",
+    "phone": "string (international format with + prefix, e.g. '+39 333 123 4567'. Empty string if not present)",
+    "timezone": "string (explicit timezone label, e.g. 'CET (UTC+1)'. Empty string if not present)",
     "links": ["string"]
   },
   "summary": "string",

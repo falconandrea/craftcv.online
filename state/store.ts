@@ -94,6 +94,8 @@ const initialState: CVState = {
     fullName: "",
     location: "",
     email: "",
+    phone: "",
+    timezone: "",
     links: [],
   },
   summary: "",
@@ -106,6 +108,26 @@ const initialState: CVState = {
   customSection: { title: "Interests", content: "" },
   cvLanguage: "en",
 };
+
+/**
+ * Merge persisted localStorage state over the current (default) state.
+ *
+ * Zustand's default persist merge is shallow: a persisted `personalInfo`
+ * object predating the phone/timezone fields would replace the default one
+ * wholesale, leaving those keys `undefined`. Merging per-field guarantees
+ * legacy saved CVs hydrate the new contact fields as empty strings.
+ */
+export function mergePersistedCV<S extends CVState>(persisted: unknown, current: S): S {
+  const saved = (persisted ?? {}) as Partial<CVState>;
+  return {
+    ...current,
+    ...saved,
+    personalInfo: {
+      ...current.personalInfo,
+      ...(saved.personalInfo ?? {}),
+    },
+  } as S;
+}
 
 /**
  * CV Store with localStorage persistence
@@ -348,6 +370,8 @@ export const useCVStore = create<CVStore>()(
         customSection: state.customSection,
         cvLanguage: state.cvLanguage,
       }),
+      // Backward-compatible hydration for pre-phone/timezone persisted state
+      merge: (persisted, current) => mergePersistedCV(persisted, current),
     },
   ),
 );

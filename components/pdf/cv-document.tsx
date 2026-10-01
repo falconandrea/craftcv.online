@@ -33,6 +33,7 @@ import {
   Path,
 } from "@react-pdf/renderer";
 import type { CVState } from "@/state/types";
+import { displayUrl, absoluteUrl } from "@/lib/url";
 
 // Register standard fonts
 Font.register({
@@ -77,6 +78,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 2,
   },
+  // Separator + following item wrapped as one unit so line breaks never
+  // leave an orphan bullet at the end of a row
+  contactGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   contactItem: {
     fontSize: 9.5,
     color: "#333333",
@@ -85,6 +92,9 @@ const styles = StyleSheet.create({
     fontSize: 9.5,
     color: "#999999",
     marginHorizontal: 2,
+  },
+  linksRow: {
+    marginTop: 2,
   },
   section: {
     marginBottom: 6,
@@ -158,13 +168,19 @@ interface CVDocumentProps {
   cv: CVState;
 }
 
+interface PdfSection {
+  key: string;
+  visible: boolean;
+  node: React.ReactNode;
+}
+
 /**
  * Translations for PDF Section Headers and UI elements
  */
 const translations = {
   en: {
     summary: "Summary",
-    experience: "Experiences",
+    experience: "Experience",
     projects: "Projects",
     education: "Education",
     languages: "Languages",
@@ -226,14 +242,7 @@ function cleanDescription(description: string): string {
     .join("\n");
 }
 
-/**
- * Clean URL by removing http:// or https://
- */
-function cleanUrl(url: string): string {
-  return url.replace(/^https?:\/\//, "");
-}
-
-// ── Contact Icons (SVG, 8×8pt, ATS-safe) ──────────────────────────────────
+// ── Contact Icons (SVG, 8×8pt, ATS-safe, direct-contact row only) ──────────
 const IconPin = () => (
   <Svg width={8} height={8} viewBox="0 0 24 24">
     <Path
@@ -252,35 +261,23 @@ const IconEmail = () => (
   </Svg>
 );
 
-const IconGitHub = () => (
+const IconPhone = () => (
   <Svg width={8} height={8} viewBox="0 0 24 24">
     <Path
       fill="#555555"
-      d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+      d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"
     />
   </Svg>
 );
 
-const IconLinkedIn = () => (
+const IconClock = () => (
   <Svg width={8} height={8} viewBox="0 0 24 24">
     <Path
       fill="#555555"
-      d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
+      d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"
     />
   </Svg>
 );
-
-function getLinkDisplay(url: string): { icon: React.ReactElement | null; text: string } {
-  if (url.includes("github.com")) {
-    const username = url.replace(/https?:\/\/(www\.)?github\.com\//, "").replace(/\/$/, "");
-    return { icon: <IconGitHub />, text: `github.com/${username}` };
-  }
-  if (url.includes("linkedin.com")) {
-    const path = url.replace(/https?:\/\/(www\.)?linkedin\.com/, "").replace(/\/$/, "");
-    return { icon: <IconLinkedIn />, text: path };
-  }
-  return { icon: null, text: cleanUrl(url) };
-}
 
 /**
  * CV Document Component
@@ -293,113 +290,92 @@ export function CVDocument({ cv }: CVDocumentProps) {
   const lang = cv.cvLanguage || "en";
   const t = translations[lang];
 
-  return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        {/* Personal Information Section */}
-        <View style={styles.header}>
-          <Text style={styles.name}>{cv.personalInfo.fullName}</Text>
-          <View style={styles.contactInfo}>
-            {cv.personalInfo.location && (
-              <View style={styles.contactInfoItem}>
-                <IconPin />
-                <Text style={styles.contactItem}>{cv.personalInfo.location}</Text>
-              </View>
-            )}
-            {cv.personalInfo.location &&
-              (cv.personalInfo.email || cv.personalInfo.links.length > 0) && (
-                <Text style={styles.contactSeparator}>•</Text>
-              )}
-            {cv.personalInfo.email && (
-              <View style={styles.contactInfoItem}>
-                <IconEmail />
-                <Text style={styles.contactItem}>{cv.personalInfo.email}</Text>
-              </View>
-            )}
-            {cv.personalInfo.links.map((link, index) => {
-              const { icon, text } = getLinkDisplay(link);
-              return (
-                <>
-                  <Text key={`sep-${index}`} style={styles.contactSeparator}>•</Text>
-                  <View key={index} style={styles.contactInfoItem}>
-                    {icon}
-                    <Link src={link} style={styles.contactItem}>
-                      {text}
-                    </Link>
-                  </View>
-                </>
-              );
-            })}
-          </View>
+  // Direct-contact row: fixed order, compact icons, no empty placeholders
+  const location = cv.personalInfo.location.trim();
+  const email = cv.personalInfo.email.trim();
+  const phone = (cv.personalInfo.phone ?? "").trim();
+  const timezone = (cv.personalInfo.timezone ?? "").trim();
+  const contactItems = [
+    location && { key: "location", icon: <IconPin />, text: location },
+    email && { key: "email", icon: <IconEmail />, text: email },
+    phone && { key: "phone", icon: <IconPhone />, text: phone },
+    timezone && { key: "timezone", icon: <IconClock />, text: timezone },
+  ].filter((item): item is { key: string; icon: React.ReactElement; text: string } => Boolean(item));
+
+  // Professional-links row: no icons, readable full-domain labels, clickable
+  const links = cv.personalInfo.links
+    .map((link) => link.trim())
+    .filter((link) => link.length > 0);
+
+  const sections: PdfSection[] = [
+    {
+      key: "summary",
+      visible: Boolean(cv.summary?.trim()),
+      node: (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.summary}</Text>
+          <Text style={styles.entryDescription}>{cv.summary}</Text>
         </View>
-
-        {/* Summary Section */}
-        {cv.summary && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t.summary}</Text>
-            <Text style={styles.entryDescription}>{cv.summary}</Text>
-          </View>
-        )}
-
-        {/* Divider */}
-        {cv.summary && cv.experience.length > 0 && (
-          <View style={styles.divider} />
-        )}
-
-        {/* Experience Section */}
-        {cv.experience.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t.experience}</Text>
-            {cv.experience.map((entry, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.entry,
-                  index === cv.experience.length - 1 ? { marginBottom: 0 } : {}
-                ]}
-              >
-                <View style={styles.entryHeaderRow}>
-                  <Text style={styles.entryTitle}>{entry.role}</Text>
-                  <View
-                    style={{ flexDirection: "row", alignItems: "baseline" }}
-                  >
-                    <Text style={styles.entryDate}>
-                      {formatDate(entry.startDate, lang)} –{" "}
-                      {formatDate(entry.endDate, lang)}
+      ),
+    },
+    {
+      key: "experience",
+      visible: cv.experience.length > 0,
+      node: (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.experience}</Text>
+          {cv.experience.map((entry, index) => (
+            <View
+              key={index}
+              style={[
+                styles.entry,
+                index === cv.experience.length - 1 ? { marginBottom: 0 } : {}
+              ]}
+            >
+              <View style={styles.entryHeaderRow}>
+                <Text style={styles.entryTitle}>{entry.role}</Text>
+                <View
+                  style={{ flexDirection: "row", alignItems: "baseline" }}
+                >
+                  <Text style={styles.entryDate}>
+                    {formatDate(entry.startDate, lang)} –{" "}
+                    {formatDate(entry.endDate, lang)}
+                  </Text>
+                  {entry.location && (
+                    <Text style={styles.entryLocation}>
+                      {" "}
+                      • {entry.location}
                     </Text>
-                    {entry.location && (
-                      <Text style={styles.entryLocation}>
-                        {" "}
-                        • {entry.location}
-                      </Text>
-                    )}
-                  </View>
-                </View>
-                <Text style={styles.entryCompany}>{entry.company}</Text>
-                <View style={styles.bulletList}>
-                  {cleanDescription(entry.description)
-                    .split("\n")
-                    .map((line, i) => (
-                      <Text key={i} style={styles.bulletItem}>
-                        • {line}
-                      </Text>
-                    ))}
+                  )}
                 </View>
               </View>
-            ))}
-          </View>
-        )}
-
-        {/* Divider */}
-        {cv.experience.length > 0 && cv.projects.length > 0 && (
-          <View style={styles.divider} />
-        )}
-
-        {/* Projects Section */}
-        {cv.projects.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t.projects}</Text>
-            {cv.projects.map((project, index) => (
+              <Text style={styles.entryCompany}>{entry.company}</Text>
+              <View style={styles.bulletList}>
+                {cleanDescription(entry.description)
+                  .split("\n")
+                  .map((line, i) => (
+                    <Text key={i} style={styles.bulletItem}>
+                      • {line}
+                    </Text>
+                  ))}
+              </View>
+            </View>
+          ))}
+        </View>
+      ),
+    },
+    {
+      key: "projects",
+      visible: cv.projects.length > 0,
+      node: (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.projects}</Text>
+          {cv.projects.map((project, index) => {
+            const projectLink = project.link.trim();
+            // http(s) destinations become clickable links; anything else
+            // (mailto:, javascript:, malformed) stays plain, non-clickable text
+            const projectDest = absoluteUrl(projectLink);
+            return (
               <View
                 key={index}
                 style={[
@@ -410,7 +386,18 @@ export function CVDocument({ cv }: CVDocumentProps) {
                 <Text style={styles.entryTitle}>{project.name}</Text>
                 <Text style={styles.entryLocation}>
                   {project.role}
-                  {project.link && <Text> • {cleanUrl(project.link)}</Text>}
+                  {projectLink && (
+                    <Text>
+                      {" • "}
+                      {projectDest ? (
+                        <Link src={projectDest} style={styles.link}>
+                          {displayUrl(projectLink)}
+                        </Link>
+                      ) : (
+                        displayUrl(projectLink)
+                      )}
+                    </Text>
+                  )}
                 </Text>
                 <View style={styles.bulletList}>
                   {cleanDescription(project.description)
@@ -422,107 +409,158 @@ export function CVDocument({ cv }: CVDocumentProps) {
                     ))}
                 </View>
               </View>
-            ))}
-          </View>
-        )}
+            );
+          })}
+        </View>
+      ),
+    },
+    {
+      key: "education",
+      visible: cv.education.length > 0,
+      node: (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.education}</Text>
+          {cv.education.map((edu, index) => (
+            <View
+              key={index}
+              style={[
+                styles.entry,
+                index === cv.education.length - 1 ? { marginBottom: 0 } : {}
+              ]}
+            >
+              <Text style={styles.entryTitle}>{edu.degree}</Text>
+              <Text style={styles.entryDescription}>
+                {edu.institution} • {edu.location} • {edu.year}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ),
+    },
+    {
+      key: "languages",
+      visible: cv.languages.length > 0,
+      node: (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.languages}</Text>
+          <Text style={styles.entryDescription}>
+            {cv.languages
+              .map((lang) => `${lang.language} (${lang.proficiency})`)
+              .join(", ")}
+          </Text>
+        </View>
+      ),
+    },
+    {
+      key: "skills",
+      visible: cv.skills.length > 0,
+      node: (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.skills}</Text>
+          <Text style={styles.skillsList}>{cv.skills.join(", ")}</Text>
+        </View>
+      ),
+    },
+    {
+      key: "custom",
+      visible: Boolean(cv.customSection?.content?.trim()),
+      node: (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            {(!cv.customSection.title || cv.customSection.title === "Interests") ? t.interests : cv.customSection.title}
+          </Text>
+          <Text style={styles.entryDescription}>{cv.customSection.content}</Text>
+        </View>
+      ),
+    },
+    {
+      key: "certifications",
+      visible: cv.certifications.length > 0,
+      node: (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.certifications}</Text>
+          {cv.certifications.map((cert, index) => (
+            <View
+              key={index}
+              style={[
+                styles.entry,
+                index === cv.certifications.length - 1 ? { marginBottom: 0 } : {}
+              ]}
+            >
+              <Text style={styles.entryTitle}>{cert.title}</Text>
+              <Text style={styles.entryDescription}>
+                {cert.issuer}
+                {cert.year && ` - ${cert.year}`}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ),
+    },
+  ];
 
-        {/* Divider */}
-        {cv.projects.length > 0 && cv.education.length > 0 && (
-          <View style={styles.divider} />
-        )}
+  // One divider between each pair of consecutive visible sections — never a
+  // leading/trailing one and never a double, even when middle sections are empty
+  const visibleSections = sections.filter((section) => section.visible);
 
-        {/* Education Section */}
-        {cv.education.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t.education}</Text>
-            {cv.education.map((edu, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.entry,
-                  index === cv.education.length - 1 ? { marginBottom: 0 } : {}
-                ]}
-              >
-                <Text style={styles.entryTitle}>{edu.degree}</Text>
-                <Text style={styles.entryDescription}>
-                  {edu.institution} • {edu.location} • {edu.year}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {/* Personal Information Section */}
+        <View style={styles.header}>
+          <Text style={styles.name}>{cv.personalInfo.fullName}</Text>
+          {contactItems.length > 0 && (
+            <View style={styles.contactInfo}>
+              {contactItems.map((item, index) => (
+                <View key={item.key} style={styles.contactGroup}>
+                  {index > 0 && (
+                    <Text style={styles.contactSeparator}>•</Text>
+                  )}
+                  <View style={styles.contactInfoItem}>
+                    {item.icon}
+                    <Text style={styles.contactItem}>{item.text}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+          {links.length > 0 && (
+            <View
+              style={
+                contactItems.length > 0
+                  ? [styles.contactInfo, styles.linksRow]
+                  : styles.contactInfo
+              }
+            >
+              {links.map((link, index) => {
+                // http(s) destinations become clickable links; anything else
+                // (mailto:, javascript:, malformed) stays plain, non-clickable text
+                const dest = absoluteUrl(link);
+                return (
+                  <View key={`${link}-${index}`} style={styles.contactGroup}>
+                    {index > 0 && (
+                      <Text style={styles.contactSeparator}>•</Text>
+                    )}
+                    {dest ? (
+                      <Link src={dest} style={styles.contactItem}>
+                        {displayUrl(link)}
+                      </Link>
+                    ) : (
+                      <Text style={styles.contactItem}>{displayUrl(link)}</Text>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </View>
 
-        {/* Divider */}
-        {cv.education.length > 0 && cv.languages.length > 0 && (
-          <View style={styles.divider} />
-        )}
-
-        {/* Languages Section */}
-        {cv.languages.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t.languages}</Text>
-            <Text style={styles.entryDescription}>
-              {cv.languages
-                .map((lang) => `${lang.language} (${lang.proficiency})`)
-                .join(", ")}
-            </Text>
-          </View>
-        )}
-
-        {/* Divider */}
-        {cv.languages.length > 0 && cv.skills.length > 0 && (
-          <View style={styles.divider} />
-        )}
-
-        {/* Skills Section */}
-        {cv.skills.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t.skills}</Text>
-            <Text style={styles.skillsList}>{cv.skills.join(", ")}</Text>
-          </View>
-        )}
-
-        {/* Divider */}
-        {cv.skills.length > 0 && cv.customSection?.content?.trim() && (
-          <View style={styles.divider} />
-        )}
-
-        {/* Custom Section */}
-        {cv.customSection?.content?.trim() && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {(!cv.customSection.title || cv.customSection.title === "Interests") ? t.interests : cv.customSection.title}
-            </Text>
-            <Text style={styles.entryDescription}>{cv.customSection.content}</Text>
-          </View>
-        )}
-
-        {/* Divider */}
-        {(cv.skills.length > 0 || cv.customSection?.content?.trim() || cv.languages.length > 0) && cv.certifications.length > 0 && (
-          <View style={styles.divider} />
-        )}
-
-        {/* Certifications Section */}
-        {cv.certifications.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t.certifications}</Text>
-            {cv.certifications.map((cert, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.entry,
-                  index === cv.certifications.length - 1 ? { marginBottom: 0 } : {}
-                ]}
-              >
-                <Text style={styles.entryTitle}>{cert.title}</Text>
-                <Text style={styles.entryDescription}>
-                  {cert.issuer}
-                  {cert.year && ` - ${cert.year}`}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
+        {visibleSections.map((section, index) => (
+          <React.Fragment key={section.key}>
+            {index > 0 && <View style={styles.divider} />}
+            {section.node}
+          </React.Fragment>
+        ))}
       </Page>
     </Document>
   );

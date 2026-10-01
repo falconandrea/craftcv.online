@@ -10,7 +10,7 @@ import { summarizeChanges } from "./summarize-changes";
  */
 function makeCv(): CVState {
     return {
-        personalInfo: { fullName: "Ada", location: "IT", email: "a@b.c", links: [] },
+        personalInfo: { fullName: "Ada", location: "IT", email: "a@b.c", phone: "", timezone: "", links: [] },
         summary: "Original summary.",
         experience: [
             {

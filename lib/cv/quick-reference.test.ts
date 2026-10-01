@@ -88,6 +88,8 @@ describe("toPromptString", () => {
         fullName: "John Doe",
         location: "New York",
         email: "john@example.com",
+        phone: "",
+        timezone: "",
         links: ["github.com/johndoe"],
       },
       summary: "Backend engineer.",

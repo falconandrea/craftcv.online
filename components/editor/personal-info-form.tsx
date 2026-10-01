@@ -13,11 +13,14 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { useState, KeyboardEvent } from "react";
+import { ensureHttpDestination } from "@/lib/url";
 
 export function PersonalInfoForm() {
   const { personalInfo, setPersonalInfo } = useCVStore();
   const [newLink, setNewLink] = useState("");
 
+  // `?? ""` keeps inputs controlled for legacy persisted state hydrated
+  // before the phone/timezone keys existed.
   const handleChange = (field: keyof typeof personalInfo, value: string) => {
     setPersonalInfo({
       ...personalInfo,
@@ -34,6 +37,20 @@ export function PersonalInfoForm() {
     });
   };
 
+  // Normalize to an absolute destination on blur only — never mid-typing.
+  const handleLinkBlur = (index: number) => {
+    const current = personalInfo.links[index] ?? "";
+    const normalized = ensureHttpDestination(current);
+    if (normalized !== current) {
+      const newLinks = [...personalInfo.links];
+      newLinks[index] = normalized;
+      setPersonalInfo({
+        ...personalInfo,
+        links: newLinks,
+      });
+    }
+  };
+
   const handleRemoveLink = (index: number) => {
     setPersonalInfo({
       ...personalInfo,
@@ -46,7 +63,7 @@ export function PersonalInfoForm() {
     if (trimmedLink) {
       setPersonalInfo({
         ...personalInfo,
-        links: [...personalInfo.links, trimmedLink],
+        links: [...personalInfo.links, ensureHttpDestination(trimmedLink)],
       });
       setNewLink("");
     }
@@ -96,6 +113,35 @@ export function PersonalInfoForm() {
       </div>
 
       <div>
+        <Label htmlFor="phone">Phone (optional)</Label>
+        <Input
+          id="phone"
+          type="tel"
+          value={personalInfo.phone ?? ""}
+          onChange={(e) => handleChange("phone", e.target.value)}
+          placeholder="+39 333 123 4567"
+          className="mt-1"
+        />
+        <p className="mt-1 text-xs text-zinc-500">
+          International prefix recommended (e.g. +39)
+        </p>
+      </div>
+
+      <div>
+        <Label htmlFor="timezone">Timezone (optional)</Label>
+        <Input
+          id="timezone"
+          value={personalInfo.timezone ?? ""}
+          onChange={(e) => handleChange("timezone", e.target.value)}
+          placeholder="CET (UTC+1)"
+          className="mt-1"
+        />
+        <p className="mt-1 text-xs text-zinc-500">
+          Manual label — useful for remote roles, e.g. CET (UTC+1)
+        </p>
+      </div>
+
+      <div>
         <Label>Links (GitHub, LinkedIn, Portfolio, etc.)</Label>
         <div className="mt-1 space-y-2">
           {personalInfo.links.map((link, index) => (
@@ -103,6 +149,7 @@ export function PersonalInfoForm() {
               <Input
                 value={link}
                 onChange={(e) => handleLinkChange(index, e.target.value)}
+                onBlur={() => handleLinkBlur(index)}
                 placeholder="https://github.com/username"
                 className="flex-1"
               />

@@ -7,39 +7,12 @@ import { Button } from "@/components/ui/button";
 import { useCVStore } from "@/state/store";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { normalizeImportedPersonalInfo } from "@/lib/url";
 import type { CVState } from "@/state/types";
 
 interface PdfImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-function normalizeLinks(links: string[]): string[] {
-  return links
-    .map((link) => {
-      const trimmed = link.trim();
-      if (!trimmed) return null;
-
-      if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-        return trimmed;
-      }
-
-      if (trimmed.startsWith("/in/")) {
-        return `https://linkedin.com${trimmed}`;
-      }
-
-      if (trimmed.startsWith("/")) {
-        return null;
-      }
-
-      const username = trimmed.replace(/\/$/, "");
-      if (username && !username.includes(".") && !username.includes(" ")) {
-        return `https://github.com/${username}`;
-      }
-
-      return null;
-    })
-    .filter((link): link is string => link !== null);
 }
 
 export function PdfImportDialog({ open, onOpenChange }: PdfImportDialogProps) {
@@ -80,9 +53,9 @@ export function PdfImportDialog({ open, onOpenChange }: PdfImportDialogProps) {
 
         const data = json.data as Partial<CVState>;
 
-        // Normalize links before saving
-        if (data.personalInfo?.links) {
-          data.personalInfo.links = normalizeLinks(data.personalInfo.links);
+        // Normalize contacts/links and fill missing phone/timezone
+        if (data.personalInfo) {
+          data.personalInfo = normalizeImportedPersonalInfo(data.personalInfo);
         }
 
         // Populate the store

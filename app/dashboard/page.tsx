@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useCVStore } from "@/state/store";
 import { importCVFromJSON } from "@/lib/json-handler";
+import { normalizeImportedPersonalInfo } from "@/lib/url";
 import { toast } from "sonner";
 import type { CVState } from "@/state/types";
 
@@ -25,33 +26,6 @@ const NAV_LINKS = [
   { label: "Editor", href: "/editor" },
   { label: "ATS Score", href: "/ats-score" },
 ];
-
-/**
- * Normalize links extracted from PDF import
- * Reused from pdf-import-dialog.tsx logic
- */
-function normalizeLinks(links: string[]): string[] {
-  return links
-    .map((link) => {
-      const trimmed = link.trim();
-      if (!trimmed) return null;
-      if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-        return trimmed;
-      }
-      if (trimmed.startsWith("/in/")) {
-        return `https://linkedin.com${trimmed}`;
-      }
-      if (trimmed.startsWith("/")) {
-        return null;
-      }
-      const username = trimmed.replace(/\/$/, "");
-      if (username && !username.includes(".") && !username.includes(" ")) {
-        return `https://github.com/${username}`;
-      }
-      return null;
-    })
-    .filter((link): link is string => link !== null);
-}
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -95,9 +69,9 @@ export default function DashboardPage() {
 
         const data = json.data as Partial<CVState>;
 
-        // Normalize links before saving
-        if (data.personalInfo?.links) {
-          data.personalInfo.links = normalizeLinks(data.personalInfo.links);
+        // Normalize contacts/links and fill missing phone/timezone
+        if (data.personalInfo) {
+          data.personalInfo = normalizeImportedPersonalInfo(data.personalInfo);
         }
 
         // Populate the store
