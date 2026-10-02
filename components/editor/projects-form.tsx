@@ -8,6 +8,7 @@
  */
 
 import { useCVStore } from "@/state/store";
+import { TldrGenerator } from "@/components/editor/tldr-generator";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -31,6 +32,7 @@ const emptyProject: Project = {
 };
 
 export function ProjectsForm() {
+  const cvLanguage = useCVStore((state) => state.cvLanguage ?? "en");
   const {
     projects,
     addProject,
@@ -185,6 +187,15 @@ export function ProjectsForm() {
                                 }}
                                 placeholder="One sentence: what it was, core tech, key result."
                                 className="mt-1 text-zinc-600 dark:text-zinc-400"
+                              />
+                              <TldrGenerator
+                                key={JSON.stringify([project.name, project.role, project.description, project.tldr, cvLanguage])}
+                                kind="project"
+                                title={project.name}
+                                role={project.role}
+                                description={project.description}
+                                language={cvLanguage}
+                                onApply={(value) => handleUpdateProject(index, "tldr", value)}
                               />
                             </div>
 
