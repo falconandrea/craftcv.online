@@ -89,3 +89,12 @@ Rejected: shortening the TEXT FORMATTING examples (no behavioral evidence; examp
 - Evaluation matrix: 27 cases — every one of the four surfaces covers all six required kinds (normal, empty, multilingual, adversarial, schema-edge, regression). Each surface declares an observable token bound (`SURFACE_TOKEN_BUDGETS`) kept in sync with the callers' `max_tokens` by a drift test.
 - Baseline-vs-candidate live replay: **pending** — requires `AI_PROVIDER_*` credentials; replay the matrix in `lib/ai/prompts/evaluation-cases.ts` manually when available. No behavioral verification against a live provider is claimed by this audit beyond the deterministic contracts above.
 - Prompt extraction (routes → modules) preserves request/response contracts: routes import the exact same strings; only the Optimize system message gained the date-context block and audited clauses by design.
+
+
+## 5. Entry TL;DR Generation (2026-10-02)
+
+- Prompt: `lib/ai/prompts/tldr.ts`; caller: `app/api/ai/tldr/route.ts`.
+- Input: one experience/project title, role and non-empty description plus CV language (`en`/`it`); no full CV or contact fields. Entry text is untrusted data.
+- Output: `{ tldr: string }`, normalized whitespace, non-empty, at most 30 words and 200 characters. Invalid output returns 502; request validation returns 400; unconfigured provider returns 503. Rate limit: 20 requests per connection per 10 minutes; provider timeout: 45 seconds.
+- The prompt requires fact preservation, no invented metrics, no contacts/placeholders, and the requested language. The user reviews/edits the result before applying it to the selected entry.
+- Manual evaluation pending: English and Italian sources, empty description, replacing an existing TL;DR, discard, injected instructions, changing/reordering the source while generation is pending, and provider failure. No live behavior or automated verification claimed.

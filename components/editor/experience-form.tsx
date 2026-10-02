@@ -8,6 +8,7 @@
  */
 
 import { useCVStore } from "@/state/store";
+import { TldrGenerator } from "@/components/editor/tldr-generator";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,7 @@ const emptyEntry: ExperienceEntry = {
 };
 
 export function ExperienceForm() {
+  const cvLanguage = useCVStore((state) => state.cvLanguage ?? "en");
   const {
     experience,
     addExperience,
@@ -176,6 +178,15 @@ export function ExperienceForm() {
                               placeholder="One sentence: what it was, core tech, key result."
                               className="mt-1 text-zinc-600 dark:text-zinc-400"
                             />
+                              <TldrGenerator
+                                key={JSON.stringify([entry.company, entry.role, entry.description, entry.tldr, cvLanguage])}
+                                kind="experience"
+                                title={entry.company}
+                                role={entry.role}
+                                description={entry.description}
+                                language={cvLanguage}
+                                onApply={(value) => handleUpdateEntry(index, "tldr", value)}
+                              />
                           </div>
 
                           {/* Start & End Date — stacked */}
