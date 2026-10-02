@@ -160,26 +160,10 @@ export function ExperienceForm() {
 
                           {/* TL;DR — full width */}
                           <div>
-                            <div className="flex items-center justify-between">
-                              <Label htmlFor={`tldr-${index}`}>TL;DR (optional)</Label>
-                              <span className="text-xs text-zinc-500">
-                                {entry.tldr ? entry.tldr.split(/\s+/).filter(Boolean).length : 0}/30 words
-                              </span>
-                            </div>
-                            <Input
-                              id={`tldr-${index}`}
-                              value={entry.tldr || ""}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                if (val.length <= 200) {
-                                  handleUpdateEntry(index, "tldr", val);
-                                }
-                              }}
-                              placeholder="One sentence: what it was, core tech, key result."
-                              className="mt-1 text-zinc-600 dark:text-zinc-400"
-                            />
                               <TldrGenerator
                                 key={JSON.stringify([entry.company, entry.role, entry.description, entry.tldr, cvLanguage])}
+                                inputId={`tldr-${index}`}
+                                value={entry.tldr ?? ""}
                                 kind="experience"
                                 title={entry.company}
                                 role={entry.role}
