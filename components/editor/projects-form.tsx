@@ -170,26 +170,10 @@ export function ProjectsForm() {
                             </div>
 
                             <div className="col-span-2">
-                              <div className="flex items-center justify-between">
-                                <Label htmlFor={`project-tldr-${index}`}>TL;DR (optional)</Label>
-                                <span className="text-xs text-zinc-500">
-                                  {project.tldr ? project.tldr.split(/\s+/).filter(Boolean).length : 0}/30 words
-                                </span>
-                              </div>
-                              <Input
-                                id={`project-tldr-${index}`}
-                                value={project.tldr || ""}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  if (val.length <= 200) {
-                                    handleUpdateProject(index, "tldr", val);
-                                  }
-                                }}
-                                placeholder="One sentence: what it was, core tech, key result."
-                                className="mt-1 text-zinc-600 dark:text-zinc-400"
-                              />
                               <TldrGenerator
                                 key={JSON.stringify([project.name, project.role, project.description, project.tldr, cvLanguage])}
+                                inputId={`project-tldr-${index}`}
+                                value={project.tldr ?? ""}
                                 kind="project"
                                 title={project.name}
                                 role={project.role}

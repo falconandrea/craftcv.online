@@ -3,11 +3,14 @@
 import { useId, useRef, useState } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import type { CVLanguage } from "@/state/types";
 
 interface TldrGeneratorProps {
+  inputId: string;
+  value: string;
   kind: "experience" | "project";
   title: string;
   role: string;
@@ -16,7 +19,7 @@ interface TldrGeneratorProps {
   onApply: (value: string) => void;
 }
 
-export function TldrGenerator({ kind, title, role, description, language, onApply }: TldrGeneratorProps) {
+export function TldrGenerator({ inputId, value, kind, title, role, description, language, onApply }: TldrGeneratorProps) {
   const id = useId();
   const pending = useRef(false);
   const [loading, setLoading] = useState(false);
@@ -53,17 +56,46 @@ export function TldrGenerator({ kind, title, role, description, language, onAppl
   }
 
   return (
-    <div className="mt-2 flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={generate} disabled={loading || !description.trim() || description.length > 15000}>
-          {loading ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <Sparkles className="size-4" />}
-          {loading ? "Generating…" : "Generate TL;DR"}
-        </Button>
-        <span className="text-xs text-muted-foreground">
-          {description.trim() ? "Uses this entry and the CV language." : "Add a description first."}
-        </span>
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <Label htmlFor={inputId}>TL;DR (optional)</Label>
+        <div className="flex items-center gap-3">
+          <span className="group relative inline-flex">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1.5 px-2 text-xs text-[#00f0ff]/70 hover:bg-[#00f0ff]/10 hover:text-[#00f0ff]"
+              onClick={generate}
+              disabled={loading || !description.trim() || description.length > 15000}
+              aria-label={loading ? "Generating TL;DR" : "Generate TL;DR"}
+              aria-describedby={`${id}-help`}
+              aria-busy={loading}
+            >
+              {loading ? <Loader2 className="size-4 animate-spin motion-reduce:animate-none" /> : <Sparkles className="size-4" />}
+              <span className="hidden sm:inline">{loading ? "Generating…" : "Generate"}</span>
+            </Button>
+            <span
+              id={`${id}-help`}
+              role="tooltip"
+              className="pointer-events-none absolute right-0 top-full z-10 mt-1 w-64 rounded-md border border-[#00f0ff]/20 bg-[#0a0a12] p-2 text-xs text-zinc-300 opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+            >
+              {!description.trim() ? "Add a description first. " : description.length > 15000 ? "Shorten the description to 15,000 characters first. " : "Generate from this entry in the CV language. "}
+              Title, role and description are sent to AI.
+            </span>
+          </span>
+          <span className="whitespace-nowrap text-xs text-muted-foreground">
+            {value.trim() ? value.trim().split(/\s+/).length : 0}/30 words
+          </span>
+        </div>
       </div>
-      <p className="text-xs text-muted-foreground">Title, role and description are sent to AI.</p>
+      <Input
+        id={inputId}
+        value={value}
+        maxLength={200}
+        onChange={(event) => onApply(event.target.value)}
+        placeholder="One sentence: what it was, core tech, key result."
+      />
       {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
       {proposal !== null && (
         <div className="flex flex-col gap-2 rounded-md border p-3">
