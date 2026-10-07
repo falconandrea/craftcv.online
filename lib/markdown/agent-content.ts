@@ -99,7 +99,7 @@ CraftCV uses a local-first editor: CV data is saved in your browser's localStora
 
 GTM is loaded when a GTM_ID is configured. Analytics tags and consent settings are managed in the deployed GTM container and service settings.
 
-Contact: falcon.andrea88@gmail.com
+Contact: andrea@craftcv.online
 `;
 
 const COOKIES = `---

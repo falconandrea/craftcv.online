@@ -55,7 +55,7 @@ const ROUTES: Record<string, RouteContract> = {
     pageSource: "app/privacy/page.tsx",
     invariants: [
       "local-first",
-      "falcon.andrea88@gmail.com",
+      "andrea@craftcv.online",
       "Google Analytics 4 (GA4) / GTM",
       "Microsoft Clarity",
       "CookieYes",

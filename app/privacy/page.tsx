@@ -107,7 +107,7 @@ export default function PrivacyPage() {
             <p className="text-zinc-500 font-mono text-sm leading-relaxed">
               For security concerns or data inquiries:
               <br />
-              <span className="text-[#00f0ff]">falcon.andrea88@gmail.com</span>
+              <span className="text-[#00f0ff]">andrea@craftcv.online</span>
             </p>
           </section>
         </div>
