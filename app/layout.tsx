@@ -20,20 +20,20 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "CraftCV - ATS-Ready CV Generator",
+    default: "CraftCV — AI CV Builder with Rule-Based ATS Checks",
     template: "%s | CraftCV",
   },
   description:
-    "Create professional, ATS-optimized CVs in minutes. Free CV builder with AI-powered optimization and PDF export.",
+    "Build your CV with AI Optimize checks against existing career details, 16 rule-based ATS checks and job keyword analysis. Free, open source, no account required.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     url: SITE_URL,
-    title: "CraftCV - ATS-Ready CV Generator",
+    title: "CraftCV — AI CV Builder with Rule-Based ATS Checks",
     description:
-      "Create professional, ATS-optimized CVs in minutes. Free CV builder with AI-powered optimization and PDF export. No login required, local-first privacy.",
+      "Build your CV with AI Optimize checks against existing career details, 16 rule-based ATS checks and job keyword analysis. Free, open source, no account required.",
     siteName: "CraftCV",
     locale: "en_US",
     // og:image comes from app/opengraph-image.tsx (generated at build time).
@@ -69,19 +69,20 @@ const jsonLd = {
   operatingSystem: "Web",
   url: SITE_URL,
   description:
-    "Free, open-source ATS-optimized CV builder with AI-powered optimization, keyword gap analysis, and PDF export. CV data is stored locally in the browser by default; AI and ATS features send selected content to external providers for processing.",
+    "Free, open-source CV builder with AI Optimize checks against existing career details, 16 deterministic ATS checks, keyword gap analysis, and PDF export. CV data is stored locally in the browser by default; AI and ATS features send selected content to external providers for processing.",
   offers: {
     "@type": "Offer",
     price: "0",
     priceCurrency: "USD",
   },
   featureList: [
-    "ATS Score with 16 deterministic lint rules",
+    "16 deterministic ATS lint checks",
     "Keyword gap analysis against job descriptions",
-    "AI-powered CV optimization with PII masking",
-    "PDF import with AI content extraction",
+    "AI Optimize checks proposed edits against existing CV details",
+    "Structured contact-field PII masking for AI Optimize",
+    "PDF import with AI-assisted extraction",
     "Real-time PDF preview",
-    "Local-first privacy — no data stored",
+    "Browser-local editor storage with JSON export",
     "JSON export/import for data portability",
   ],
   creator: {

@@ -39,7 +39,7 @@ export default function CookiesPage() {
             COOKIE_POLICY<span className="text-[#ff00aa]">.SYS</span>
           </h1>
           <p className="text-zinc-400 font-mono text-sm uppercase tracking-widest">
-            Last Updated: April 2026 // Status: Active
+            Last Updated: October 7, 2026 // Status: Active
           </p>
         </div>
 
@@ -50,7 +50,7 @@ export default function CookiesPage() {
             </h2>
             <div className="prose prose-invert prose-sm max-w-none font-mono text-zinc-400 leading-relaxed">
               <p>
-                Essential cookies are necessary for the website to function. They are used to manage user sessions and basic site navigation. 
+                The editor saves your CV in browser localStorage, not in an account session cookie. A separate localStorage value remembers dismissal of the AI Optimize privacy notice. Consent services may use cookies or storage to remember your choices; this is distinct from CV storage.
               </p>
               <div className="mt-6 border border-[#b8ff00]/20 p-4 rounded bg-[#b8ff00]/5 text-xs">
                 <div className="font-bold text-[#b8ff00] mb-2">LOCAL_STORAGE_MANIFEST:</div>
@@ -60,8 +60,8 @@ export default function CookiesPage() {
                     <span className="text-zinc-500 italic">User CV state data.</span>
                   </div>
                   <div className="flex justify-between border-b border-white/5 py-1">
-                    <span>theme-storage</span>
-                    <span className="text-zinc-500 italic">User UI preferences.</span>
+                    <span>ai_privacy_dismissed</span>
+                    <span className="text-zinc-500 italic">Privacy notice dismissal.</span>
                   </div>
                 </div>
               </div>
@@ -74,7 +74,7 @@ export default function CookiesPage() {
             </h2>
             <div className="prose prose-invert prose-sm max-w-none font-mono text-zinc-400 leading-relaxed">
               <p>
-                These modules help us understand how users interact with the Terminal. All data is processed anonymously.
+                Analytics measure site usage and interactions. They are separate from local CV storage and may use identifiers; we do not describe all collected data as anonymous. GTM loads when configured; analytics tags and consent controls are managed in the deployed GTM container and service settings.
               </p>
               <div className="mt-4 space-y-4">
                 <div className="flex gap-4 p-4 border border-[#00f0ff]/10 rounded bg-[#00f0ff]/3">
@@ -91,7 +91,7 @@ export default function CookiesPage() {
                   <div>
                     <div className="text-white font-bold text-sm">Google Analytics 4 (GA4)</div>
                     <p className="text-xs text-zinc-500 mt-1">
-                      Behavioral mapping and anonymous traffic analysis to measure feature usage.
+                      Traffic and aggregate feature-usage measurement.
                     </p>
                   </div>
                 </div>
@@ -100,7 +100,7 @@ export default function CookiesPage() {
                   <div>
                     <div className="text-white font-bold text-sm">Microsoft Clarity</div>
                     <p className="text-xs text-zinc-500 mt-1">
-                      Tracks interface interaction patterns (clicks, scrolls) to identify UX bottlenecks.
+                      Interaction analytics and session recording to help understand clicks, scrolling and usability issues.
                     </p>
                   </div>
                 </div>
@@ -113,8 +113,7 @@ export default function CookiesPage() {
               OVERRIDE_PREFERENCES
             </h2>
             <p className="text-zinc-500 font-mono text-sm leading-relaxed">
-              Modify your tracking consent status at any time via the 
-              <span className="text-[#ff00aa]"> Cookie Banner</span> (powered by CookieYes) located at the bottom of the screen.
+              Where the deployed CookieYes consent controls are available, use them to review or change analytics consent. Cookie names, lifetimes and which tags are consent-controlled depend on the deployed service configuration.
             </p>
           </section>
         </div>

@@ -65,7 +65,7 @@ function GroundingReportPanel({ report }: { report: GroundingReport }) {
                     return (
                         <li key={`inv-${i}`} className="flex items-start gap-2 text-xs font-mono">
                             <span className="mt-0.5 shrink-0 px-1.5 py-0.5 rounded text-[10px] bg-[#ff00aa]/15 text-[#ff00aa] border border-[#ff00aa]/20">
-                                INVENTION
+                                UNSUPPORTED
                             </span>
                             <span className="text-zinc-400">
                                 &quot;{flag.term}&quot; — <span className="text-zinc-500">{flag.message}</span>
@@ -160,7 +160,8 @@ export function ChatMessage({ message, onApply, onSkip }: ChatMessageProps) {
         : undefined;
 
     const hasPendingChanges =
-        effectivePatch && Object.keys(effectivePatch).length > 0 && message.changeStatus === "pending";
+        message.groundingStatus !== "failed" && effectivePatch && Object.keys(effectivePatch).length > 0 && message.changeStatus === "pending";
+    const requiresReview = !!message.groundingReport && hasGroundingFlags(message.groundingReport);
 
     const changeSummary = hasPendingChanges
         ? summarizeChanges(effectivePatch, cv)
@@ -234,10 +235,13 @@ export function ChatMessage({ message, onApply, onSkip }: ChatMessageProps) {
                                         size="sm"
                                         variant="default"
                                         className="h-7 gap-1.5 bg-[#b8ff00]/15 hover:bg-[#b8ff00]/25 text-[#b8ff00] border border-[#b8ff00]/30 text-xs px-3 flex-1 font-mono"
-                                        onClick={() => onApply?.(effectivePatch!)}
+                                        onClick={() => {
+                                            if (requiresReview) setIsDiffOpen(true);
+                                            else onApply?.(effectivePatch!);
+                                        }}
                                     >
                                         <CheckCheck className="h-3.5 w-3.5" />
-                                        APPLY
+                                        {requiresReview ? "REVIEW & APPLY" : "APPLY"}
                                     </Button>
                                     <Button
                                         size="sm"
@@ -251,6 +255,12 @@ export function ChatMessage({ message, onApply, onSkip }: ChatMessageProps) {
                                 </div>
                             </div>
                         </div>
+                    )}
+
+                    {message.groundingStatus === "failed" && (
+                        <p role="alert" className="text-xs font-mono text-amber-400">
+                            We couldn&apos;t verify these suggested changes. Review the advice manually or retry.
+                        </p>
                     )}
 
                     {/* Applied / Skipped badge */}

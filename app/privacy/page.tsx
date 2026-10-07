@@ -39,7 +39,7 @@ export default function PrivacyPage() {
             PRIVACY_POLICY<span className="text-[#00f0ff]">.EXE</span>
           </h1>
           <p className="text-zinc-400 font-mono text-sm uppercase tracking-widest">
-            Last Updated: April 2026 // Status: Active
+            Last Updated: October 7, 2026 // Status: Active
           </p>
         </div>
 
@@ -49,14 +49,14 @@ export default function PrivacyPage() {
               <Lock className="w-24 h-24 text-[#00f0ff]" />
             </div>
             <h2 className="text-xl font-mono font-bold text-[#00f0ff] mb-4 flex items-center gap-2">
-              <span className="text-[#ff00aa]">&gt;</span> 01_LOCAL_STORAGE_ENCRYPTION
+              <span className="text-[#ff00aa]">&gt;</span> 01_LOCAL_CV_STORAGE
             </h2>
             <div className="prose prose-invert prose-sm max-w-none font-mono text-zinc-400 leading-relaxed">
               <p>
-                CraftCV is designed with a &quot;Privacy-First&quot; architecture. By default, all CV data you enter is stored exclusively in your browser&apos;s local storage. We do not maintain a central database of user CVs.
+                CraftCV uses a local-first editor: CV data is saved in your browser&apos;s localStorage, without application-level encryption. We do not maintain a central database of user CVs. Export JSON for a portable backup; clearing browser storage removes the saved local copy.
               </p>
               <p className="mt-4">
-                Your data never leaves your device unless you explicitly use our AI-powered features or export your data.
+                Your saved CV stays in browser local storage. AI features and ATS analysis transmit content for processing; analytics and session recording are described below.
               </p>
             </div>
           </section>
@@ -67,17 +67,19 @@ export default function PrivacyPage() {
             </h2>
             <div className="prose prose-invert prose-sm max-w-none font-mono text-zinc-400 leading-relaxed">
               <p>
-                When using AI features (Optimization, PDF Import, ATS Score):
+                When you choose features that require server or AI processing:
               </p>
               <ul className="list-disc pl-5 mt-4 space-y-2">
-                <li>CV content is temporarily transmitted to our AI providers (Nous Research at the moment) for processing.</li>
+                <li>CV content is sent through our server to the configured external AI provider for processing. Provider handling depends on its own policies.</li>
                 <li>
-                  <strong>Optimization & Import:</strong> We attempt to mask Personally Identifiable Information (PII) like phone numbers and specific addresses before transmission.
+                  <strong>AI Optimize:</strong> In the standard editor flow, structured name, email, phone and profile-link fields are masked in the browser before transmission. Identifiers in free-text CV fields or chat messages may still be sent.
                 </li>
                 <li>
-                  <strong>ATS Score Simulator:</strong> The original PDF document is transmitted <u>without</u> modifications or PII masking. This is a technical requirement to accurately simulate how an enterprise ATS (Applicant Tracking System) parses your actual file structure, layout, and metadata.
+                  <strong>PDF Import & ATS analysis:</strong> The PDF is uploaded to our server for text extraction. Import sends up to 15,000 characters of extracted text to the configured provider. ATS checks run on the full extracted text and filename; up to 15,000 characters may be sent for AI review when available. Neither flow masks that text, and neither sends the original PDF to the AI provider.
                 </li>
-                <li>Data is processed in real-time and is not stored permanently by our platform after the request is completed.</li>
+                <li><strong>Job descriptions:</strong> When supplied for keyword analysis or ATS review, job-description text is sent to the configured provider without PII masking.</li>
+                <li><strong>Generate TL;DR:</strong> The selected entry&apos;s title, role, description and CV language are sent to the provider without PII masking. This flow does not use AI Optimize&apos;s patch-grounding checks.</li>
+                <li><strong>Storage and retention:</strong> The application does not save uploaded PDFs or AI request content to a central CV database. Aggregate usage and token counters are saved server-side. Connection identifiers and request timestamps are held in memory for rate limiting. Error logs can include provider errors or response excerpts; their retention depends on deployment logging. External AI and analytics services handle data under their own policies; we do not promise zero retention by those services.</li>
               </ul>
             </div>
           </section>
@@ -88,10 +90,10 @@ export default function PrivacyPage() {
             </h2>
             <div className="prose prose-invert prose-sm max-w-none font-mono text-zinc-400 leading-relaxed">
               <p>
-                We use the following services to monitor system health and improve user experience:
+                GTM is loaded when a GTM_ID is configured. The deployment uses the following services for measurement and consent; tags, cookie lifetimes and consent behavior are configured outside this repository in GTM and the service settings:
               </p>
               <ul className="list-disc pl-5 mt-4 space-y-2">
-                <li>Google Analytics 4 (GA4) / GTM: Behavioral tracking (anonymous).</li>
+                <li>Google Analytics 4 (GA4) / GTM: Traffic and feature-usage analytics.</li>
                 <li>Microsoft Clarity: Visual session recording for debugging UI issues.</li>
                 <li>CookieYes: Consent management.</li>
               </ul>

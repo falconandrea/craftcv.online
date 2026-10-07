@@ -1,9 +1,9 @@
-# Craft CV: ATS-Friendly CV Generator
+# CraftCV: AI CV Builder with Rule-Based ATS Checks
 
-A modern, fast, and privacy-focused web application to generate **ATS-optimized CVs**. Built with Next.js, optimized for speed and simplicity.
+Build and tailor CVs with AI Optimize, which compares proposed edits against existing career details. Separate rule-based ATS checks and job keyword analysis help identify concrete gaps. Built with Next.js.
 
 > **Status**: In Active Development
-> **Privacy**: Local-first. Your data stays in your browser (unless you opt-in for AI features).
+> **Privacy**: Local-first. Editor data is stored in your browser. AI features and ATS analysis send content through the server to an external provider; see the privacy details below.
 
 ---
 
@@ -16,12 +16,12 @@ A modern, fast, and privacy-focused web application to generate **ATS-optimized 
 - **Export/Import**: Save your progress as a JSON file and resume anytime.
 - **PDF Generation**: High-quality, selectable text PDF output.
 - **Mobile Friendly**: Responsive design for editing on the go.
-- **ATS Score Simulator**: Upload your PDF to test how an ATS parses your CV with 16 deterministic lint rules (contacts, bullet quality, structure) and a keyword gap analysis against any job description. The lint score is weighted — a warning is half credit and the two optional checks never lower it — and it stays separate from the AI score instead of being averaged into one number. Rules and scoring: [`docs/ATS_RULES.md`](./docs/ATS_RULES.md).
+- **ATS CV Check**: Check extracted PDF text and the filename with 16 deterministic lint rules (contacts, bullet quality, structure) and, when AI keyword extraction is available, a keyword gap analysis against a supplied job description. The lint score is weighted — a warning is half credit and the two optional checks never lower it — and it stays separate from the AI score instead of being averaged into one number. Rules and scoring: [`docs/ATS_RULES.md`](./docs/ATS_RULES.md).
 - **AI-Powered**:
   - Optimize your CV based on a Job Description (using LLMs like DeepSeek).
   - Keyword Gap Analysis against any job description.
-  - Built-in AI grounding with anti-hallucination guardrails and verified facts protection.
-  - Token-optimized career data model (TL;DR fields, skill evidence linking) for faster, cheaper AI calls.
+  - AI Optimize checks proposed patches: protected experience dates and education/certification years are preserved, unsupported skills/entities are flagged, and detected new metrics are flagged; flagged proposals require diff review, with explicit metric confirmation before applying. These heuristic checks do not verify career history or catch every unsupported claim.
+  - Token-optimized career data model (TL;DR fields, skill evidence linking) to reduce prompt context size where compact context is appropriate.
 
 ---
 
@@ -103,12 +103,17 @@ docker compose up -d
 
 ---
 
-## 🧘 Vibe Coding & Spec-Driven Development
+## AI-assisted, spec-driven development
 
-This project embraces the **Vibe Coding** philosophy, combined with a **Spec-Driven** approach.
+Development uses explicit specifications, focused implementation, tests and review. AI assists with implementation; documented constraints and code-level validation help check its output.
 
--   **Spec-Driven**: We define clear, detailed specifications (PRD, Tech Stack, App Flow) *before* writing code. This ensures the AI agent has perfect context.
--   **Vibe Coding**: We iterate fast, focusing on the "feel" and user experience, letting the AI handle the heavy lifting of implementation while we direct the flow.
+## Privacy and processing
+
+- Editor CV data is persisted in browser local storage; JSON export provides a portable backup. There is no central database of user CVs.
+- AI features and ATS analysis send content through the server to the configured external AI provider. AI Optimize masks structured name, email, phone and profile-link fields; free-text CV content and chat messages may still contain identifiers.
+- PDF import and ATS analysis send extracted PDF text without PII masking. TL;DR generation sends the selected entry title, role, description and language without masking. Grounding checks described above apply to AI Optimize, not every AI feature.
+- The site uses Google Analytics via GTM, Microsoft Clarity for session recording and CookieYes for consent management. Aggregate usage/token counters are persisted server-side in JSON files.
+- See the [privacy policy](https://craftcv.online/privacy) for processing details.
 
 ---
 

@@ -10,7 +10,7 @@ export const OG_IMAGE = {
   url: "/opengraph-image",
   width: 1200,
   height: 630,
-  alt: "CraftCV - ATS-Ready CV Generator",
+  alt: "CraftCV — AI CV Builder with Rule-Based ATS Checks",
 };
 
 /**

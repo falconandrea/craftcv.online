@@ -64,12 +64,12 @@ export function ResultsDashboard({ data, onReset }: ResultsDashboardProps) {
       {hasAi ? (
         <div className="flex flex-col items-center justify-center p-8 bg-black/60 border border-white/10 rounded-xl relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#ff00aa]/5 pointer-events-none" />
-          <h2 className="text-sm font-mono tracking-[0.2em] text-white/50 uppercase mb-4">Overall ATS Readability Score</h2>
+          <h2 className="text-sm font-mono tracking-[0.2em] text-white/50 uppercase mb-4">AI Evaluation Score</h2>
           <div className={`text-7xl font-bold font-mono tracking-tighter ${getScoreColor(aiScore)} drop-shadow-[0_0_15px_rgba(currentColor,0.5)]`}>
             {aiScore}
           </div>
           <p className="text-white/60 mt-4 text-center max-w-md">
-            {aiScore >= 80 ? "Excellent! Your CV is highly readable and impactful for ATS software." : aiScore >= 60 ? "Good, but it needs a few tweaks to ensure it passes strict ATS filters." : "Warning: ATS parsers will likely struggle with this CV or found missing critical keywords."}
+            {aiScore >= 80 ? "The AI review rated your CV highly. Review its feedback alongside the rule-based checks." : aiScore >= 60 ? "The AI review suggests improvements. Check its feedback and the rule-based findings." : "The AI review flagged concerns. Review the details before changing your CV."}
           </p>
         </div>
       ) : (
@@ -77,10 +77,9 @@ export function ResultsDashboard({ data, onReset }: ResultsDashboardProps) {
           <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
           <p className="text-sm text-white/70 leading-relaxed">
             <strong className="text-yellow-400 block mb-1">AI evaluation unavailable</strong>
-            The AI review could not be completed for this document, so only the
-            deterministic checks below are shown. They run entirely on our side
-            and are the reproducible part of the report — try again in a moment
-            for the AI breakdown.
+            The AI review could not be completed for this document, so the
+            rule-based report remains available below. They run entirely on our side
+            and do not depend on an AI model. Any available keyword gap report is shown separately.
           </p>
         </div>
       )}
@@ -119,7 +118,7 @@ export function ResultsDashboard({ data, onReset }: ResultsDashboardProps) {
           <div className="flex items-center justify-between border-b border-white/10 pb-2">
             <h3 className="text-lg font-mono tracking-widest text-white uppercase flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#00ffd5]" />
-              CraftCV Lint Check
+              Rule-Based Lint Score
             </h3>
             {data.lintScore !== undefined && (
               <span className={`text-2xl font-bold font-mono ${getScoreColor(data.lintScore)}`}>

@@ -5,7 +5,7 @@ import { ImageResponse } from "next/og";
 // Next render the PNG (and load the satori WASM) on every crawler hit.
 export const dynamic = "force-static";
 
-export const alt = "CraftCV - ATS-Ready CV Generator";
+export const alt = "CraftCV — AI CV Builder with Rule-Based ATS Checks";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -88,15 +88,15 @@ export default function OpengraphImage() {
         {/* Headline */}
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", fontSize: 76, color: "#f4f4f5" }}>
-            Build your
+            A stronger CV.
           </div>
-          <div style={{ display: "flex", fontSize: 92, color: CYAN }}>
-            professional CV
+          <div style={{ display: "flex", fontSize: 64, color: CYAN }}>
+            Grounded in your
           </div>
           <div
             style={{ display: "flex", fontSize: 58, color: "#a1a1aa" }}
           >
-            in minutes
+            experience.
           </div>
         </div>
 
@@ -119,7 +119,7 @@ export default function OpengraphImage() {
             </div>
             <div style={{ display: "flex", fontSize: 26, color: "#a1a1aa" }}>
               <span style={{ color: LIME, marginRight: 12 }}>$</span>
-              ATS-optimized output
+              16 rule-based ATS checks
             </div>
           </div>
 

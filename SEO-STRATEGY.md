@@ -92,8 +92,7 @@ new pages for four keywords** — that's how cannibalisation starts.
   lives in `components/ats/AtsScoreContent.tsx` (server component); the widget
   moved to `components/ats/AtsScoreTool.tsx` so the copy stays out of the client
   bundle. Internal links to `/dashboard`, `/editor` and `/privacy`.
-  **Still open:** the H1 is unchanged (`ATS Score Simulator`) — deliberately not
-  gambled on unresearched keywords. Revisit it after Phase 0 keyword research.
+  **Updated 2026-10-07:** the H1 now reads `Check how ATS-friendly your CV is`; the page leads with deterministic checks and separates AI review. The previous decision to leave the H1 unchanged is historical. Keyword research remains pending; revisit the wording after Phase 0 research.
   Do **not** create `/ats-checker` — one canonical URL.
 - [ ] Only add more routes if the intent is genuinely different **and** you can
   serve it well:

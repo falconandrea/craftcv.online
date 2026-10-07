@@ -14,11 +14,12 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-xs font-mono text-zinc-500 uppercase tracking-widest">
-              &copy; {new Date().getFullYear()} TERMINAL_SYSTEM_v2.0
+              &copy; {new Date().getFullYear()} CraftCV
             </p>
           </div>
 
           <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-4">
+            <Link href="/ats-score" className="text-xs font-mono text-zinc-400 hover:text-[#00f0ff] transition-colors uppercase tracking-wider">ATS Score</Link>
             <Link
               href="/privacy"
               className="text-xs font-mono text-zinc-400 hover:text-[#00f0ff] transition-colors uppercase tracking-wider"
