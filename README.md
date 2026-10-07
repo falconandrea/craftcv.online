@@ -72,6 +72,43 @@ Build and tailor CVs with AI Optimize, which compares proposed edits against exi
 
 ---
 
+## AI provider configuration
+
+CraftCV supports OpenAI-compatible endpoints such as DeepSeek, OpenAI and Ollama.
+Only AI Optimize can additionally use Claude through Anthropic's native Messages API.
+The deployment chooses the provider; visitors cannot select it at runtime.
+
+```env
+# Optimize only (unset means openai_compatible for backward compatibility)
+AI_OPTIMIZE_PROVIDER=anthropic
+ANTHROPIC_API_KEY=your-anthropic-key
+ANTHROPIC_MODEL=claude-sonnet-5-5
+
+# Other AI features; also Optimize when openai_compatible is selected
+AI_PROVIDER_BASE_URL=https://api.deepseek.com/v1
+AI_PROVIDER_API_KEY=your-deepseek-key
+AI_PROVIDER_MODEL=deepseek-chat
+```
+
+Both Anthropic variables are required when selected. Unknown selectors or missing
+selected-provider configuration return 503; there is no automatic provider fallback.
+PDF import, ATS AI review, JD extraction and TL;DR generation still use `AI_PROVIDER_*`.
+Keys stay server-side: never use `NEXT_PUBLIC_` for these variables. Set them in
+`.env.local` for local development or the server's `server/.env` for the Compose
+reference deployment, then restart/recreate the service. The image is unchanged by
+runtime provider selection, but the new SDK requires deploying the updated image.
+
+Anthropic sampling and thinking parameters are omitted, leaving the model's default
+adaptive thinking. Only text blocks enter the application. Incomplete or refused
+responses cannot produce applicable patches. Token counters retain their existing
+input/output meaning; output usage can include reasoning tokens, so provider totals
+are not a direct comparison of visible text. No prompt caching is enabled here.
+
+Manual paid smoke test: follow [AI Optimize providers](docs/AI_PROVIDERS.md).
+The command is explicit and never runs in normal tests or CI.
+
+---
+
 ## 🐳 Docker
 
 The project includes a multi-stage `Dockerfile` for production-ready builds.

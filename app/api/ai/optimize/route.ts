@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
+import { AiConfigurationError, resolveOptimizeProvider } from "@/lib/ai/providers/config";
+import { safeErrorMetadata } from "@/lib/ai/providers/types";
 import type { CVState } from "@/state/types";
 import { incrementCounter, addToCounter } from "@/lib/stats";
 import { validatePatch } from "@/lib/ai/grounding/validate-patch";
@@ -28,16 +29,7 @@ import {
 // ---------------------------------------------------------------------------
 export async function POST(req: NextRequest) {
   try {
-    const baseURL = process.env.AI_PROVIDER_BASE_URL;
-    const apiKey = process.env.AI_PROVIDER_API_KEY;
-    const model = process.env.AI_PROVIDER_MODEL;
-
-    if (!baseURL || !apiKey || !model) {
-      return NextResponse.json(
-        { error: "AI provider is not configured. Please set AI_PROVIDER_BASE_URL, AI_PROVIDER_API_KEY, and AI_PROVIDER_MODEL in your .env.local file." },
-        { status: 503 }
-      );
-    }
+    const provider = resolveOptimizeProvider();
 
     const body = await req.json();
     const { messages, cvData } = body as {
@@ -45,8 +37,15 @@ export async function POST(req: NextRequest) {
       cvData: CVState;
     };
 
-    if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json({ error: "Invalid request: messages array required." }, { status: 400 });
+    if (!Array.isArray(messages) || messages.some(message =>
+      !message || typeof message !== "object" ||
+      (message.role !== "user" && message.role !== "assistant") ||
+      typeof message.content !== "string"
+    )) {
+      return NextResponse.json(
+        { error: "Invalid request: messages must contain only user/assistant roles with string content." },
+        { status: 400 }
+      );
     }
 
     // Read explicit CV language from state (fallback formatting if missing)
@@ -73,60 +72,44 @@ export async function POST(req: NextRequest) {
       messages[messages.length - 1]?.content
     );
 
-    const client = new OpenAI({ apiKey, baseURL });
-
-    // Build the message list. We deliberately do NOT use a prefill trick
-    // (no synthetic assistant "{" message): the trick assumes the provider
-    // natively supports assistant message prefilling, which is true for
-    // Anthropic Claude but breaks for DeepSeek / Llama / Mistral via
-    // OpenAI-compatible proxies — they emit chat-template markers as text
-    // (e.g. "#start#", "# Human:") that corrupt the response. Modern models
-    // follow JSON instructions reliably without prefill; the robust parser
-    // handles any residual messiness.
-    const llmMessages = [
-      {
-        role: "system" as const,
-        // Audited composition (lib/ai/prompts/optimize.ts): language
-        // separation + explicit current date + prompt + CV context.
-        content:
-          languageInstruction +
-          buildDateContext() +
-          OPTIMIZE_SYSTEM_PROMPT +
-          cvContext,
-      },
-      ...messages,
-      { role: "user" as const, content: `REMINDER: You MUST respond with a raw JSON object starting with {. Include "message" and "proposedChanges" keys. Do NOT use markdown or code fences. Output ONLY valid JSON.` },
-    ];
-
-    const completion = await client.chat.completions.create({
-      model,
-      max_tokens: 4000,
-      temperature: 0.3,
-      messages: llmMessages,
+    const completion = await provider.generate({
+      system: languageInstruction + buildDateContext() + OPTIMIZE_SYSTEM_PROMPT + cvContext,
+      messages: [
+        ...messages,
+        { role: "user", content: `REMINDER: You MUST respond with a raw JSON object starting with {. Include "message" and "proposedChanges" keys. Do NOT use markdown or code fences. Output ONLY valid JSON.` },
+      ],
+      maxOutputTokens: 4000,
     });
 
-    const modelOutput = completion.choices[0]?.message?.content ?? "";
+    const modelOutput = completion.text;
 
-    const parsed = parseModelResponse(modelOutput);
-
-    await incrementCounter("ai_messages");
+    // Incomplete/refused output never reaches the parser or validator.
+    const parsed = completion.complete ? parseModelResponse(modelOutput) : {
+      message: completion.refused
+        ? "The AI provider declined this request. Please rephrase your request."
+        : "The AI provider did not complete the response. No changes can be applied. Please try a smaller request.",
+      proposedChanges: undefined,
+    };
+    if (!completion.complete) {
+      console.warn("[AI Optimize] Incomplete response", {
+        provider: provider.name, stopReason: completion.stopReason,
+      });
+    }
 
     // ─── Token accounting ( continued ) ────────────────────────────
     // Actual provider-reported usage + estimated savings. Best-effort.
     try {
-      const usage = completion.usage;
-      if (usage) {
-        if (typeof usage.prompt_tokens === "number") {
-          await addToCounter("ai_optimize_prompt_tokens", usage.prompt_tokens);
-        }
-        if (typeof usage.completion_tokens === "number") {
-          await addToCounter("ai_optimize_completion_tokens", usage.completion_tokens);
-        }
+      await incrementCounter("ai_messages");
+      if (typeof completion.inputTokens === "number") {
+        await addToCounter("ai_optimize_prompt_tokens", completion.inputTokens);
+      }
+      if (typeof completion.outputTokens === "number") {
+        await addToCounter("ai_optimize_completion_tokens", completion.outputTokens);
       }
       await addToCounter("ai_optimize_snapshot_tokens", snapshotTokens);
       await addToCounter("ai_optimize_full_json_tokens_avoided", tokensAvoided);
     } catch (tokenStatsError) {
-      console.error("[AI Optimize] Token stats error:", tokenStatsError);
+      console.error("[AI Optimize] Token stats error:", { provider: provider.name, ...safeErrorMetadata(tokenStatsError) });
     }
 
     // ─── Grounding validation ─────────────────────────────────────
@@ -148,7 +131,7 @@ export async function POST(req: NextRequest) {
         finalChanges = undefined;
         groundingReport = undefined;
         groundingStatus = "failed";
-        console.error("[AI Grounding] Validation error:", groundingError);
+        console.error("[AI Grounding] Validation error:", { provider: provider.name, ...safeErrorMetadata(groundingError) });
       }
     }
 
@@ -162,7 +145,7 @@ export async function POST(req: NextRequest) {
           await incrementCounter("grounding_verifications_requested");
         }
       } catch (statsError) {
-        console.error("[AI Grounding] Stats error:", statsError);
+        console.error("[AI Grounding] Stats error:", { provider: provider.name, ...safeErrorMetadata(statsError) });
       }
     }
 
@@ -173,7 +156,13 @@ export async function POST(req: NextRequest) {
       groundingStatus,
     });
   } catch (error) {
-    console.error("[AI Optimize API] Error:", error);
+    if (error instanceof AiConfigurationError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
+    console.error("[AI Optimize API] Error:", {
+      provider: process.env.AI_OPTIMIZE_PROVIDER === "anthropic" ? "anthropic" : "openai_compatible",
+      ...safeErrorMetadata(error),
+    });
     return NextResponse.json(
       { error: "Something went wrong while contacting the AI provider. Please try again." },
       { status: 500 }
