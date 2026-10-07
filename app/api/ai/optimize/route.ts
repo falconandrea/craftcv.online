@@ -4,6 +4,7 @@ import type { CVState } from "@/state/types";
 import { incrementCounter, addToCounter } from "@/lib/stats";
 import { validatePatch } from "@/lib/ai/grounding/validate-patch";
 import { hasGroundingFlags } from "@/lib/ai/grounding/types";
+import type { GroundingStatus } from "@/lib/ai/grounding/types";
 import { buildQuickReference, toPromptString } from "@/lib/cv/quick-reference";
 import { buildCvContext } from "@/lib/ai/context-selection";
 import { estimateTokens } from "@/lib/ai/token-estimator";
@@ -129,8 +130,9 @@ export async function POST(req: NextRequest) {
     }
 
     // ─── Grounding validation ─────────────────────────────────────
-    let finalChanges = parsed.proposedChanges;
+    let finalChanges = undefined;
     let groundingReport = undefined;
+    let groundingStatus: GroundingStatus | undefined;
 
     if (parsed.proposedChanges && cvData) {
       try {
@@ -140,19 +142,27 @@ export async function POST(req: NextRequest) {
         );
         finalChanges = cleanPatch;
         groundingReport = report;
-
-        // Increment aggregate stats counters
-        if (hasGroundingFlags(report)) {
-          if (report.flaggedInventions.length > 0) {
-            await incrementCounter("grounding_inventions_blocked");
-          }
-          if (report.needsVerification.length > 0) {
-            await incrementCounter("grounding_verifications_requested");
-          }
-        }
+        groundingStatus = "validated";
       } catch (groundingError) {
-        // Grounding failure should not crash the response
+        // Keep conversational advice, but never expose an unvalidated patch.
+        finalChanges = undefined;
+        groundingReport = undefined;
+        groundingStatus = "failed";
         console.error("[AI Grounding] Validation error:", groundingError);
+      }
+    }
+
+    // Telemetry failure must not change a completed validation result.
+    if (groundingReport && hasGroundingFlags(groundingReport)) {
+      try {
+        if (groundingReport.flaggedInventions.length > 0) {
+          await incrementCounter("grounding_unsupported_additions_flagged");
+        }
+        if (groundingReport.needsVerification.length > 0) {
+          await incrementCounter("grounding_verifications_requested");
+        }
+      } catch (statsError) {
+        console.error("[AI Grounding] Stats error:", statsError);
       }
     }
 
@@ -160,6 +170,7 @@ export async function POST(req: NextRequest) {
       content: parsed.message ?? "I couldn't generate a response. Please try again.",
       proposedChanges: finalChanges ?? undefined,
       groundingReport: groundingReport ?? undefined,
+      groundingStatus,
     });
   } catch (error) {
     console.error("[AI Optimize API] Error:", error);

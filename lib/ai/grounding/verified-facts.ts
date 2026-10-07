@@ -1,8 +1,9 @@
 /**
- * Verified Facts Extractor
+ * Existing CV Value Extractor (legacy VerifiedFact type)
  *
- * Extracts immutable facts (numbers, dates, IDs) from CVState.
- * These facts are used to protect verifiable data from AI modifications.
+ * Extracts existing dates, selected numeric values and certification identifiers.
+ * Date/year values support patch protection; numeric values support metric flags.
+ * This extraction does not externally verify career history.
  */
 
 import type { CVState } from "@/state/types";
@@ -12,7 +13,7 @@ import type { VerifiedFact } from "./types";
 const NUMERIC_PATTERN = /(?<!\w)(\d[\d,.]*(?:[%x×]|))(?!\w)/g;
 
 /**
- * Extracts all verifiable facts from a CV.
+ * Extracts selected existing values from a CV using fields and numeric patterns.
  * Facts include: dates, years, numeric metrics, certification/education identifiers.
  */
 export function extractVerifiedFacts(cv: CVState): VerifiedFact[] {

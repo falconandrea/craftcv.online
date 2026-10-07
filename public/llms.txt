@@ -1,6 +1,6 @@
 # Craft CV
 
-ATS-Ready CV Generator. Free, Private, and AI-Powered.
+CV builder with AI Optimize and 16 rule-based ATS checks. Free, open source, no account required.
 
 ## Tech Stack
 - **Framework**: Next.js 16 (App Router)
@@ -11,14 +11,17 @@ ATS-Ready CV Generator. Free, Private, and AI-Powered.
 - **Deployment**: Docker, Traefik, VPS (Ubuntu)
 
 ## Core Philosophy
-- **Privacy First**: All CV data is stored in the user's browser (localStorage). No database.
-- **ATS Optimization**: Clean, single-column layouts designed to pass Applicant Tracking Systems.
-- **AI-Powered**: Built-in AI coach for CV tailoring with automatic PII masking.
+- **Privacy First**: Editor CV data is saved in browser localStorage. No central CV database. AI features and ATS analysis send content through the server for processing; aggregate counters are saved server-side.
+- **ATS Optimization**: Single-column PDFs with selectable text, plus 16 deterministic lint checks. A separate best-effort AI review does not reproduce a proprietary ATS or predict hiring decisions.
+- **AI-Powered**: AI Optimize compares proposed edits against existing CV details and flags unsupported additions. Structured name, email, phone and profile-link fields are masked in the standard editor flow; free text and chat may contain identifiers. PDF Import, ATS review and TL;DR generation do not use this masking or patch-grounding pipeline.
 
 ## Key Features
 - **Live PDF Preview**: Real-time, paginated PDF preview matching the export.
 - **AI Optimize**: Chat-based CV improvements based on job descriptions.
-- **AI Diff View**: Interactive modal to review and apply AI-suggested changes.
+- **AI Diff View**: Review proposed edits, flags and protected-date changes. All flagged proposals route APPLY through this modal; metrics flagged as new require confirmation before applying.
+- **Keyword Gap**: AI extracts job keywords; code matches them against CV text.
+- **Analytics**: GTM-configured measurement, including GA4 and Clarity; consent settings are managed in deployment.
+- **Privacy policy**: https://craftcv.online/privacy
 - **Local Import/Export**: Save and load CV data as JSON files.
 
 ## Project Structure

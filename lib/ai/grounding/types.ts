@@ -1,11 +1,13 @@
 /**
- * Grounding & Anti-Hallucination Types
+ * AI Optimize Patch Grounding Types
  *
- * Types for the post-LLM validation layer that prevents fact drift,
- * blocks invented entities, and flags unverifiable metrics.
+ * Types for existing date/year protection, unsupported-addition flags,
+ * detected new metric flags and selected passive-opener warnings.
  */
 
-// ─── Verified Facts ─────────────────────────────────────────────────────
+// Existing CV values; legacy type names do not imply external verification.
+
+export type GroundingStatus = "validated" | "failed";
 
 export type VerifiedFactType = "numeric" | "temporal" | "identity";
 
@@ -32,7 +34,7 @@ export interface VocabularyEntry {
 // ─── Grounding Flags ────────────────────────────────────────────────────
 
 export interface FlaggedInvention {
-  /** The invented term/entity */
+  /** The potentially unsupported term/entity */
   term: string;
   /** Best-guess category */
   category: string;
@@ -76,7 +78,7 @@ export interface GroundingReport {
   flaggedInventions: FlaggedInvention[];
   /** Metrics proposed without evidence in the original CV */
   needsVerification: NeedsVerification[];
-  /** Changes to immutable facts that were blocked */
+  /** Changes to protected existing dates/years that were rejected */
   rejectedVerifiedEdits: RejectedVerifiedEdit[];
   /** Bullets rewritten with passive openers */
   styleWarnings: StyleWarning[];

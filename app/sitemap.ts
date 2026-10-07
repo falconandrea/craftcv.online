@@ -5,10 +5,10 @@ import { SITE_URL } from '@/lib/site'
 // changed on every deploy, which is false and makes the signal worthless.
 // Update the entry when you meaningfully change a page's content.
 const ROUTES: { path: string; lastModified: string; priority: number }[] = [
-    { path: '', lastModified: '2026-08-01', priority: 1 },
-    { path: '/ats-score', lastModified: '2026-08-11', priority: 0.8 },
-    { path: '/privacy', lastModified: '2026-08-11', priority: 0.5 },
-    { path: '/cookies', lastModified: '2026-08-11', priority: 0.5 },
+    { path: '', lastModified: '2026-10-07', priority: 1 },
+    { path: '/ats-score', lastModified: '2026-10-07', priority: 0.8 },
+    { path: '/privacy', lastModified: '2026-10-07', priority: 0.5 },
+    { path: '/cookies', lastModified: '2026-10-07', priority: 0.5 },
 ]
 
 // Only indexable pages — app routes (/dashboard, /editor) are noindex

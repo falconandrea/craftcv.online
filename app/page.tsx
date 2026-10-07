@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { FileText, Lock, Zap, Sparkles, ArrowRight, Terminal, Cpu, Database, Eye } from "lucide-react";
+import { FileText, Lock, Sparkles, ArrowRight, Terminal, Cpu, Database, Eye } from "lucide-react";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { Footer } from "@/components/layout/Footer";
 
@@ -32,31 +32,27 @@ export default function Home() {
               style={{ animation: 'fade-in-up 0.6s ease-out forwards', opacity: 0 }}
             >
               <Sparkles className="w-4 h-4" />
-              <span>{/* // */} ATS ENGINE v2 — DETERMINISTIC RULES + KEYWORD GAP</span>
+              <span>{/* // */} CV BUILDER — AI OPTIMIZE + ATS CHECKS</span>
             </div>
 
             <h1 
               className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-8 leading-[1.1]"
               style={{ animation: 'fade-in-up 0.6s ease-out 0.1s forwards', opacity: 0 }}
             >
-              <span className="text-zinc-100">Build your</span>
+              <span className="text-zinc-100">A stronger CV.</span>
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00f0ff] to-[#ff00aa]" style={{ textShadow: '0 0 60px rgba(0,240,255,0.5)' }}>
-                professional CV
+                Grounded in your
               </span>
               <br />
-              <span className="text-zinc-400 text-4xl md:text-6xl">in minutes</span>
+              <span className="text-zinc-400 text-4xl md:text-6xl">experience.</span>
             </h1>
             
             <p 
               className="text-lg md:text-xl text-zinc-400 mb-12 max-w-2xl font-mono text-sm leading-relaxed"
               style={{ animation: 'fade-in-up 0.6s ease-out 0.2s forwards', opacity: 0 }}
             >
-              <span className="text-[#00f0ff]">$</span> no login required
-              <br />
-              <span className="text-[#ff00aa]">$</span> local-first privacy
-              <br />
-              <span className="text-[#b8ff00]">$</span> ATS-optimized output
+              Build and tailor your CV with AI Optimize, which checks proposed changes against your existing career details. Rule-based ATS checks and job keyword analysis help you spot concrete gaps.
             </p>
             
             <div 
@@ -66,7 +62,7 @@ export default function Home() {
               <Link href="/dashboard">
                 <Button size="lg" className="h-14 px-8 text-lg bg-[#00f0ff] text-black hover:bg-[#00f0ff]/80 font-bold border border-[#00f0ff] retro-border-glow group">
                   <span className="mr-2">▶</span>
-                  Initialize CV Builder
+                  Build my CV
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
@@ -76,7 +72,7 @@ export default function Home() {
                 rel="noopener noreferrer"
                 className="text-zinc-500 hover:text-[#00f0ff] transition-colors font-mono text-sm flex items-center gap-2"
               >
-                <span className="text-[#ff00aa]">&gt;</span> view_source()
+                <span className="text-[#ff00aa]">&gt;</span> View source on GitHub
               </a>
             </div>
           </div>
@@ -87,9 +83,9 @@ export default function Home() {
           <div className="container mx-auto max-w-5xl">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {[
-                { label: 'ATS Lint + Gap', value: '16 Rules', icon: FileText },
-                { label: 'Zero Data Stored', value: 'Local', icon: Lock },
-                { label: 'AI Extraction', value: 'PDF', icon: Cpu },
+                { label: 'Deterministic checks', value: '16 Rules', icon: FileText },
+                { label: 'Browser storage', value: 'Local', icon: Lock },
+                { label: 'Review AI suggestions', value: 'You decide', icon: Cpu },
                 { label: 'No Signup', value: 'Free', icon: Database },
               ].map((stat, i) => (
                 <div 
@@ -113,20 +109,20 @@ export default function Home() {
               <div>
                 <div className="inline-flex items-center gap-2 text-[#ff00aa] font-mono text-sm mb-6">
                   <Cpu className="w-4 h-4" />
-                  <span>{/* // */} AI_MODULE_ACTIVE</span>
+                  <span>{/* // */} AI_OPTIMIZE</span>
                 </div>
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-                  Tailor your CV to{" "}
-                  <span className="block text-[#00f0ff]">any job — instantly</span>
+                  Improve your wording.{" "}
+                  <span className="block text-[#00f0ff]">Keep your facts in view.</span>
                 </h2>
                 <p className="text-zinc-400 mb-8 text-lg">
-                  Paste a job description and let the AI coach suggest targeted improvements: better keywords, stronger bullet points, relevant skills. You review every change.
+                  In the AI Optimize flow, proposed edits are compared with your existing CV. Protected dates are preserved, unsupported additions are flagged, and detected new metrics are flagged for verification. You review the proposed changes and decide whether to apply them.
                 </p>
                 <div className="space-y-4">
                   {[
-                    'Chat-based suggestions with context',
-                    'Privacy by design — PII masked before AI',
-                    'One-click apply or skip each change',
+                    'Protected experience dates and education/certification years',
+                    'Unsupported skills and entities flagged for review',
+                    'New metrics flagged; confirmation in the diff review',
               ].map((feature) => (
                     <div key={feature} className="flex items-center gap-3 font-mono text-sm">
                       <span className="text-[#b8ff00]">✓</span>
@@ -142,20 +138,23 @@ export default function Home() {
                   <div className="w-3 h-3 rounded-full bg-red-500/50" />
                   <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
                   <div className="w-3 h-3 rounded-full bg-green-500/50" />
-                  <span className="ml-2 text-zinc-500 text-xs">ai_optimizer.ts</span>
+                  <span className="ml-2 text-zinc-500 text-xs">AI Optimize · review example</span>
                 </div>
-                <div className="pt-8 space-y-2">
-                  <div className="text-zinc-500">{/* // */} Analyzing job description...</div>
-                  <div><span className="text-[#ff00aa]">const</span> keywords <span className="text-[#00f0ff]">=</span> [</div>
-                  <div className="pl-4 text-[#b8ff00]">&quot;React&quot;, &quot;TypeScript&quot;, &quot;System Design&quot;</div>
-                  <div>];</div>
-                  <div className="text-zinc-500 mt-4">{/* // */} Generating suggestions...</div>
-                  <div><span className="text-[#ff00aa]">const</span> improvements <span className="text-[#00f0ff]">=</span> [</div>
-                  <div className="pl-4 text-[#00f0ff]">&quot;Add &apos;Led team of 5 engineers&apos;&quot;,</div>
-                  <div className="pl-4 text-[#00f0ff]">&quot;Include AWS cert (requested)&quot;,</div>
-                  <div className="pl-4 text-[#00f0ff]">&quot;Quantify impact (+40% efficiency)&quot;</div>
-                  <div>];</div>
-                  <div className="mt-4 text-[#b8ff00]">{/* // */} Ready for review</div>
+                <div className="pt-8 space-y-6">
+                  <p className="text-zinc-400 text-xs">Illustrative AI Optimize checks, not a live analysis.</p>
+                  <div>
+                    <p className="text-zinc-200">Suggested skill: Kubernetes</p>
+                    <p className="text-amber-300 mt-2">Not found in your existing CV. Add only if you can support it.</p>
+                  </div>
+                  <div>
+                    <p className="text-zinc-200">Suggested result: +40% performance</p>
+                    <p className="text-amber-300 mt-2">New metric detected. Verify before applying.</p>
+                  </div>
+                  <div>
+                    <p className="text-zinc-200">Experience start date: 2020 → 2019</p>
+                    <p className="text-[#b8ff00] mt-2">Change rejected. Original date preserved: 2020.</p>
+                  </div>
+                  <p className="text-zinc-400 text-xs">These checks help surface inconsistencies; they do not verify your career history or catch every unsupported claim.</p>
                 </div>
               </div>
             </div>
@@ -170,9 +169,9 @@ export default function Home() {
                 <Terminal className="w-4 h-4" />
                 <span>{/* // */} MODULE_MANIFEST</span>
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-4">Why Craft CV?</h2>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">See what needs attention.</h2>
               <p className="text-zinc-400 max-w-xl mx-auto">
-                Built for professionals who value privacy and results. No tracking, no storage, just clean CV generation.
+                Get concrete checks on your CV and compare it with a job description. The rule-based lint score stays separate from the AI evaluation.
               </p>
             </div>
             
@@ -180,20 +179,20 @@ export default function Home() {
               {[
                 {
                   icon: FileText,
-                  title: 'ATS Score + Keyword Gap',
-                  description: 'Upload your CV to test how ATS software parses it (16 deterministic lint rules), then paste a job description to see which keywords you are missing.',
+                  title: '16 deterministic ATS checks',
+                  description: 'Checks run on the text extracted from your PDF and its filename: contact details, bullet quality, section structure and common parsing issues. The weighted lint score is calculated by code, not an AI model.',
                   color: '#00f0ff'
                 },
                 {
-                  icon: Lock,
-                  title: 'Privacy First',
-                  description: 'Everything lives in your browser. No data stored. Export as JSON and keep full control.',
+                  icon: Cpu,
+                  title: 'Job keyword gap',
+                  description: 'AI extracts keywords from the job description, then code checks for those terms in your CV. See present and missing keywords as prompts for review, not proof that you have or lack a skill.',
                   color: '#ff00aa'
                 },
                 {
-                  icon: Zap,
-                  title: 'PDF Import',
-                  description: 'Upload an existing PDF and our AI extracts content to pre-fill the editor in seconds.',
+                  icon: Eye,
+                  title: 'Separate AI evaluation',
+                  description: 'AI also provides feedback on formatting, impact and completeness. Its evaluation stays separate from the deterministic lint score. These reports are guidance, not a guarantee of ATS acceptance or an interview.',
                   color: '#b8ff00'
                 },
               ].map((feature) => (
@@ -220,6 +219,22 @@ export default function Home() {
           </div>
         </section>
 
+        <section id="privacy" className="py-24 px-4">
+          <div className="container mx-auto max-w-5xl">
+            <div className="inline-flex items-center gap-2 text-[#ff00aa] font-mono text-sm mb-6">
+              <Lock className="w-4 h-4" />
+              <span>LOCAL STORAGE + YOUR CONTROL</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">Saved in your browser. Shared for AI when you choose.</h2>
+            <div className="space-y-4 text-zinc-400 text-lg max-w-3xl leading-relaxed">
+              <p>Your editor data is saved in your browser. Export it as JSON to keep a copy, and download your CV as a PDF. No account required.</p>
+              <p>When you use AI features or the ATS analyzer, content is sent through our server to an external AI provider. AI Optimize masks the structured name, email, phone and profile-link fields; identifiers in free text or chat may still be sent. PDF import and ATS analysis send extracted text without that masking.</p>
+              <p>We use Google Analytics via GTM and Microsoft Clarity for analytics and session recording, with CookieYes for consent management.</p>
+              <Link href="/privacy" className="inline-block text-[#00f0ff] underline underline-offset-4">Read the privacy policy</Link>
+            </div>
+          </div>
+        </section>
+
         {/* CTA Section */}
         <section className="py-24 px-4 text-center relative">
           <div className="container mx-auto max-w-3xl relative">
@@ -232,15 +247,20 @@ export default function Home() {
                 <span>{/* // */} READY_TO_DEPLOY</span>
               </div>
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Ready to build your <span className="text-[#00f0ff]">CV?</span>
+                Open source. <span className="text-[#00f0ff]">Open to inspection.</span>
               </h2>
               <p className="text-zinc-400 mb-10 text-lg">
-                Start for free. No account needed. AI-powered.
+                Explore the ATS rules and AI Optimize safeguards in the source, or start building your CV for free. No account needed.
               </p>
+              <div className="flex flex-wrap justify-center gap-6 mb-8 font-mono text-sm">
+                <a href="https://github.com/falconandrea/craftcv.online" className="text-[#00f0ff] underline underline-offset-4">Source on GitHub</a>
+                <a href="https://github.com/falconandrea/craftcv.online/blob/main/docs/ATS_RULES.md" className="text-[#00f0ff] underline underline-offset-4">ATS rules and scoring</a>
+                <Link href="/ats-score" className="text-[#00f0ff] underline underline-offset-4">Check my CV</Link>
+              </div>
               <Link href="/dashboard">
                 <Button size="lg" className="h-14 px-10 text-lg bg-[#00f0ff] text-black hover:bg-[#00f0ff]/80 font-bold border border-[#00f0ff] retro-border-glow group">
                   <Terminal className="mr-2 w-5 h-5" />
-                  Launch Editor
+                  Build my CV
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>

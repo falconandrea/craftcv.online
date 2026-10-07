@@ -1,5 +1,7 @@
 # PROJECT.md
 
+> **Historical planning document.** This records the original product plan, not the current implementation or active constraints. Claims about local-only operation, no backend APIs/storage, universal ATS compliance, icon-free PDFs and future AI rewriting are superseded. Current capabilities and processing are documented in [README](../README.md), [AI prompt contracts](AI_PROMPTS.md), [ATS rules](ATS_RULES.md) and the [privacy policy](https://craftcv.online/privacy).
+
 ## Project info
 
 ### Goal

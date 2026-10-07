@@ -2,10 +2,10 @@
  * Patch Validator — Core Grounding Engine
  *
  * Runs 4 post-LLM checks on proposed CV patches:
- * 1. Verified Facts Protection (FR-03)
- * 2. Anti-Invention (FR-05)
+ * 1. Existing date/year protection (FR-03)
+ * 2. Unsupported-addition flags (FR-05)
  * 3. Needs-Verification flagging (FR-08)
- * 4. STAR/XYZ style enforcement (FR-12)
+ * 4. Selected passive-opener warnings (FR-12)
  */
 
 import type { CVState, CVPatch } from "@/state/types";
@@ -158,7 +158,7 @@ function removeDestructiveChanges(cleanPatch: CVPatch, cv: CVState): void {
 
 /**
  * Validates a proposed CV patch against the original CV.
- * Returns a clean patch (with verified-fact violations removed) and a grounding report.
+ * Returns a clean patch (with protected date/year changes restored) and a grounding report.
  */
 export function validatePatch(patch: CVPatch, cv: CVState): ValidatePatchResult {
   const facts = extractVerifiedFacts(cv);
@@ -179,7 +179,7 @@ export function validatePatch(patch: CVPatch, cv: CVState): ValidatePatchResult 
   // avoid confusing the user with changes they never asked for.
   removeDestructiveChanges(cleanPatch, cv);
 
-  // ─── Check 1: Verified Facts Protection ─────────────────────────
+  // ─── Check 1: Existing date/year protection ─────────────────────────
   checkVerifiedFacts(cleanPatch, cv, facts, rejectedVerifiedEdits);
 
   // ─── Check 2: Anti-Invention ────────────────────────────────────
@@ -188,7 +188,7 @@ export function validatePatch(patch: CVPatch, cv: CVState): ValidatePatchResult 
   // ─── Check 3: Needs-Verification metrics ────────────────────────
   checkUnverifiedMetrics(cleanPatch, cv, facts, needsVerification);
 
-  // ─── Check 4: STAR/XYZ style ────────────────────────────────────
+  // ─── Check 4: Selected passive-opener warnings ────────────────────────────────────
   checkStyleWeakening(cleanPatch, cv, styleWarnings);
 
   // Count applied (fields with no flags)
@@ -229,7 +229,7 @@ function checkVerifiedFacts(
         rejected.push({
           fact: yearFact,
           proposed: edu.year,
-          message: `Education year "${originalEdu.year}" is a verified fact — AI change to "${edu.year}" was blocked.`,
+          message: `Education year "${originalEdu.year}" is a protected existing CV value — AI change to "${edu.year}" was blocked.`,
         });
         return { ...edu, year: originalEdu.year };
       }
@@ -251,7 +251,7 @@ function checkVerifiedFacts(
         rejected.push({
           fact: startFact,
           proposed: exp.startDate,
-          message: `Start date "${originalExp.startDate}" is a verified fact — AI change to "${exp.startDate}" was blocked.`,
+          message: `Start date "${originalExp.startDate}" is a protected existing CV value — AI change to "${exp.startDate}" was blocked.`,
         });
         fixed = { ...fixed, startDate: originalExp.startDate };
       }
@@ -259,7 +259,7 @@ function checkVerifiedFacts(
         rejected.push({
           fact: endFact,
           proposed: exp.endDate ?? "",
-          message: `End date "${originalExp.endDate}" is a verified fact — AI change to "${exp.endDate}" was blocked.`,
+          message: `End date "${originalExp.endDate}" is a protected existing CV value — AI change to "${exp.endDate}" was blocked.`,
         });
         fixed = { ...fixed, endDate: originalExp.endDate };
       }
@@ -278,7 +278,7 @@ function checkVerifiedFacts(
         rejected.push({
           fact: yearFact,
           proposed: cert.year ?? "",
-          message: `Certification year "${originalCert.year}" is a verified fact — AI change to "${cert.year}" was blocked.`,
+          message: `Certification year "${originalCert.year}" is a protected existing CV value — AI change to "${cert.year}" was blocked.`,
         });
         return { ...cert, year: originalCert.year };
       }

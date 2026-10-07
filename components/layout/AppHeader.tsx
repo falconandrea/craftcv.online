@@ -77,7 +77,7 @@ export function AppHeader({ showStartBuilding = false, navLinks }: AppHeaderProp
           {showStartBuilding ? (
             <Link href="/dashboard">
               <Button className="bg-[#00f0ff] text-black hover:bg-[#00f0ff]/80 font-semibold">
-                Start Building
+                Build my CV
               </Button>
             </Link>
           ) : (

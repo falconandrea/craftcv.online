@@ -15,7 +15,7 @@ const CHECK_GROUPS = [
     title: "Contact details",
     accent: "#00ffd5",
     description:
-      "A parser that cannot find how to contact you drops the application, however strong the experience is.",
+      "Checks whether recognizable contact details appear in the extracted text.",
     checks: [
       "Email address",
       "Phone number",
@@ -29,14 +29,14 @@ const CHECK_GROUPS = [
     title: "Bullet quality",
     accent: "#b8ff00",
     description:
-      "What recruiters skim after the parser is done: does each line start with a verb and end with a number?",
+      "Checks action-verb openings, bullet length and the presence of measurable results. Include numbers only when they are accurate.",
     checks: ["Action verbs", "Bullet point length", "Measurable metrics"],
   },
   {
     title: "Structure",
     accent: "#ff00aa",
     description:
-      "ATS software segments a CV by section heading and date. Non-standard headings and broken date ranges lose entire roles.",
+      "Checks recognizable sections and date patterns, and flags possible timeline issues for review.",
     checks: [
       "Standard sections",
       "Dates & timeline",
@@ -48,7 +48,7 @@ const CHECK_GROUPS = [
     title: "ATS-specific parsing",
     accent: "#00f0ff",
     description:
-      "The mistakes that look fine to a human and turn into garbage once the text is extracted.",
+      "Checks special characters, skills formatting and the filename for potential parsing issues.",
     checks: ["Special characters / emoji", "Skills parsability", "File name"],
   },
 ];
@@ -57,50 +57,50 @@ const FAILURE_MODES = [
   {
     problem: "Skills in a table or multi-column layout",
     consequence:
-      "Text extraction reads columns in the wrong order, so skills end up glued to unrelated job titles.",
+      "Columns and tables can disrupt reading order during PDF text extraction.",
   },
   {
     problem: "Section headings like “My Journey” instead of “Experience”",
     consequence:
-      "The parser has no rule for a creative heading and files the whole block as untagged text.",
+      "Creative headings may be harder for automated section detection to recognize.",
   },
   {
     problem: "Icons and emoji next to contact details",
     consequence:
-      "Glyphs from an icon font extract as unknown characters, which can corrupt the email or phone number next to them.",
+      "Some icon glyphs extract as unknown characters. Check that adjacent contact details remain readable.",
   },
   {
     problem: "Dates written as “2022 – now” or only as years",
     consequence:
-      "Duration cannot be computed, so filters on “3+ years of experience” never match you.",
+      "Ambiguous date formats can make timeline interpretation less reliable. Review flagged date ranges.",
   },
   {
     problem: "A file named cv_final_v3(1).pdf",
     consequence:
-      "It survives parsing, but a recruiter scanning an attachment list reads it as carelessness.",
+      "Generic names and draft markers trigger the filename check. Use a clear name for your exported CV.",
   },
 ];
 
 const QUESTIONS = [
   {
-    q: "Is this a real ATS or a simulation?",
-    a: "A simulation. Nobody outside Workday or Taleo can run your CV through the real thing — and every company configures its own parser, keyword weights and knock-out questions. What is reproducible is the class of formatting and content problems that break parsers generally, and that is what the 16 deterministic checks measure.",
+    q: "Does this reproduce an enterprise ATS?",
+    a: "A CV checking tool, not an enterprise ATS. It checks extracted PDF text and the filename using documented rules, with a separate AI review when available. It does not reproduce proprietary ATS products or employer configurations.",
   },
   {
     q: "Why two scores?",
-    a: "The lint score comes from the 16 deterministic checks: pure functions, same input, same output, every time. A passed check counts as full credit, a warning as half, and the two checks whose own advice calls them optional (GitHub, personal website) are left out of the score entirely, so a CV is never penalised for advice it can legitimately ignore. The ATS score is the AI evaluation, which reads the extracted text and judges formatting, impact and completeness the way a screener would. They answer different questions, so they are kept separate instead of averaged into one meaningless number.",
+    a: "The weighted lint score is calculated by code from 16 deterministic checks. A passed check earns full credit, a warning half; optional GitHub and personal-website checks do not lower it. A separate AI evaluation score summarizes model feedback on the extracted text. The scores are not averaged. If AI review fails or is not configured, the rule-based report is still available.",
   },
   {
     q: "What does adding a job description change?",
-    a: "It turns on the keyword gap report: the tool extracts the terms from the posting and reports which ones are missing from your CV. Without a job description there is nothing concrete to match against, so the keyword match score stays empty rather than being guessed.",
+    a: "When AI keyword extraction is available, it extracts terms from the posting and code checks for them in your CV text. The keyword gap score measures matched terms marked must-have by the extraction; it is not evidence that you have or lack a skill. Without must-have terms, this gap score is N/A. The AI review may also comment on keyword coverage.",
   },
   {
     q: "What happens to my PDF?",
-    a: "The text extracted from it is sent to the AI provider for parsing and evaluation. The file itself is not stored in an account, because there are no accounts. Details are in the privacy policy — if a document is confidential, do not upload it.",
+    a: "The server extracts text from your PDF. The rules check the full extracted text and filename; up to 15,000 characters of unmasked CV text may be sent to the configured AI provider for review. The original PDF is not sent to the provider. See the privacy policy for processing and retention details.",
   },
   {
     q: "Does a high score mean I get the interview?",
-    a: "No. It means the document is unlikely to be mangled or filtered out before a person reads it. That is a floor, not an advantage — the content still has to match the role.",
+    a: "No. A high lint score means your CV passed more of these documented checks; a high AI score reflects the model’s assessment. Neither predicts acceptance by an employer’s ATS or a job interview.",
   },
 ];
 
@@ -113,10 +113,7 @@ export function AtsScoreContent() {
           How the ATS check works
         </h2>
         <p className="mb-4">
-          Most CVs are not rejected by a person. They are parsed by software that
-          turns a PDF into structured fields, and anything the parser cannot read
-          is simply missing from the profile a recruiter searches. This tool runs
-          your CV through the two layers that decide whether that happens.
+          Start with reproducible checks on the text extracted from your PDF and its filename. A separate AI review adds feedback when available; it does not determine the rule-based lint score.
         </p>
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="border border-white/10 bg-white/[0.02] p-5">
@@ -125,7 +122,7 @@ export function AtsScoreContent() {
             </h3>
             <p className="text-sm">
               16 checks implemented as pure functions — no AI, no randomness. The
-              same CV always produces the same result (an open-ended role marked
+              same extracted text and filename produce the same findings for a given date (an open-ended role marked
               &ldquo;Present&rdquo; is measured against today&apos;s date), and every finding
               names the rule it came from, so you can verify it yourself instead
               of trusting a score.
@@ -137,9 +134,7 @@ export function AtsScoreContent() {
             </h3>
             <p className="text-sm">
               A language model reads the extracted text and scores formatting,
-              impact and completeness the way a screener would, then lists what
-              to change. Paste a job description and it also reports which of the
-              posting&apos;s keywords your CV is missing.
+              impact and completeness, then suggests what to review. With a job description, AI extracts keywords and code matches them against your CV for a separate keyword gap report. Both AI-dependent layers are best-effort; the deterministic checks still work when they are unavailable.
             </p>
           </div>
         </div>
@@ -183,11 +178,10 @@ export function AtsScoreContent() {
       {/* Failure modes */}
       <div>
         <h2 className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-white mb-4">
-          Why CVs fail before a human reads them
+          Common PDF and content issues to review
         </h2>
         <p className="mb-6">
-          The five problems below account for most silent rejections. None of
-          them look like mistakes when you open the PDF yourself.
+          These examples show why checking extracted text and clear formatting can be useful. They are possible issues, not predictions of rejection by a particular ATS.
         </p>
         <dl className="space-y-4">
           {FAILURE_MODES.map((item) => (
@@ -200,14 +194,14 @@ export function AtsScoreContent() {
           ))}
         </dl>
         <p className="mt-6 text-sm">
-          Fixing these by hand in a word processor tends to reintroduce them. The{" "}
+          The{" "}
           <Link
             href="/editor"
             className="text-white/60 underline underline-offset-4 transition-colors hover:text-[#b8ff00]"
           >
             CraftCV editor
           </Link>{" "}
-          exports a single-column, parser-safe PDF, so the layout cannot drift
+          exports a single-column PDF with selectable text, so the layout cannot drift
           back into a table.
         </p>
       </div>
@@ -239,7 +233,7 @@ export function AtsScoreContent() {
         <p className="text-sm mb-4">
           The report tells you what to change; fixing it is a separate job. You
           can rebuild the CV from scratch in the editor, keep the file local, and
-          re-run this check on the export until nothing is flagged.
+          re-run this check on the export and review any findings that matter to your CV.
         </p>
         <div className="flex flex-wrap gap-4 text-sm font-mono">
           {/* Underline is always visible; hover only shifts the colour. The
@@ -248,7 +242,7 @@ export function AtsScoreContent() {
             href="/dashboard"
             className="text-white/60 underline underline-offset-4 transition-colors hover:text-[#b8ff00]"
           >
-            Build an ATS-ready CV →
+            Build my CV →
           </Link>
           <Link
             href="/"

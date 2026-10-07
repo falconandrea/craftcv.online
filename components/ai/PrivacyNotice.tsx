@@ -25,8 +25,7 @@ export function PrivacyNotice() {
         <div className="flex items-start gap-3 rounded-lg border border-[#00f0ff]/20 bg-[#00f0ff]/5 px-4 py-3 text-xs font-mono text-[#00f0ff]">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
             <p className="flex-1 text-zinc-400">
-                <span className="text-[#00f0ff] font-semibold">PRIVACY_SHIELD:</span> Your name, email, phone, and links are
-                automatically masked before being sent to the AI.
+                <span className="text-[#00f0ff] font-semibold">PRIVACY_SHIELD:</span> AI Optimize masks the structured name, email, phone and profile-link fields before sending your CV. Identifiers in free text or chat may still be sent.
             </p>
             <button
                 onClick={handleDismiss}

@@ -157,5 +157,6 @@ export interface AiMessage {
   changeStatus?: "pending" | "applied" | "skipped";
   /** Grounding validation report from the server-side post-LLM checks */
   groundingReport?: import("@/lib/ai/grounding/types").GroundingReport;
+  /** Validation outcome; optional for compatibility with existing messages. */
+  groundingStatus?: import("@/lib/ai/grounding/types").GroundingStatus;
 }
-

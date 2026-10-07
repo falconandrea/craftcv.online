@@ -35,8 +35,8 @@ export function GapReport({ gapReport }: GapReportProps) {
   // Headline text
   const headline =
     totalMustHave > 0
-      ? `${presentMustHave} of ${totalMustHave} must-have skills found`
-      : `${present.length} skills matched`;
+      ? `${presentMustHave} of ${totalMustHave} must-have keywords found`
+      : `${present.length} keywords matched`;
 
   return (
     <div className="space-y-4">
@@ -51,7 +51,7 @@ export function GapReport({ gapReport }: GapReportProps) {
             className={`text-2xl font-bold font-mono ${scoreColor}`}
             title={
               keywordScore === null
-                ? "The posting lists no must-have skills, so there is nothing to score against."
+                ? "The posting lists no must-have keywords, so there is nothing to score against."
                 : undefined
             }
           >
@@ -83,7 +83,7 @@ export function GapReport({ gapReport }: GapReportProps) {
             </p>
             {hasGaps && (
               <p className="text-sm text-white/60 mt-1 font-mono">
-                {missing.length} skill{missing.length !== 1 ? "s" : ""} missing{" "}
+                {missing.length} keyword{missing.length !== 1 ? "s" : ""} not found{" "}
                 {topGaps.length > 0 && (
                   <span>
                     — top gap{topGaps.length !== 1 ? "s" : ""}:{" "}
@@ -107,7 +107,7 @@ export function GapReport({ gapReport }: GapReportProps) {
               </h4>
               {present.length === 0 ? (
                 <p className="text-xs font-mono text-white/30 text-center py-3">
-                  No skills matched
+                  No keywords matched
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -126,7 +126,7 @@ export function GapReport({ gapReport }: GapReportProps) {
               </h4>
               {missing.length === 0 ? (
                 <p className="text-xs font-mono text-white/30 text-center py-3">
-                  No skills missing
+                  No extracted keywords missing
                 </p>
               ) : (
                 <div className="space-y-2">

@@ -11,44 +11,57 @@ export interface AgentMarkdown {
 }
 
 const HOME = `---
-title: CraftCV - ATS-Ready CV Generator
-description: Create professional, ATS-optimized CVs in minutes. Free CV builder with AI-powered optimization and PDF export.
+title: CraftCV — AI CV Builder with Rule-Based ATS Checks
+description: Build your CV with AI Optimize checks against existing career details, 16 rule-based ATS checks and job keyword analysis. Free, open source, no account required.
 ---
 
-# Build your professional CV in minutes
+# A stronger CV. Grounded in your experience.
 
-CraftCV is a free, local-first, AI-powered CV builder. No login required, no data stored, ATS-optimized output.
+Build and tailor your CV with AI Optimize, which checks proposed changes against your existing career details. Rule-based ATS checks and job keyword analysis help you spot concrete gaps.
 
-## Highlights
+## AI Optimize: improve your wording, keep your facts in view
 
-- **ATS Lint + Gap**: 16 deterministic rules.
-- **Zero Data Stored**: Everything lives in your browser (local-first).
-- **AI Extraction**: Upload a PDF and pre-fill the editor.
-- **No Signup**: Free to use.
+Protected experience dates and education/certification years are preserved. Unsupported skills and entities flagged for review. New metrics flagged; confirmation in the diff review.
 
-## Why CraftCV?
+In the AI Optimize flow, proposed edits are compared with your existing CV. Protected dates are preserved, unsupported additions are flagged, and detected new metrics are flagged for verification. You review the proposed changes and decide whether to apply them.
 
-Built for professionals who value privacy and results. No tracking, no storage, just clean CV generation.
+Illustrative AI Optimize checks, not a live analysis.
 
-## Tailor your CV to any job — instantly
+Suggested skill: Kubernetes
 
-Paste a job description and the AI coach suggests targeted improvements: better keywords, stronger bullet points, relevant skills. You review every change.
+Not found in your existing CV. Add only if you can support it.
 
-- Chat-based suggestions with context.
-- Privacy by design — PII masked before AI.
-- One-click apply or skip each change.
+Suggested result: +40% performance
 
-## Features
+New metric detected. Verify before applying.
 
-- **ATS Score + Keyword Gap**: Upload your CV to test how ATS software parses it (16 deterministic lint rules), then paste a job description to see which keywords you are missing.
-- **Privacy First**: Everything lives in your browser. No data stored. Export as JSON and keep full control.
-- **PDF Import**: Upload an existing PDF and our AI extracts content to pre-fill the editor in seconds.
+Experience start date: 2020 → 2019
 
-## Get started
+Change rejected. Original date preserved: 2020.
 
-- Launch the editor: https://craftcv.online/dashboard
-- ATS score simulator: https://craftcv.online/ats-score
-- Source code: https://github.com/falconandrea/craftcv.online
+These checks help surface inconsistencies; they do not verify your career history or catch every unsupported claim.
+
+## See what needs attention.
+
+- **16 deterministic ATS checks**: Code checks extracted PDF text and filename for contacts, bullet quality, structure and parsing issues. The weighted lint score is separate from the AI evaluation.
+- **Job keyword gap**: AI extracts job keywords; code checks whether those terms appear in the CV. Missing terms are prompts for review, not proof of missing skills.
+- **Separate AI evaluation**: Feedback on formatting, impact and completeness. Reports do not guarantee ATS acceptance or an interview.
+
+## Saved in your browser. Shared for AI when you choose.
+
+Your editor data is saved in your browser. Export JSON or download a PDF. No account required.
+
+AI features and ATS analysis send content through the server to an external provider. AI Optimize masks structured name, email, phone and profile-link fields; free text and chat may still contain identifiers. PDF import and ATS analysis send extracted text without that masking.
+
+We use Google Analytics via GTM and Microsoft Clarity for analytics and session recording, with CookieYes for consent management.
+
+## Open source. Open to inspection.
+
+- Build my CV: https://craftcv.online/dashboard
+- Check my CV: https://craftcv.online/ats-score
+- Privacy policy: https://craftcv.online/privacy
+- Source: https://github.com/falconandrea/craftcv.online
+- ATS rules: https://github.com/falconandrea/craftcv.online/blob/main/docs/ATS_RULES.md
 `;
 
 const PRIVACY = `---
@@ -58,34 +71,35 @@ description: Our commitment to your privacy and data security.
 
 # Privacy Policy
 
-Last Updated: April 2026. Status: Active.
+Last Updated: October 7, 2026.
 
-## 1. Local storage encryption
+## Local CV storage
 
-CraftCV is designed with a "Privacy-First" architecture. By default, all CV data you enter is stored exclusively in your browser's local storage. We do not maintain a central database of user CVs.
+CraftCV uses a local-first editor: CV data is saved in your browser's localStorage, without application-level encryption. We do not maintain a central database of user CVs. Export JSON for a portable backup; clearing browser storage removes the saved local copy.
 
-Your data never leaves your device unless you explicitly use our AI-powered features or export your data.
+## Server and AI processing
 
-## 2. AI processing protocol
+- CV content is sent through our server to the configured external AI provider for processing. Provider handling depends on its own policies.
 
-When using AI features (Optimization, PDF Import, ATS Score):
+- AI Optimize: In the standard editor flow, structured name, email, phone and profile-link fields are masked in the browser before transmission. Identifiers in free-text CV fields or chat messages may still be sent.
 
-- CV content is temporarily transmitted to our AI providers (Nous Research at the moment) for processing.
-- **Optimization & Import**: We attempt to mask Personally Identifiable Information (PII) like phone numbers and specific addresses before transmission.
-- **ATS Score Simulator**: The original PDF document is transmitted **without** modifications or PII masking. This is a technical requirement to accurately simulate how an enterprise ATS (Applicant Tracking System) parses your actual file structure, layout, and metadata.
-- Data is processed in real-time and is not stored permanently by our platform after the request is completed.
+- PDF Import & ATS analysis: The PDF is uploaded to our server for text extraction. Import sends up to 15,000 characters of extracted text to the configured provider. ATS checks run on the full extracted text and filename; up to 15,000 characters may be sent for AI review when available. Neither flow masks that text, and neither sends the original PDF to the AI provider.
 
-## 3. Analytics & subprocessors
+- Job descriptions: When supplied for keyword analysis or ATS review, job-description text is sent to the configured provider without PII masking.
 
-We use the following services to monitor system health and improve user experience:
+- Generate TL;DR: The selected entry's title, role, description and CV language are sent to the provider without PII masking. This flow does not use AI Optimize's patch-grounding checks.
 
-- Google Analytics 4 (GA4) / GTM: Behavioral tracking (anonymous).
+- Storage and retention: The application does not save uploaded PDFs or AI request content to a central CV database. Aggregate usage and token counters are saved server-side. Connection identifiers and request timestamps are held in memory for rate limiting. Error logs can include provider errors or response excerpts; their retention depends on deployment logging. External AI and analytics services handle data under their own policies; we do not promise zero retention by those services.
+
+- Google Analytics 4 (GA4) / GTM: Traffic and feature-usage analytics.
+
 - Microsoft Clarity: Visual session recording for debugging UI issues.
+
 - CookieYes: Consent management.
 
-## Contact
+GTM is loaded when a GTM_ID is configured. Analytics tags and consent settings are managed in the deployed GTM container and service settings.
 
-For security concerns or data inquiries: falcon.andrea88@gmail.com
+Contact: falcon.andrea88@gmail.com
 `;
 
 const COOKIES = `---
@@ -95,58 +109,46 @@ description: Understanding tracking modules and browser storage.
 
 # Cookie Policy
 
-Last Updated: April 2026. Status: Active.
+Last Updated: October 7, 2026.
 
-## Core operations
+## Browser storage
 
-Essential cookies are necessary for the website to function. They are used to manage user sessions and basic site navigation.
+- cv-storage: editor CV data in localStorage, not an account session cookie.
+- ai_privacy_dismissed: remembers dismissal of the AI Optimize privacy notice.
 
-**Local storage manifest:**
+Consent services may use cookies or storage to remember your choices.
 
-- \`cv-storage\` — User CV state data.
-- \`theme-storage\` — User UI preferences.
+## Analytics and consent
 
-## Analytics beacons
+GTM loads when configured. Google Tag Manager manages measurement scripts; Google Analytics 4 (GA4) measures traffic and aggregate feature usage. Microsoft Clarity provides interaction analytics and session recording. Data may include identifiers; it is not all described as anonymous.
 
-These modules help us understand how users interact with the site. All data is processed anonymously.
-
-- **Google Tag Manager** — Manages the deployment of various measurement scripts.
-- **Google Analytics 4 (GA4)** — Behavioral mapping and anonymous traffic analysis to measure feature usage.
-- **Microsoft Clarity** — Tracks interface interaction patterns (clicks, scrolls) to identify UX bottlenecks.
-
-## Override preferences
-
-Modify your tracking consent status at any time via the Cookie Banner (powered by CookieYes) located at the bottom of the screen.
+Analytics tags, cookie names/lifetimes and consent controls are managed in the deployed GTM container and service settings. Where CookieYes controls are available, use them to review or change consent.
 `;
 
 const ATS_SCORE = `---
-title: ATS Score Simulator | CraftCV
-description: Upload your CV to see how an Applicant Tracking System reads it. Discover missing keywords, formatting errors, and get actionable feedback.
+title: ATS CV Check — 16 Rule-Based Checks | CraftCV
+description: Check your CV with 16 deterministic ATS lint rules. Add a job description for keyword gaps, plus a separate best-effort AI review. No account required.
 ---
 
-# ATS Score Simulator
+# Check how ATS-friendly your CV is
 
-Upload your CV to see how an Applicant Tracking System reads it. Discover missing keywords, formatting errors, and get actionable feedback.
+Run 16 deterministic checks on structure, contact details, bullet quality and parsability. Add a job description to identify keyword gaps, with a separate AI review for additional feedback. No account required.
 
-## Important disclaimer & privacy
+## Rule-based checks and AI review
 
-This is an AI-powered simulation of generic enterprise ATS logic (like Workday, Taleo). Every company configures their ATS differently. A high score here does not guarantee a job interview.
+16 deterministic checks run on the full extracted PDF text and filename. Contact details, bullet quality, structure and parsing issues contribute to a weighted lint score: pass earns full credit, warning half; optional GitHub/website checks never lower it. Findings can depend on the current date for open-ended roles.
 
-**Privacy note**: The raw text extracted from your PDF is sent to our AI providers for parsing. Please do not upload sensitive documents if you do not consent to this.
+A separate best-effort AI evaluation gives feedback on extracted text. The lint and AI scores are not averaged. Rule-based results remain available when AI review is unavailable. This does not reproduce a proprietary ATS or predict hiring outcomes.
 
-## The two layers of the report
+With a job description and AI keyword extraction available, a keyword gap report matches extracted terms against CV text using code. The must-have gap score is separate; absent terms are not proof of absent skills.
 
-1. **Deterministic rules** — 16 deterministic checks implemented as pure functions, no AI involved: contact details, bullet quality, document structure and ATS-specific parsing traps. A passed check counts as full credit and a warning as half; the two checks whose own advice calls them optional (GitHub, personal website) never lower the score.
-2. **AI evaluation** — a language model reads the extracted text and scores formatting, impact and completeness, then lists what to change. Paste a job description and it also produces a keyword gap report naming the terms your CV is missing.
+## Processing
 
-## How to use
+Your PDF is uploaded to the server for text extraction. Up to 15,000 characters of unmasked CV text may be sent to the configured provider for AI review; supplied job descriptions are sent for extraction and review. The original PDF is not sent to the provider.
 
-1. Visit https://craftcv.online/ats-score
-2. Upload your CV PDF (max 5 MB).
-3. (Optional) Paste a job description to turn on the keyword gap report.
-4. Review the report: missing keywords, formatting errors, and actionable feedback.
-
-This is an interactive, client-rendered tool. The HTML page is required to use it.
+- Check my CV: https://craftcv.online/ats-score
+- Build my CV: https://craftcv.online/dashboard
+- Privacy: https://craftcv.online/privacy
 `;
 
 // Path -> markdown body lookup. Keys are normalized routes (no trailing slash,

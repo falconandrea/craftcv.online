@@ -42,7 +42,7 @@ export function AtsScoreTool() {
       // The API degrades to the deterministic report when the model fails, so
       // don't announce a full report the dashboard is not showing.
       if (results.aiUnavailable) {
-        toast.warning("Deterministic checks are ready — the AI review failed this time.", {
+        toast.warning("Deterministic checks are ready — the AI review is unavailable.", {
           className: "border-yellow-500 bg-black text-yellow-500"
         });
       } else {
@@ -74,9 +74,9 @@ export function AtsScoreTool() {
         <Info className="w-5 h-5 text-[#00ffd5] shrink-0 mt-0.5" />
         <p className="text-xs text-white/70 leading-relaxed">
           <strong className="text-[#00ffd5] block mb-1">Important Disclaimer &amp; Privacy</strong>
-          This is an AI-powered simulation of generic enterprise ATS logic (like Workday, Taleo). Every company configures their ATS differently. A high score here does not guarantee a job interview.
+          This tool combines 16 rule-based checks with a separate, best-effort AI review. It does not reproduce any proprietary ATS or predict a hiring decision. Rule-based results remain available if AI review is unavailable.
           <span className="block mt-2">
-            <strong className="text-[#00ffd5]/80">Privacy Note:</strong> The raw text extracted from your PDF is sent to our AI providers for parsing. Please do not upload sensitive documents if you do not consent to this.
+            <strong className="text-[#00ffd5]/80">Privacy Note:</strong> Your PDF is uploaded to our server for text extraction. Up to 15,000 characters of unmasked text may be sent to the configured AI provider for review. If you add a job description, it is also sent for keyword extraction and review.
           </span>
         </p>
       </div>
@@ -99,7 +99,7 @@ export function AtsScoreTool() {
               <div className="absolute inset-2 rounded-full border-r-2 border-[#00ffd5] animate-spin direction-reverse"></div>
               <div className="absolute inset-4 rounded-full border-b-2 border-[#b8ff00] animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xs font-mono font-bold text-white blink">AI</span>
+                <span className="text-xs font-mono font-bold text-white blink">CV</span>
               </div>
             </div>
             <h2 className="text-xl font-mono font-bold tracking-widest text-white uppercase blink">Scanning Document</h2>

@@ -170,14 +170,14 @@ export default function DashboardPage() {
 
   const infoBadges = [
     {
-      label: "ATS_COMPLIANT",
-      value: "ATS Compliant Output",
+      label: "ATS_FRIENDLY",
+      value: "Single-column PDF Output",
       icon: FileText,
       accent: "#00f0ff",
     },
     {
       label: "DATA_PRIVACY",
-      value: "Encrypted Data Privacy",
+      value: "Browser-local CV Storage",
       icon: Lock,
       accent: "#ff00aa",
     },

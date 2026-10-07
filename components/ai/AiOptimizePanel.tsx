@@ -90,9 +90,10 @@ export function AiOptimizePanel({ messages, onMessagesChange, onLoadingChange }:
                 id: `assistant-${Date.now()}`,
                 role: "assistant",
                 content: response.error ? `⚠️ ${response.error}` : response.content,
-                proposedChanges: response.error ? undefined : (response.proposedChanges as CVPatch | undefined),
-                changeStatus: response.proposedChanges && !response.error ? "pending" : undefined,
+                proposedChanges: response.error || response.groundingStatus === "failed" ? undefined : (response.proposedChanges as CVPatch | undefined),
+                changeStatus: response.proposedChanges && !response.error && response.groundingStatus !== "failed" ? "pending" : undefined,
                 groundingReport: response.error ? undefined : response.groundingReport,
+                groundingStatus: response.error ? undefined : response.groundingStatus,
             };
 
             onMessagesChange([...updatedMessages, assistantMessage]);

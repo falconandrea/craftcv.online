@@ -19,16 +19,14 @@ export default function AtsScorePage() {
         <div className="text-center mb-10 w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="inline-block px-3 py-1 mb-4 rounded-full border border-[#ff00aa] bg-[#ff00aa]/10">
             <span className="text-xs font-mono font-semibold tracking-widest text-[#ff00aa] uppercase">
-              AI Powered
+              RULE-BASED CHECKS + AI REVIEW
             </span>
           </div>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold font-mono tracking-tighter mb-4 text-glow">
-            ATS Score <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#b8ff00]">Simulator</span>
+            Check how ATS-friendly <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#b8ff00]">your CV is</span>
           </h1>
           <p className="text-lg text-white/60 max-w-2xl mx-auto leading-relaxed">
-            Check your CV against applicant tracking systems: 16 deterministic
-            parsing checks plus an AI review of formatting, impact and keyword
-            coverage. No account, no upload history.
+            Run 16 deterministic checks on structure, contact details, bullet quality and parsability. Add a job description to identify keyword gaps, with a separate AI review for additional feedback. No account required.
           </p>
         </div>
 
