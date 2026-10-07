@@ -107,3 +107,12 @@ Rejected: shortening the TEXT FORMATTING examples (no behavioral evidence; examp
 - Output: `{ tldr: string }`, normalized whitespace, non-empty, at most 30 words and 200 characters. Invalid output returns 502; request validation returns 400; unconfigured provider returns 503. Rate limit: 20 requests per connection per 10 minutes; provider timeout: 45 seconds.
 - The prompt requires fact preservation, no invented metrics, no contacts/placeholders, and the requested language. The user reviews/edits the result before applying it to the selected entry.
 - Manual evaluation pending: English and Italian sources, empty description, replacing an existing TL;DR, discard, injected instructions, changing/reordering the source while generation is pending, and provider failure. No live behavior or automated verification claimed.
+
+## Optimize provider selection
+
+Optimize alone supports native Anthropic via `AI_OPTIMIZE_PROVIDER=anthropic`.
+Provider selection, completion safety and the opt-in live smoke procedure are
+documented in [AI_PROVIDERS.md](AI_PROVIDERS.md). Prompt/context construction,
+JSON parsing and grounding stay common to both providers. The other pipelines
+continue using `AI_PROVIDER_*`. Provider changes require a fresh live evaluation;
+unit tests verify contracts without contacting either API.

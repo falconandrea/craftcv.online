@@ -501,11 +501,11 @@ describe("evaluation matrix coverage", () => {
     }
   });
 
-  it("keeps token budgets aligned with the runtime max_tokens configuration", () => {
+  it("keeps token budgets aligned with the runtime output token configuration", () => {
     const maxTokensOf = (relPath: string): number => {
       const source = readFileSync(path.join(repoRoot, relPath), "utf-8");
-      const match = source.match(/max_tokens:\s*(\d+)/);
-      expect(match, `${relPath} must configure max_tokens`).toBeDefined();
+      const match = source.match(/(?:max_tokens|maxOutputTokens):\s*(\d+)/);
+      expect(match, `${relPath} must configure an output token budget`).toBeDefined();
       return Number(match![1]);
     };
     expect(maxTokensOf("app/api/ai/optimize/route.ts")).toBe(SURFACE_TOKEN_BUDGETS.optimize);

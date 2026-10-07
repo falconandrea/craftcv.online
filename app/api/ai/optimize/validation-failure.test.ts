@@ -13,10 +13,11 @@ vi.mock("openai", () => ({ default: class {
 vi.mock("@/lib/stats", () => ({ incrementCounter, addToCounter }));
 
 beforeEach(() => {
+  vi.stubEnv("AI_OPTIMIZE_PROVIDER", "openai_compatible");
   vi.stubEnv("AI_PROVIDER_BASE_URL", "https://provider.example/v1");
   vi.stubEnv("AI_PROVIDER_API_KEY", "test-key");
   vi.stubEnv("AI_PROVIDER_MODEL", "test-model");
-  complete.mockResolvedValue({ choices: [{ message: { content: JSON.stringify({
+  complete.mockResolvedValue({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify({
     message: "Here is my advice.", proposedChanges: { summary: "Backend engineer." },
   }) } }] });
 });
@@ -49,7 +50,7 @@ describe("Optimize HTTP response validation boundary", () => {
   });
 
   it("keeps conversation-only responses usable without a validation state", async () => {
-    complete.mockResolvedValueOnce({ choices: [{ message: { content: '{"message":"Advice only."}' } }] });
+    complete.mockResolvedValueOnce({ choices: [{ finish_reason: "stop", message: { content: '{"message":"Advice only."}' } }] });
     const body = await (await request()).json();
     expect(body.content).toBe("Advice only.");
     expect(body.proposedChanges).toBeUndefined();
@@ -57,7 +58,7 @@ describe("Optimize HTTP response validation boundary", () => {
   });
 
   it("uses the flagged-additions counter and preserves validated changes if telemetry fails", async () => {
-    complete.mockResolvedValueOnce({ choices: [{ message: { content: JSON.stringify({
+    complete.mockResolvedValueOnce({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify({
       message: "Review this skill.", proposedChanges: { skills: ["Kubernetes"] },
     }) } }] });
     incrementCounter.mockImplementation(async (metric: string) => {
