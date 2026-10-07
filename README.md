@@ -12,7 +12,7 @@ Build and tailor CVs with AI Optimize, which compares proposed edits against exi
 - **ATS-Ready**: Single-column layout optimized for Applicant Tracking Systems.
 - **PDF Import**: Kickstart your CV by uploading an existing PDF. AI extracts the data and fills the form for you.
 - **Real-time Preview**: See changes as you type.
-- **Privacy First**: No database. Data is stored in your browser or exported as JSON.
+- **Privacy First**: CV data is stored locally in your browser, with no central CV database. Server-side processing and aggregate telemetry are documented below.
 - **Export/Import**: Save your progress as a JSON file and resume anytime.
 - **PDF Generation**: High-quality, selectable text PDF output.
 - **Mobile Friendly**: Responsive design for editing on the go.
