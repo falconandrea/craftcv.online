@@ -3,13 +3,13 @@
 > **READ THIS FIRST**: This file tells AI how to work with this project.
 > 
 > 💡 **Note for Developers**: This project uses the shared AI agents/skills workflow from [agent-brains](https://github.com/falconandrea/agent-brains). 
-> If you want to enable the custom slash commands (`/start`, `/feature`) and the specialized skills, clone `agent-brains` on your local system and run `./setup.sh .` inside this project directory.
+> If you want to enable the custom slash commands (`/start`, `/feature`) and the specialized skills, clone `agent-brains` and run `./setup.sh /path/to/craftcv.online nextjs` from the agent-brains directory.
 
 ## Skills
 
 This project uses the skills.sh system for procedural best practices.
 To see installed skills: `npx skills list`
-To update: `npx skills update`
+To refresh project links: run `./setup.sh /path/to/craftcv.online nextjs` from agent-brains. Update shared skill content in agent-brains, not through project symlinks.
 
 ## Code Rules
 
@@ -32,7 +32,7 @@ Load context **by area**, not "everything upfront". Read a file only if the task
 | Next.js API / server code | `.ai/context/TECH_STACK.md` + `next-best-practices` |
 | React / Tailwind / JSX UI | `.ai/context/FRONTEND_GUIDELINES.md` (mandatory) + `frontend-design` + the one relevant UI skill |
 | Hard bug / regression | `diagnosing-bugs` |
-| Completion claim | `verification-before-completion` only when the user asked for verification |
+| Completion claim | `verification-before-completion` before completion claims, following the Verification Policy |
 
 `.ai/context/APP_FLOW.md`, `GLOSSARY.md`, and `database_schema.mmd` are read **only** when the requested area needs them. Do not preload them.
 
@@ -62,7 +62,7 @@ Load context **by area**, not "everything upfront". Read a file only if the task
 **Trigger**: Start of session, new feature request, architectural decision
 
 **Actions**:
-- Ask questions using `.ai/prompts/create_prd.md` for new features
+- When explicitly invoked, use `/feature` for a substantial feature; ask questions in one batch and produce a PRD plus task list under `.ai/features/<name>/`
 - Propose solutions, DON'T implement
 - Update `.ai/context/` files with decisions
 - Get explicit "approved to implement" before switching to ACTING MODE
@@ -91,7 +91,7 @@ Load context **by area**, not "everything upfront". Read a file only if the task
 **Trigger**: When user says "debug this" or reports a bug
 
 **Actions**:
-- Use `systematic-debugging` skill framework
+- Use the `diagnosing-bugs` skill
 - Check `.ai/memory/lessons.md` for similar past issues
 - Document solution in `.ai/memory/lessons.md` if it's a novel fix
 
@@ -106,10 +106,10 @@ Load context **by area**, not "everything upfront". Read a file only if the task
 4. `.ai/context/TECH_STACK.md` - which stack
 
 ### New Feature Workflow
-1. Use `.ai/prompts/create_prd.md` → Creates PRD
-2. Use `.ai/prompts/generate_tasks.md` → Creates task list
-3. Work through tasks, marking `[x]` on completion
-4. Feature files saved in `.ai/features/[feature-name]/`
+1. Explicit `/feature` invocation creates `.ai/features/<name>/prd-<name>.md` and `tasks-<name>.md`; approve both before implementation.
+2. Small fixes and configuration changes follow the direct path without a new PRD.
+3. Work through approved tasks, marking `[x]` on completion.
+4. Read `.ai/agents/issue-tracker.md` when creating or retrieving specs and implementation tickets.
 
 ### Writing Code
 
@@ -118,7 +118,7 @@ Load context **by area**, not "everything upfront". Read a file only if the task
 ---
 
 ## 🚨 Red Flags - Stop and Ask
-- Feature not in PRD.md
+- Substantial feature implementation without an approved feature plan
 - Library version different from TECH_STACK.md
 - Making breaking changes to API
 - Repeating a mistake from lessons.md
@@ -142,7 +142,7 @@ After every task:
 - "Review this" → Enter REVIEW MODE
 - "Any lessons?" → Read lessons.md
 - "Debug this" → Enter DEBUG MODE
-- "New feature: [description]" → Use create_prd prompt
+- "New feature: [description]" → Discuss scope; invoke `/feature` explicitly for the full planning cycle
 
 ---
 
@@ -159,7 +159,7 @@ These slash commands are available when using the **Antigravity AI agent**. Each
 ### When the agent should trigger each workflow automatically:
 - **Session start** → remind the user to run `/start` if memory files haven't been read yet
 - **New project detected** (empty `TECH_STACK.md` or `progress.md`) → suggest `/setup`
-- **Feature request** ("add X", "build Y", "implement Z") → suggest `/feature` before writing any code
+- **Substantial feature request** → offer `/feature`; activate it only on explicit invocation. Small fixes use the direct path.
 
 ---
 
@@ -174,3 +174,7 @@ These slash commands are available when using the **Antigravity AI agent**. Each
 7. **Next.js**: NEVER mix client/server components incorrectly
 8. **ALL `.ai/` markdown files MUST be written in English** - No exceptions
 9. **ALL code comments MUST be written in English** - No exceptions
+
+## Shared skill invocation
+
+Invoke `feature`, `setup`, and `solution-capture` explicitly. Shared skills use `.agents/skills/<name>/SKILL.md`. For UI changes, activate `designer` with `.ai/context/FRONTEND_GUIDELINES.md` and the relevant UI skill.

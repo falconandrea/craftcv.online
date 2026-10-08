@@ -104,3 +104,5 @@ Cross-cutting principle: **determinism before AI** — check with code whatever 
 **Suggested order**: A → B → C (ship alongside/after B) → D (refactor during A/B/C). **Out of scope (Cluster E)**: multi-platform export (LinkedIn/GitHub/X generators) — scope expansion, noted only.
 
 All four feature clusters in this spec backlog are implemented. New ideas remain research notes until selected for the product roadmap.
+
+- [2026-10-08] Refreshed agent-brains links using the `nextjs` profile, replaced obsolete `.md` skill links, added the local issue tracker, and aligned workflow references. Verified link destinations and manifest membership.
