@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { EditorContent } from "@/components/editor/editor-content";
 import { PdfImportDialog } from "@/components/editor/pdf-import-dialog";
+import { SettingsDialog } from "@/components/editor/settings-dialog";
 import { AiOptimizePanel, INITIAL_AI_MESSAGE } from "@/components/ai/AiOptimizePanel";
 import type { AiMessage } from "@/state/types";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import {
   Code2,
   Eye,
   X,
+  Settings,
 } from "lucide-react";
 import {
   Popover,
@@ -70,6 +72,7 @@ export default function EditorPage() {
   const [chatMessages, setChatMessages] = useState<AiMessage[]>([INITIAL_AI_MESSAGE]);
   const [importPopoverOpen, setImportPopoverOpen] = useState(false);
   const [pdfImportOpen, setPdfImportOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // IDE mode toggle: editor or preview
   const [activeMode, setActiveMode] = useState<EditorMode>("editor");
@@ -104,6 +107,7 @@ export default function EditorPage() {
   const setEducation = useCVStore((state) => state.setEducation);
   const setLanguages = useCVStore((state) => state.setLanguages);
   const setCustomSection = useCVStore((state) => state.setCustomSection);
+  const setCVLanguage = useCVStore((state) => state.setCVLanguage);
 
   // AI Optimize
   const isAiEnabled =
@@ -162,6 +166,7 @@ export default function EditorPage() {
         setEducation(data.education);
         if (data.languages) setLanguages(data.languages);
         if (data.customSection) setCustomSection(data.customSection);
+        if (data.cvLanguage) setCVLanguage(data.cvLanguage);
       });
       toast.success("CV data imported successfully!");
     } catch (error) {
@@ -284,6 +289,26 @@ export default function EditorPage() {
                   </button>
                 </PopoverContent>
               </Popover>
+
+              {/* Settings */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSettingsOpen(true)}
+                aria-label={`Settings — CV language: ${
+                  cvLanguage === "it" ? "Italian" : "English"
+                }`}
+                className="gap-1.5 border-zinc-700/50 bg-transparent text-zinc-400 hover:text-[#00f0ff] hover:border-[#00f0ff]/30 hover:bg-[#00f0ff]/5 font-mono text-xs"
+              >
+                <Settings className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">SETTINGS</span>
+                <span
+                  aria-hidden="true"
+                  className="rounded border border-zinc-700/60 px-1 py-0.5 text-[0.625rem] leading-none text-[#00f0ff]"
+                >
+                  {cvLanguage === "it" ? "IT" : "EN"}
+                </span>
+              </Button>
             </div>
 
             {/* Right: AI + Download */}
@@ -372,6 +397,7 @@ export default function EditorPage() {
 
       {/* Dialogs */}
       <PdfImportDialog open={pdfImportOpen} onOpenChange={setPdfImportOpen} />
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
 
       {/* Footer */}
       <Footer />

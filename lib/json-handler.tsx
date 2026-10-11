@@ -71,13 +71,19 @@ function cleanTextForJSON(text: string): string {
 
 /**
  * Normalize imported CV data to the canonical shape before it reaches the
- * store: fills missing contact fields (phone/timezone) with empty strings
- * and makes link destinations absolute.
+ * store: fills missing contact fields (phone/timezone) with empty strings,
+ * makes link destinations absolute, and keeps `cvLanguage` only when it is
+ * an exact "it"/"en" value. Legacy exports without a language resolve to
+ * `undefined` so callers keep the user's current setting.
  */
 export function normalizeCVState(data: CVState): CVState {
   return {
     ...data,
     personalInfo: normalizeImportedPersonalInfo(data.personalInfo ?? undefined),
+    cvLanguage:
+      data.cvLanguage === "it" || data.cvLanguage === "en"
+        ? data.cvLanguage
+        : undefined,
   };
 }
 

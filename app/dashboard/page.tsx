@@ -83,6 +83,9 @@ export default function DashboardPage() {
         if (data.projects) cv.setProjects(data.projects);
         if (data.education) cv.setEducation(data.education);
         if (data.languages) cv.setLanguages(data.languages);
+        if (data.cvLanguage === "it" || data.cvLanguage === "en") {
+          cv.setCVLanguage(data.cvLanguage);
+        }
 
         toast.success("CV imported successfully!");
         router.push("/editor");
@@ -120,6 +123,7 @@ export default function DashboardPage() {
         cv.setEducation(data.education);
         if (data.languages) cv.setLanguages(data.languages);
         if (data.customSection) cv.setCustomSection(data.customSection);
+        if (data.cvLanguage) cv.setCVLanguage(data.cvLanguage);
       });
       toast.success("CV data imported successfully!");
       router.push("/editor");
