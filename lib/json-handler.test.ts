@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { importCVFromJSON, normalizeCVState } from "./json-handler";
 import { defaultCVState, type CVState } from "@/state/types";
 
@@ -71,6 +73,58 @@ describe("normalizeCVState", () => {
       "https://github.com/mariorossi",
       "https://mariorossi.dev",
     ]);
+  });
+});
+
+describe("cvLanguage import", () => {
+  it("restores cvLanguage when the export carries a valid value", async () => {
+    for (const language of ["it", "en"] as const) {
+      const exported = { ...legacyCV(), cvLanguage: language };
+
+      let received: CVState | undefined;
+      await importCVFromJSON(cvFile(exported), (data) => {
+        received = data;
+      });
+
+      expect(received!.cvLanguage).toBe(language);
+    }
+  });
+
+  it("keeps legacy exports language-less so the current setting is preserved", async () => {
+    const legacy = { ...legacyCV() };
+    delete (legacy as Partial<CVState>).cvLanguage;
+
+    let received: CVState | undefined;
+    await importCVFromJSON(cvFile(legacy), (data) => {
+      received = data;
+    });
+
+    expect(received!.cvLanguage).toBeUndefined();
+  });
+
+  it("sanitizes invalid cvLanguage values instead of forwarding them", () => {
+    const normalized = normalizeCVState({
+      ...legacyCV(),
+      cvLanguage: "fr" as CVState["cvLanguage"],
+    });
+    expect(normalized.cvLanguage).toBeUndefined();
+  });
+
+  it("imports the synthetic manual-test fixture as Italian", async () => {
+    const raw = readFileSync(
+      join(process.cwd(), "cv-test-openrouter.json"),
+      "utf8",
+    );
+    const fixtureFile = new File([raw], "cv-test-openrouter.json", {
+      type: "application/json",
+    });
+
+    let received: CVState | undefined;
+    await importCVFromJSON(fixtureFile, (data) => {
+      received = data;
+    });
+
+    expect(received!.cvLanguage).toBe("it");
   });
 });
 

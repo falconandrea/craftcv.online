@@ -11,7 +11,6 @@ import { ProjectsForm } from "@/components/editor/projects-form";
 import { EducationForm } from "@/components/editor/education-form";
 import { LanguagesForm } from "@/components/editor/languages-form";
 import { CustomSectionForm } from "@/components/editor/custom-section-form";
-import { SettingsForm } from "@/components/editor/settings-form";
 import { EditorTopNav } from "@/components/editor/EditorTopNav";
 import { useCVStore } from "@/state/store";
 import { RotateCcw } from "lucide-react";
@@ -86,10 +85,6 @@ const TAB_DESCRIPTIONS: Record<string, { title: string; description: string }> =
   certifications: {
     title: "Certifications",
     description: "Add professional certifications and credentials that validate your expertise.",
-  },
-  settings: {
-    title: "Settings",
-    description: "Configure document output preferences, template options, and formatting parameters.",
   },
 };
 
@@ -185,11 +180,6 @@ export function EditorContent({ activeTab, onTabChange }: EditorContentProps) {
         <TabsContent value="certifications" forceMount className="space-y-6 data-[state=inactive]:hidden">
           <SectionHeader {...TAB_DESCRIPTIONS.certifications} />
           <CertificationsForm />
-        </TabsContent>
-
-        <TabsContent value="settings" forceMount className="space-y-6 data-[state=inactive]:hidden">
-          <SectionHeader {...TAB_DESCRIPTIONS.settings} />
-          <SettingsForm />
         </TabsContent>
       </Tabs>
     </div>

@@ -11,6 +11,7 @@ export interface QuickReference {
     title: string;
     company: string;
     period: string;
+    location?: string;
     tldr?: string;
   }[];
   projects: {
@@ -68,6 +69,7 @@ export function buildQuickReference(cv: CVState): QuickReference {
       title: e.role,
       company: e.company,
       period: `${e.startDate} - ${e.endDate || "Present"}`,
+      location: e.location || undefined,
       tldr: e.tldr,
     })),
     // Preserve the user's CV order; missing tldr/link must not drop the entry
@@ -83,10 +85,14 @@ export function buildQuickReference(cv: CVState): QuickReference {
       issuer: c.issuer,
       year: c.year,
     })),
-    // Map education to simple one-liners
+    // Map education to simple one-liners. Location is included when present
+    // (review 2026-10-12): the snapshot previously omitted it, so full-CV
+    // rewrites could not preserve it — the root cause of the education
+    // location wipe caught by the destructive-change guard.
     education: cv.education.map(e => {
       let eduStr = `${e.degree} @ ${e.institution}`;
-      if (e.year) eduStr += ` (${e.year})`;
+      const details = [e.year, e.location].filter(Boolean);
+      if (details.length > 0) eduStr += ` (${details.join(", ")})`;
       return eduStr;
     }),
     languages: cv.languages.map(l => ({
@@ -117,7 +123,8 @@ export function toPromptString(ref: QuickReference): string {
   if (ref.roles && ref.roles.length > 0) {
     output += `\n[ ROLES ]\n`;
     ref.roles.forEach(r => {
-      output += `- ${r.title} @ ${r.company} (${r.period})\n`;
+      const place = r.location ? `, ${r.location}` : "";
+      output += `- ${r.title} @ ${r.company} (${r.period}${place})\n`;
       if (r.tldr) output += `  TLDR: ${r.tldr}\n`;
     });
   }

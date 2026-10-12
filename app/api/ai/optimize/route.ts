@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
       system: languageInstruction + buildDateContext() + OPTIMIZE_SYSTEM_PROMPT + cvContext,
       messages: [
         ...messages,
-        { role: "user", content: `REMINDER: You MUST respond with a raw JSON object starting with {. Include "message" and "proposedChanges" keys. Do NOT use markdown or code fences. Output ONLY valid JSON.` },
+        { role: "user", content: `REMINDER: You MUST respond with a raw JSON object starting with {. Always include "message"; include "proposedChanges" only when the request and the Fact Fidelity rules justify actual changes — assessment-only or confirmation-question replies omit it. Do NOT use markdown or code fences. Output ONLY valid JSON.` },
       ],
       maxOutputTokens: 4000,
     });

@@ -1,0 +1,57 @@
+{
+  "personalInfo": {
+    "fullName": "Alex Esempio",
+    "location": "Torino, Italia",
+    "email": "alex@example.com",
+    "phone": "",
+    "timezone": "Europe/Rome",
+    "links": ["https://example.com/alex"]
+  },
+  "summary": "Sviluppatore frontend con esperienza nella realizzazione di interfacce web con React e TypeScript. Mi occupo di componenti riutilizzabili, moduli di inserimento dati e integrazione con API REST. Nei progetti personali esploro accessibilità e gestione dello stato lato client.",
+  "experience": [
+    {
+      "company": "Studio Interfacce Demo",
+      "role": "Frontend Developer",
+      "startDate": "2022-03",
+      "endDate": "2025-06",
+      "location": "Torino, Italia",
+      "description": "• Sviluppato interfacce React e TypeScript per un portale interno di gestione delle richieste.\n• Realizzato componenti riutilizzabili e moduli con validazione dei dati e messaggi di errore.\n• Integrato API REST mostrando stati di caricamento, risultati vuoti ed errori di rete.\n• Collaborato con il designer per adattare le schermate a dispositivi mobili e navigazione da tastiera.",
+      "tldr": ""
+    }
+  ],
+  "skills": ["React", "TypeScript", "JavaScript", "HTML", "CSS", "Git", "API REST"],
+  "certifications": [],
+  "projects": [
+    {
+      "name": "TaskBoard Demo",
+      "role": "Sviluppatore frontend",
+      "link": "https://example.com/projects/taskboard",
+      "description": "• Creato una bacheca di attività con React e TypeScript, organizzata per stato di avanzamento.\n• Implementato creazione, modifica e filtro delle attività con salvataggio nel browser.\n• Gestito moduli incompleti e liste vuote con messaggi espliciti per l'utente.",
+      "tldr": ""
+    },
+    {
+      "name": "Biblioteca Accessibile Demo",
+      "role": "Sviluppatore frontend",
+      "link": "https://example.com/projects/biblioteca",
+      "description": "• Realizzato un catalogo di libri con ricerca per titolo e filtro per autore usando React e TypeScript.\n• Curato etichette dei campi, ordine del focus e navigazione da tastiera.\n• Integrato un'API REST per caricare il catalogo e gestito gli errori di connessione con un'azione di riprova.",
+      "tldr": ""
+    }
+  ],
+  "customSection": {
+    "title": "Interessi",
+    "content": "Accessibilità web, lettura e progetti personali di interfacce utente."
+  },
+  "education": [
+    {
+      "degree": "Laurea in Informatica",
+      "institution": "Università Demo",
+      "location": "Torino, Italia",
+      "year": "2021"
+    }
+  ],
+  "languages": [
+    { "language": "Italiano", "proficiency": "Madrelingua" },
+    { "language": "Inglese", "proficiency": "B2" }
+  ],
+  "cvLanguage": "it"
+}

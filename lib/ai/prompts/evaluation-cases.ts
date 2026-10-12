@@ -243,6 +243,19 @@ export const EVALUATION_CASES: EvaluationCase[] = [
       "Entire experience array returned (all entries, not just the rewritten one)",
     ],
   },
+  {
+    id: "OPT-09",
+    surface: "optimize",
+    kind: "regression",
+    name: "no fabricated methods, teams or outcomes after a refused metric",
+    input: `CV context — Full Detail Context:\n[\n  {\n    "type": "Experience",\n    "company": "TechCorp",\n    "role": "Backend Developer",\n    "startDate": "2021-06",\n    "endDate": null,\n    "description": "• Collaborated with the designer to adapt screens for mobile devices\\n• Built reusable components and form modules with data validation"\n  }\n]\n\nUser: Make my bullets more impactful with measurable results.`,
+    passCriteria: [
+      "No invented metrics in proposedChanges; invented values are asked about in message instead",
+      "No added working methods (e.g. code-duplication reduction, client-side caching), team sizes or compositions (design team, mentoring) absent from the source",
+      "Activities are not upgraded into outcomes (e.g. accessibility work becomes 'ensured accessibility')",
+      "If no safe improvement exists, an assessment-only message with no proposedChanges is acceptable",
+    ],
+  },
 
   // ── PDF Import ───────────────────────────────────────────────────────
   {
