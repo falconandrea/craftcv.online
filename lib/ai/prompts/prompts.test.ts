@@ -32,6 +32,8 @@ import {
   buildLanguageInstruction,
   buildDateContext,
 } from "./optimize";
+import { TLDR_SYSTEM_PROMPT } from "./tldr";
+import { TLDR_MAX_CHARS, TLDR_MAX_WORDS } from "@/lib/ai/tldr-validation";
 import { IMPORT_PDF_SYSTEM_PROMPT } from "./import-pdf";
 import { ANALYZE_ATS_SYSTEM_PROMPT } from "./analyze-ats";
 import { JD_EXTRACT_SYSTEM_PROMPT } from "./jd-extract";
@@ -273,6 +275,45 @@ describe("optimize prompt contract", () => {
     expect(OPTIMIZE_SYSTEM_PROMPT).toContain("do NOT fabricate experience");
   });
 
+  it("keeps the fact-fidelity contract (manual OpenRouter test 2026-10-11 regressions)", () => {
+    expect(OPTIMIZE_SYSTEM_PROMPT).toContain("Fact Fidelity");
+    // Deduction is not fact; activities are not outcomes.
+    expect(OPTIMIZE_SYSTEM_PROMPT).toContain(
+      "A plausible deduction is NOT a documented fact"
+    );
+    expect(OPTIMIZE_SYSTEM_PROMPT).toContain(
+      "never upgrade an activity into an outcome"
+    );
+    // No added responsibilities, methods, team sizes or results without source.
+    expect(OPTIMIZE_SYSTEM_PROMPT).toContain(
+      "responsibilities, working methods, team composition or team size"
+    );
+    expect(OPTIMIZE_SYSTEM_PROMPT).toContain(
+      '"reduced code duplication between screens", "client-side validation"'
+    );
+    // Missing info → confirmation question in message, not patch content.
+    expect(OPTIMIZE_SYSTEM_PROMPT).toContain(
+      'ask for confirmation in "message"'
+    );
+    // Assessment-only responses are legitimate; no forced changes.
+    expect(OPTIMIZE_SYSTEM_PROMPT).toContain("assessment only");
+    expect(OPTIMIZE_SYSTEM_PROMPT).toContain(
+      "Never manufacture changes to satisfy the request"
+    );
+    // After a refused invention, no alternative ready-made bullets assuming
+    // other unverified facts — ask what facts are available instead.
+    expect(OPTIMIZE_SYSTEM_PROMPT).toContain(
+      "do NOT offer alternative ready-made bullet text that assumes other unverified facts"
+    );
+    // Rule 2 and the array rules must permit message-only responses.
+    expect(OPTIMIZE_SYSTEM_PROMPT).toContain(
+      'return "message" only and omit "proposedChanges"'
+    );
+    expect(OPTIMIZE_SYSTEM_PROMPT).toContain(
+      "call for an assessment or a confirmation question instead of changes"
+    );
+  });
+
   it("distinguishes empty sections from omitted detail (FR-12, finding F-02)", () => {
     expect(OPTIMIZE_SYSTEM_PROMPT).toContain("Context Interpretation");
     expect(OPTIMIZE_SYSTEM_PROMPT).toContain(
@@ -433,6 +474,18 @@ describe("jd-extract prompt contract", () => {
     expect(JD_EXTRACT_SYSTEM_PROMPT).toContain("Deduplicate keywords");
     expect(JD_EXTRACT_SYSTEM_PROMPT).toContain(
       "Return an empty hard_skills array if no hard skills can be extracted"
+    );
+  });
+});
+
+// ─── TL;DR generation ────────────────────────────────────────────────────
+
+describe("tldr prompt contract", () => {
+  it("keeps the prompt limits aligned with the route validator constants", () => {
+    // The route (app/api/ai/tldr) rejects anything over these bounds; the
+    // prompt must teach the same numbers so valid outputs are not wasted.
+    expect(TLDR_SYSTEM_PROMPT).toContain(
+      `Maximum ${TLDR_MAX_WORDS} words and ${TLDR_MAX_CHARS} characters`
     );
   });
 });

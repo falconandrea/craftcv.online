@@ -141,6 +141,53 @@ describe("toPromptString", () => {
     expect(ref.customSection).toEqual({ title: "Hobbies", content: "Chess" });
   });
 
+  it("REGRESSION (review): per-entry locations are part of the AI context", () => {
+    // Root cause of the education-location wipe: the snapshot omitted
+    // locations, so the model emitted "" and only the destructive-change
+    // guard saved the data. The context must now carry the real values.
+    const cv = {
+      ...defaultCVState,
+      experience: [
+        {
+          company: "Studio Interfacce Demo",
+          role: "Frontend Developer",
+          startDate: "2022-03",
+          endDate: "2025-06",
+          location: "Torino, Italia",
+          description: "",
+        },
+      ],
+      education: [
+        {
+          degree: "Laurea in Informatica",
+          institution: "Università Demo",
+          location: "Torino, Italia",
+          year: "2021",
+        },
+      ],
+    };
+    const ref = buildQuickReference(cv);
+    const output = toPromptString(ref);
+
+    expect(output).toContain("- Frontend Developer @ Studio Interfacce Demo (2022-03 - 2025-06, Torino, Italia)");
+    expect(output).toContain("Laurea in Informatica @ Università Demo (2021, Torino, Italia)");
+  });
+
+  it("keeps the roles and education formats unchanged when locations are absent", () => {
+    const cv = {
+      ...defaultCVState,
+      experience: [
+        { company: "Acme", role: "Dev", startDate: "2020", endDate: null, description: "" },
+      ],
+      education: [
+        { degree: "BSc", institution: "MIT", location: "", year: "2021" },
+      ],
+    };
+    const output = toPromptString(buildQuickReference(cv));
+    expect(output).toContain("- Dev @ Acme (2020 - Present)");
+    expect(output).toContain("BSc @ MIT (2021)");
+  });
+
   it("omits custom section from prompt when content is empty (less noise for the LLM)", () => {
     const cv = {
       ...defaultCVState,
