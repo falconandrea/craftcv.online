@@ -5,6 +5,7 @@ import { Info } from "lucide-react";
 import { Dropzone } from "@/components/ats/Dropzone";
 import { ResultsDashboard, AtsScoreData } from "@/components/ats/ResultsDashboard";
 import { toast } from "sonner";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 /**
  * Interactive part of /ats-score. Split out of the page so the static SEO copy
@@ -38,6 +39,11 @@ export function AtsScoreTool() {
 
       const results = data as AtsScoreData;
       setResults(results);
+      trackAnalyticsEvent({
+        name: "ats_analysis_completed",
+        ai_status: results.aiUnavailable ? "unavailable" : "available",
+        job_description_used: jobDescription.trim().length > 0,
+      });
 
       // The API degrades to the deterministic report when the model fails, so
       // don't announce a full report the dashboard is not showing.

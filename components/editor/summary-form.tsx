@@ -8,6 +8,7 @@
  */
 
 import { useCVStore } from "@/state/store";
+import { markEditorStarted } from "@/lib/analytics";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
@@ -20,7 +21,10 @@ export function SummaryForm() {
       <Textarea
         id="summary"
         value={summary}
-        onChange={(e) => setSummary(e.target.value)}
+        onChange={(e) => {
+          markEditorStarted();
+          setSummary(e.target.value);
+        }}
         placeholder="Brief professional summary highlighting your key qualifications and career goals..."
         rows={8}
         className="mt-1"

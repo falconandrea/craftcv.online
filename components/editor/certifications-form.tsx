@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import type { Certification } from "@/state/types";
+import { markEditorStarted } from "@/lib/analytics";
 import {
   DragDropContext,
   Droppable,
@@ -38,6 +39,7 @@ export function CertificationsForm() {
   } = useCVStore();
 
   const handleAddCertification = () => {
+    markEditorStarted();
     addCertification({ ...emptyCertification });
     setTimeout(() => {
       const element = document.getElementById(`cert-title-${certifications.length}`);
@@ -53,16 +55,19 @@ export function CertificationsForm() {
     field: keyof Certification,
     value: string,
   ) => {
+    markEditorStarted();
     const cert = certifications[index];
     updateCertification(index, { ...cert, [field]: value });
   };
 
   const handleRemoveCertification = (index: number) => {
+    markEditorStarted();
     removeCertification(index);
   };
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
+    if (result.source.index !== result.destination.index) markEditorStarted();
     reorderCertifications(result.source.index, result.destination.index);
   };
 

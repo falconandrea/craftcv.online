@@ -20,6 +20,7 @@ import { importCVFromJSON } from "@/lib/json-handler";
 import { normalizeImportedPersonalInfo } from "@/lib/url";
 import { toast } from "sonner";
 import type { CVState } from "@/state/types";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 const NAV_LINKS = [
   { label: "Dashboard", href: "/dashboard" },
@@ -87,6 +88,8 @@ export default function DashboardPage() {
           cv.setCVLanguage(data.cvLanguage);
         }
 
+        trackAnalyticsEvent({ name: "resume_import_completed", import_source: "pdf" });
+
         toast.success("CV imported successfully!");
         router.push("/editor");
       } catch (error) {
@@ -125,6 +128,7 @@ export default function DashboardPage() {
         if (data.customSection) cv.setCustomSection(data.customSection);
         if (data.cvLanguage) cv.setCVLanguage(data.cvLanguage);
       });
+      trackAnalyticsEvent({ name: "resume_import_completed", import_source: "json" });
       toast.success("CV data imported successfully!");
       router.push("/editor");
     } catch (error) {

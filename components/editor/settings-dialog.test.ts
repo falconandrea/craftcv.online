@@ -96,6 +96,8 @@ function expectDialog(open: boolean) {
 
 beforeEach(() => {
   useCVStore.setState({ cvLanguage: "it" });
+  window.sessionStorage.clear();
+  window.dataLayer = [];
 });
 
 afterEach(() => {
@@ -174,8 +176,19 @@ describe("SettingsDialog open/discard/save flow (toolbar wiring)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     expectDialog(false);
     expect(useCVStore.getState().cvLanguage).toBe("en");
+    expect(window.dataLayer).toEqual([{ event: "editor_started" }]);
 
     openFromToolbar();
     expect(draftValue()).toBe("en");
+  });
+
+  it("Save does not count an unchanged language as an editor modification", () => {
+    render(React.createElement(ToolbarHarness));
+
+    openFromToolbar();
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(useCVStore.getState().cvLanguage).toBe("it");
+    expect(window.dataLayer).toEqual([]);
   });
 });

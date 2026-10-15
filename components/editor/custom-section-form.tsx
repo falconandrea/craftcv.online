@@ -8,6 +8,7 @@
  */
 
 import { useCVStore } from "@/state/store";
+import { markEditorStarted } from "@/lib/analytics";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -22,9 +23,10 @@ export function CustomSectionForm() {
         <Input
           id="custom-section-title"
           value={customSection.title}
-          onChange={(e) =>
-            setCustomSection({ ...customSection, title: e.target.value })
-          }
+          onChange={(e) => {
+            markEditorStarted();
+            setCustomSection({ ...customSection, title: e.target.value });
+          }}
           placeholder="Interests"
         />
       </div>
@@ -34,9 +36,10 @@ export function CustomSectionForm() {
         <Textarea
           id="custom-section-content"
           value={customSection.content}
-          onChange={(e) =>
-            setCustomSection({ ...customSection, content: e.target.value })
-          }
+          onChange={(e) => {
+            markEditorStarted();
+            setCustomSection({ ...customSection, content: e.target.value });
+          }}
           placeholder="Enter your content here... (leave empty to hide this section from the PDF)"
           rows={5}
         />

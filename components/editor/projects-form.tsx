@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import type { Project } from "@/state/types";
+import { markEditorStarted } from "@/lib/analytics";
 import {
   DragDropContext,
   Droppable,
@@ -42,6 +43,7 @@ export function ProjectsForm() {
   } = useCVStore();
 
   const handleAddProject = () => {
+    markEditorStarted();
     addProject({ ...emptyProject });
     setTimeout(() => {
       const element = document.getElementById(`project-name-${projects.length}`);
@@ -57,16 +59,19 @@ export function ProjectsForm() {
     field: keyof Project,
     value: string,
   ) => {
+    markEditorStarted();
     const project = projects[index];
     updateProject(index, { ...project, [field]: value });
   };
 
   const handleRemoveProject = (index: number) => {
+    markEditorStarted();
     removeProject(index);
   };
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
+    if (result.source.index !== result.destination.index) markEditorStarted();
     reorderProjects(result.source.index, result.destination.index);
   };
 

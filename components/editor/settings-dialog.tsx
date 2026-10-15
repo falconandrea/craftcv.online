@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useCVStore } from "@/state/store";
 import type { CVLanguage } from "@/state/types";
+import { markEditorStarted } from "@/lib/analytics";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -47,7 +48,9 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
 
   const handleSave = () => {
     if (draftLanguage) {
+      const languageChanged = draftLanguage !== (cvLanguage ?? "en");
       setCVLanguage(draftLanguage);
+      if (languageChanged) markEditorStarted();
     }
     onOpenChange(false);
   };

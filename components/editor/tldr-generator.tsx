@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import type { CVLanguage } from "@/state/types";
+import { markEditorStarted, trackAnalyticsEvent } from "@/lib/analytics";
 
 interface TldrGeneratorProps {
   inputId: string;
@@ -25,7 +26,9 @@ export function TldrGenerator({ inputId, value, kind, title, role, description, 
   const [loading, setLoading] = useState(false);
   const [proposal, setProposal] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const validProposal = proposal !== null && proposal.trim().length > 0 && proposal.length <= 200 && proposal.trim().split(/\s+/).length <= 30;
+  const isValidProposal = (candidate: string) => candidate.trim().length > 0 && candidate.length <= 200 && candidate.trim().split(/\s+/).length <= 30;
+  const validProposal = proposal !== null && isValidProposal(proposal);
+  const functionType = kind === "experience" ? "experience_tldr" : "project_tldr";
 
   async function generate() {
     if (pending.current) return;
@@ -47,6 +50,9 @@ export function TldrGenerator({ inputId, value, kind, title, role, description, 
         throw new Error("AI returned an invalid summary. Please try again.");
       }
       setProposal(data.tldr);
+      if (isValidProposal(data.tldr)) {
+        trackAnalyticsEvent({ name: "ai_assistance_completed", function_type: functionType });
+      }
     } catch (error) {
       setError(error instanceof Error ? error.message : "Could not generate the summary. Please try again.");
     } finally {
@@ -103,7 +109,15 @@ export function TldrGenerator({ inputId, value, kind, title, role, description, 
           <Textarea id={id} value={proposal} maxLength={200} onChange={(event) => setProposal(event.target.value)} rows={2} />
           <p className="text-xs text-muted-foreground" aria-live="polite">{proposal.trim() ? proposal.trim().split(/\s+/).length : 0}/30 words · {proposal.length}/200 characters. Review the facts before applying.</p>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" size="sm" disabled={!validProposal} onClick={() => { onApply(proposal.trim()); setProposal(null); }}>Use this TL;DR</Button>
+            <Button type="button" size="sm" disabled={!validProposal} onClick={() => {
+                const appliedValue = proposal.trim();
+                if (appliedValue !== value) {
+                  onApply(appliedValue);
+                  markEditorStarted();
+                  trackAnalyticsEvent({ name: "ai_proposal_applied", function_type: functionType });
+                }
+                setProposal(null);
+            }}>Use this TL;DR</Button>
             <Button type="button" variant="ghost" size="sm" onClick={() => setProposal(null)}>Discard</Button>
           </div>
         </div>

@@ -80,7 +80,7 @@ interface CVStore extends CVState {
   setCustomSection: (customSection: CustomSection) => void;
 
   // Reset action
-  resetCV: () => void;
+  resetCV: () => boolean;
 
   // AI patch action
   applyAiPatch: (patch: CVPatch) => void;
@@ -108,6 +108,40 @@ const initialState: CVState = {
   customSection: { title: "Interests", content: "" },
   cvLanguage: "en",
 };
+
+function areValuesEqual(left: unknown, right: unknown): boolean {
+  if (Object.is(left, right)) return true;
+
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return (
+      Array.isArray(left) &&
+      Array.isArray(right) &&
+      left.length === right.length &&
+      left.every((value, index) => areValuesEqual(value, right[index]))
+    );
+  }
+
+  if (
+    typeof left !== "object" || left === null ||
+    typeof right !== "object" || right === null
+  ) {
+    return false;
+  }
+
+  const leftRecord = left as Record<string, unknown>;
+  const rightRecord = right as Record<string, unknown>;
+  const leftKeys = Object.keys(leftRecord);
+  const rightKeys = Object.keys(rightRecord);
+
+  return (
+    leftKeys.length === rightKeys.length &&
+    leftKeys.every(
+      (key) =>
+        Object.prototype.hasOwnProperty.call(rightRecord, key) &&
+        areValuesEqual(leftRecord[key], rightRecord[key]),
+    )
+  );
+}
 
 /**
  * Merge persisted localStorage state over the current (default) state.
@@ -338,7 +372,29 @@ export const useCVStore = create<CVStore>()(
       setCustomSection: (customSection) => set({ customSection }),
 
       // Reset action
-      resetCV: () => set(initialState),
+      resetCV: () => {
+        let changed = false;
+        set((state) => {
+          const currentCV: CVState = {
+            personalInfo: state.personalInfo,
+            summary: state.summary,
+            experience: state.experience,
+            skills: state.skills,
+            certifications: state.certifications,
+            projects: state.projects,
+            education: state.education,
+            languages: state.languages,
+            customSection: state.customSection,
+            cvLanguage: state.cvLanguage,
+          };
+
+          if (areValuesEqual(currentCV, initialState)) return state;
+
+          changed = true;
+          return initialState;
+        });
+        return changed;
+      },
 
       // AI patch action — replaces CV data with AI suggestions where provided
       applyAiPatch: (patch) =>
