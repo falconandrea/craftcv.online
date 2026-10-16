@@ -29,6 +29,7 @@ import {
   DropResult,
 } from "@hello-pangea/dnd";
 import type { ExperienceEntry } from "@/state/types";
+import { markEditorStarted } from "@/lib/analytics";
 
 const emptyEntry: ExperienceEntry = {
   company: "",
@@ -50,6 +51,7 @@ export function ExperienceForm() {
   } = useCVStore();
 
   const handleAddEntry = () => {
+    markEditorStarted();
     addExperience({ ...emptyEntry });
     setTimeout(() => {
       const element = document.getElementById(`company-${experience.length}`);
@@ -65,16 +67,19 @@ export function ExperienceForm() {
     field: keyof ExperienceEntry,
     value: string | null,
   ) => {
+    markEditorStarted();
     const entry = experience[index];
     updateExperience(index, { ...entry, [field]: value });
   };
 
   const handleRemoveEntry = (index: number) => {
+    markEditorStarted();
     removeExperience(index);
   };
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
+    if (result.source.index !== result.destination.index) markEditorStarted();
     reorderExperience(result.source.index, result.destination.index);
   };
 

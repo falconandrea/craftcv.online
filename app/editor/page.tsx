@@ -40,6 +40,7 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { Footer } from "@/components/layout/Footer";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 const PreviewContent = dynamic(
   () => import("@/components/editor/preview-content").then((mod) => mod.PreviewContent),
@@ -168,6 +169,7 @@ export default function EditorPage() {
         if (data.customSection) setCustomSection(data.customSection);
         if (data.cvLanguage) setCVLanguage(data.cvLanguage);
       });
+      trackAnalyticsEvent({ name: "resume_import_completed", import_source: "json" });
       toast.success("CV data imported successfully!");
     } catch (error) {
       console.error("Failed to import JSON:", error);

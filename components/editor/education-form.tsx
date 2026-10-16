@@ -15,6 +15,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import type { Education } from "@/state/types";
+import { markEditorStarted } from "@/lib/analytics";
 import {
   DragDropContext,
   Droppable,
@@ -39,6 +40,7 @@ export function EducationForm() {
   } = useCVStore();
 
   const handleAddEducation = () => {
+    markEditorStarted();
     addEducation({ ...emptyEducation });
     setTimeout(() => {
       const element = document.getElementById(`edu-degree-${education.length}`);
@@ -54,16 +56,19 @@ export function EducationForm() {
     field: keyof Education,
     value: string,
   ) => {
+    markEditorStarted();
     const edu = education[index];
     updateEducation(index, { ...edu, [field]: value });
   };
 
   const handleRemoveEducation = (index: number) => {
+    markEditorStarted();
     removeEducation(index);
   };
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
+    if (result.source.index !== result.destination.index) markEditorStarted();
     reorderEducation(result.source.index, result.destination.index);
   };
 

@@ -20,6 +20,7 @@ import {
     DropResult,
 } from "@hello-pangea/dnd";
 import type { Language } from "@/state/types";
+import { markEditorStarted } from "@/lib/analytics";
 
 export function LanguagesForm() {
     const {
@@ -31,6 +32,7 @@ export function LanguagesForm() {
     } = useCVStore();
 
     const handleAddLanguage = () => {
+        markEditorStarted();
         addLanguage({ language: "", proficiency: "Intermediate" });
         setTimeout(() => {
             const element = document.getElementById(`language-${languages.length}`);
@@ -46,16 +48,19 @@ export function LanguagesForm() {
         field: keyof Language,
         value: string
     ) => {
+        markEditorStarted();
         const entry = languages[index];
         updateLanguage(index, { ...entry, [field]: value });
     };
 
     const handleRemoveLanguage = (index: number) => {
+        markEditorStarted();
         removeLanguage(index);
     };
 
     const handleDragEnd = (result: DropResult) => {
         if (!result.destination) return;
+        if (result.source.index !== result.destination.index) markEditorStarted();
         reorderLanguages(result.source.index, result.destination.index);
     };
 

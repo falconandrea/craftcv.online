@@ -13,6 +13,7 @@ import { LanguagesForm } from "@/components/editor/languages-form";
 import { CustomSectionForm } from "@/components/editor/custom-section-form";
 import { EditorTopNav } from "@/components/editor/EditorTopNav";
 import { useCVStore } from "@/state/store";
+import { markEditorStarted } from "@/lib/analytics";
 import { RotateCcw } from "lucide-react";
 import {
   AlertDialog,
@@ -124,7 +125,9 @@ export function EditorContent({ activeTab, onTabChange }: EditorContentProps) {
                   CANCEL
                 </AlertDialogCancel>
                 <AlertDialogAction
-                  onClick={() => resetCV()}
+                  onClick={() => {
+                    if (resetCV()) markEditorStarted();
+                  }}
                   className="bg-[#ff00aa]/20 hover:bg-[#ff00aa]/30 text-[#ff00aa] border border-[#ff00aa]/30 font-mono text-xs"
                 >
                   EXECUTE_RESET

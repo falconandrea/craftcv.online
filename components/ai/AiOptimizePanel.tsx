@@ -10,6 +10,7 @@ import type { AiMessage, CVPatch } from "@/state/types";
 import type { CVState } from "@/state/types";
 import { sendAiMessage, type ApiMessage } from "@/lib/ai-client";
 import { useCVStore } from "@/state/store";
+import { markEditorStarted, trackAnalyticsEvent } from "@/lib/analytics";
 
 export const INITIAL_AI_MESSAGE: AiMessage = {
     id: "initial",
@@ -86,6 +87,17 @@ export function AiOptimizePanel({ messages, onMessagesChange, onLoadingChange }:
 
             const response = await sendAiMessage(history, cvSnapshot);
 
+            if (
+                !response.error &&
+                response.content.trim().length > 0 &&
+                response.groundingStatus !== "failed"
+            ) {
+                trackAnalyticsEvent({
+                    name: "ai_assistance_completed",
+                    function_type: "editor_chat",
+                });
+            }
+
             const assistantMessage: AiMessage = {
                 id: `assistant-${Date.now()}`,
                 role: "assistant",
@@ -120,7 +132,13 @@ export function AiOptimizePanel({ messages, onMessagesChange, onLoadingChange }:
     };
 
     const handleApply = useCallback((changes: CVPatch, messageId: string) => {
+        if (Object.keys(changes).length === 0) return;
         applyAiPatch(changes);
+        markEditorStarted();
+        trackAnalyticsEvent({
+            name: "ai_proposal_applied",
+            function_type: "editor_chat",
+        });
         onMessagesChange(
             messages.map((m) => (m.id === messageId ? { ...m, changeStatus: "applied" } : m))
         );

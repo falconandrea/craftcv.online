@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { normalizeImportedPersonalInfo } from "@/lib/url";
 import type { CVState } from "@/state/types";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 interface PdfImportDialogProps {
   open: boolean;
@@ -70,6 +71,8 @@ export function PdfImportDialog({ open, onOpenChange }: PdfImportDialogProps) {
         if (data.cvLanguage === "it" || data.cvLanguage === "en") {
           cv.setCVLanguage(data.cvLanguage);
         }
+
+        trackAnalyticsEvent({ name: "resume_import_completed", import_source: "pdf" });
 
         toast.success(
           "CV imported successfully! Review the data and make any adjustments."

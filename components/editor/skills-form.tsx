@@ -21,6 +21,7 @@ import {
 import { GripVertical, AlertTriangle } from "lucide-react";
 import { useState, KeyboardEvent, useMemo } from "react";
 import { computeSkillEvidence } from "@/lib/cv/skill-evidence";
+import { markEditorStarted } from "@/lib/analytics";
 
 export function SkillsForm() {
   const cv = useCVStore();
@@ -38,6 +39,7 @@ export function SkillsForm() {
   const handleAddSkill = () => {
     const trimmedValue = inputValue.trim();
     if (trimmedValue && !skills.includes(trimmedValue)) {
+      markEditorStarted();
       setSkills([...skills, trimmedValue]);
       setInputValue("");
     }
@@ -53,16 +55,19 @@ export function SkillsForm() {
       skills.length > 0
     ) {
       // Remove the last skill when backspace is pressed on empty input
+      markEditorStarted();
       setSkills(skills.slice(0, -1));
     }
   };
 
   const handleRemoveSkill = (index: number) => {
+    markEditorStarted();
     setSkills(skills.filter((_, i) => i !== index));
   };
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
+    if (result.source.index !== result.destination.index) markEditorStarted();
     reorderSkills(result.source.index, result.destination.index);
   };
 

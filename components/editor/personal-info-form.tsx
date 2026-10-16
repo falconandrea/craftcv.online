@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { useState, KeyboardEvent } from "react";
 import { ensureHttpDestination } from "@/lib/url";
+import { markEditorStarted } from "@/lib/analytics";
 
 export function PersonalInfoForm() {
   const { personalInfo, setPersonalInfo } = useCVStore();
@@ -22,6 +23,7 @@ export function PersonalInfoForm() {
   // `?? ""` keeps inputs controlled for legacy persisted state hydrated
   // before the phone/timezone keys existed.
   const handleChange = (field: keyof typeof personalInfo, value: string) => {
+    markEditorStarted();
     setPersonalInfo({
       ...personalInfo,
       [field]: value,
@@ -29,6 +31,7 @@ export function PersonalInfoForm() {
   };
 
   const handleLinkChange = (index: number, value: string) => {
+    markEditorStarted();
     const newLinks = [...personalInfo.links];
     newLinks[index] = value;
     setPersonalInfo({
@@ -42,6 +45,7 @@ export function PersonalInfoForm() {
     const current = personalInfo.links[index] ?? "";
     const normalized = ensureHttpDestination(current);
     if (normalized !== current) {
+      markEditorStarted();
       const newLinks = [...personalInfo.links];
       newLinks[index] = normalized;
       setPersonalInfo({
@@ -52,6 +56,7 @@ export function PersonalInfoForm() {
   };
 
   const handleRemoveLink = (index: number) => {
+    markEditorStarted();
     setPersonalInfo({
       ...personalInfo,
       links: personalInfo.links.filter((_, i) => i !== index),
@@ -61,6 +66,7 @@ export function PersonalInfoForm() {
   const handleAddLink = () => {
     const trimmedLink = newLink.trim();
     if (trimmedLink) {
+      markEditorStarted();
       setPersonalInfo({
         ...personalInfo,
         links: [...personalInfo.links, ensureHttpDestination(trimmedLink)],
